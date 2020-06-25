@@ -51,6 +51,30 @@ class MachineEnv(gym.Env):
             observations.
         actcode: If passed and not None, a translator between RL actions and
             machine settings. Otherwise, actions are settings.
+
+    Usage:
+
+        >>> import numpy as np
+        >>> from gym.spaces import Box
+        >>> from stable_baselines import TD3
+        >>> class Parabola:
+        ...     settings_space = Box(-1, 1, (2,))
+        ...     measurements_space = Box(0, float('inf'), (1,))
+        ...     reward_range = (-float('inf'), 0.0)
+        ...     def __init__(self):
+        ...         self.x = None
+        ...     def apply_settings(self, x):
+        ...         self.x = x
+        ...     def take_measurement(self):
+        ...         return = np.asarray(sum(self.x)**2)
+        ...     def evaluate_measurement(self, x2, info):
+        ...         reward = -x2
+        ...         done = x2 < 0.01
+        ...         info['success'] = done
+        ...         return reward, done
+        >>> env = MachineEnv(Parabola())
+        >>> agent = TD3('MlpPolicy', env)
+        >>> agent.learn()
     """
     def __init__(self,
                  machine: Machine,
