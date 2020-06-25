@@ -58,11 +58,6 @@ class MachineEnv(gym.Env):
         self.metadata = machine.metadata
 
     @property
-    def machine(self) -> Machine:
-        """The underlying machine."""
-        return self._machine
-
-    @property
     def observation_space(self) -> gym.Space:
         """The observation space as defined by the `MeasurementEncoder`."""
         return self._obscode.observation_space
