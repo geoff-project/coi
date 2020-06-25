@@ -18,7 +18,8 @@ class GoalSpec:
     # pylint: disable=too-few-public-methods
     reward_range: Range = (-float('inf'), float('inf'))
 
-    def evaluate(self, measurement, info: dict) -> (float, bool):
+    def evaluate_measurement(self, measurement,
+                             info: dict) -> Tuple[float, bool]:
         """Evaluate the goodness of settings based on the given measurement.
 
         The results of the evaluation should be as close to physical values as
@@ -72,10 +73,11 @@ class LambdaGoal(GoalSpec):
         if reward_range is not None:
             self.reward_range = reward_range
 
-    def evaluate(self, measurement, info: dict) -> Tuple[float, bool]:
+    def evaluate_measurement(self, measurement,
+                             info: dict) -> Tuple[float, bool]:
         return self.func(measurement, info)
 
-    __call__ = evaluate
+    __call__ = evaluate_measurement
 
     @classmethod
     def with_reward_range(cls, low: float, high: float):
@@ -124,8 +126,8 @@ class BeamlineGoal(GoalSpec):
         max_rms = _rms(max_deviation * numpy.ones_like(reference))
         self.reward_range = (-max_rms, 0.0)
 
-    def evaluate(self, measurement, info):
-        """Evaluate the measurement and fill the `info` dict.
+    def evaluate_measurement(self, measurement, info):
+        """Evaluate the given measurement and fill the `info` dict.
 
         Info entries:
             rms: The RMS deviation between the measured beam and the reference

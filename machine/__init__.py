@@ -92,7 +92,7 @@ class MachineEnv(gym.Env):
         measurement = self._machine.take_measurement()
         info = dict(settings=settings, measurement=measurement)
         obs = self._obscode.encode_measurement(measurement, False)
-        reward, done = self._goal.evaluate(measurement, info)
+        reward, done = self._goal.evaluate_measurement(measurement, info)
         return obs, reward, done, info
 
     def render(self, mode: str = 'human'):
