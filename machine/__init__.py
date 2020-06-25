@@ -32,7 +32,7 @@ For more information about each interface, see their respective docstrings.
 import gym
 from .machine import Machine
 from .goalspec import GoalSpec
-from .codecs import MeasurementEncoder, ActionDecoder
+from .codecs import MeasurementEncoder, ActionDecoder, Identity
 
 
 class MachineEnv(gym.Env):
@@ -45,16 +45,22 @@ class MachineEnv(gym.Env):
     Args:
         machine: An interface to the concrete machine.
         goal: The optimization goal.
-        obscode: A translator between machine measurements and RL observations.
-        actcode: A translator between RL actions and machine settings.
+        obscode: If passed and not None, a translator between machine
+            measurements and RL observations. Otherwise, measurements are
+            observations.
+        actcode: If passed and not None, a translator between RL actions and
+            machine settings. Otherwise, actions are settings.
     """
-    def __init__(self, machine: Machine, goal: GoalSpec,
-                 obscode: MeasurementEncoder, actcode: ActionDecoder):
+    def __init__(self,
+                 machine: Machine,
+                 goal: GoalSpec,
+                 obscode: MeasurementEncoder = None,
+                 actcode: ActionDecoder = None):
         super().__init__()
         self._machine = machine
         self._goal = goal
-        self._obscode = obscode
-        self._actcode = actcode
+        self._obscode = obscode or Identity(machine)
+        self._actcode = actcode or Identity(machine)
         self.metadata = machine.metadata
 
     @property
