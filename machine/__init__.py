@@ -44,7 +44,8 @@ class MachineEnv(gym.Env):
 
     Args:
         machine: An interface to the concrete machine.
-        goal: The optimization goal.
+        goal: If passed and not None, the optimization goal. Otherwise, the
+            machine is expected to provide the goal itself.
         obscode: If passed and not None, a translator between machine
             measurements and RL observations. Otherwise, measurements are
             observations.
@@ -53,12 +54,12 @@ class MachineEnv(gym.Env):
     """
     def __init__(self,
                  machine: Machine,
-                 goal: GoalSpec,
+                 goal: GoalSpec = None,
                  obscode: MeasurementEncoder = None,
                  actcode: ActionDecoder = None):
         super().__init__()
         self._machine = machine
-        self._goal = goal
+        self._goal = goal or machine
         self._obscode = obscode or Identity(machine)
         self._actcode = actcode or Identity(machine)
         self.metadata = machine.metadata
