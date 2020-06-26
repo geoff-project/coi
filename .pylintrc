@@ -1,0 +1,7 @@
+[MASTER]
+init-hook=sys.path.append(os.getcwd())
+
+[REPORTS]
+output-format=parseable
+reports=no
+score=no
