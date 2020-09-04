@@ -2,7 +2,7 @@
 """Setup script for shared_interfaces."""
 
 from pathlib import Path
-from setuptools import setup, find_packages
+from setuptools import setup, find_namespace_packages
 
 THISDIR = Path(__file__).parent.resolve()
 
@@ -18,7 +18,8 @@ def strip_quotes(string):
 def get_version():
     """Read the version number from the repository."""
     version = None
-    with (THISDIR / 'cdao_interfaces' / '__init__.py').open() as infile:
+    path = THISDIR / 'cern' / 'env_interfaces' / '__init__.py'
+    with path.open() as infile:
         for line in infile:
             before, equals, after = line.partition('=')
             if equals and before.strip() == '__version__':
@@ -34,10 +35,10 @@ for problems of optimal control at DESY and CERN.
 """
 
 setup(
-    name='shared_interfaces',
+    name='cern-env-interfaces',
     version=get_version(),
     python_requires='>=3.6',
-    packages=find_packages(),
+    packages=find_namespace_packages(include=('cern', 'cern.*')),
     install_requires=['gym >= 0.11'],
     zip_safe=True,
     author='Nico Madysa',
