@@ -1,0 +1,24 @@
+include:
+ - project: acc-co/devops/python/acc-py-devtools
+   file: acc_py_devtools/templates/gitlab-ci/python.yml
+
+variables:
+  project_name: cernml-abc
+
+
+# A full installation of cern-awake-mltools, tested with pytest.
+test_install:
+  extends: .acc_py_full_test
+  script:
+      - mkdir -p not-the-source-dir && cd not-the-source-dir
+      - python -c 'import cernml.abc'
+
+
+# A development installation of cern-awake-mltools tested with pytest.
+test_dev:
+  extends: .acc_py_dev_test
+
+
+# A push of the source distribution to the acc-py PyPI, only on git tag.
+release_sdist_on_tag:
+  extends: .acc_py_release_sdist
