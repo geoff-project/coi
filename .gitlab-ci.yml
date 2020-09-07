@@ -3,7 +3,7 @@ include:
    file: acc_py_devtools/templates/gitlab-ci/python.yml
 
 variables:
-  project_name: cernml-abc
+  project_name: cernml.abc
 
 
 # A full installation of cern-awake-mltools, tested with pytest.
@@ -17,6 +17,8 @@ test_install:
 # A development installation of cern-awake-mltools tested with pytest.
 test_dev:
   extends: .acc_py_dev_test
+  script:
+      - pytest ${project_root}/tests --cov=${project_name} --junitxml=report.xml
 
 
 # A push of the source distribution to the acc-py PyPI, only on git tag.
