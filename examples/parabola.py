@@ -2,15 +2,17 @@
 """An example implementation of the `OptEnv` interface."""
 
 import sys
+import typing as t
 import argparse
 
 import gym
 import gym.wrappers
 import numpy as np
 import scipy.optimize
+from matplotlib import pyplot
 from stable_baselines3 import TD3
 
-from cern.env_interfaces import OptEnv
+from cern.env_interfaces import OptEnv, check_env
 
 
 class Parabola(OptEnv):
@@ -23,6 +25,9 @@ class Parabola(OptEnv):
     action_space = gym.spaces.Box(-1.0, 1.0, shape=(2, ))
     optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2, ))
     reward_range = (-np.sqrt(8.0), 0.0)
+    metadata = {
+        'render.modes': ['ansi', 'qtembed'],
+    }
 
     # The radius at which an episode is ended. We employ "reward dangling",
     # i.e. we start with a very wide radius and restrict it with each
@@ -65,7 +70,12 @@ class Parabola(OptEnv):
         return loss
 
     def render(self, mode='human'):
-        return str(self.pos)
+        if mode in ('human', 'qtembed'):
+            pyplot.scatter(*self.pos)
+            return None
+        if mode == 'qtembed':
+            return str(self.pos)
+        return super().render(mode)
 
     def seed(self, seed=None):
         return [
@@ -75,7 +85,7 @@ class Parabola(OptEnv):
         ]
 
 
-def run_episode(agent, env):
+def run_episode(agent, env: OptEnv) -> bool:
     """Run one episode of the given environment and return the success flag."""
     obs = env.reset()
     done = False
@@ -100,41 +110,37 @@ def get_parser():
     return parser
 
 
-def main_rl(env: OptEnv):
+def main_rl(env: OptEnv, num_runs: int) -> t.List[bool]:
     """Handler for `rl` mode."""
-    num_runs = 100
     env = gym.wrappers.TimeLimit(env, max_episode_steps=10)
     agent = TD3('MlpPolicy', env, learning_rate=2e-3)
     agent.learn(total_timesteps=300)
     env.train(False)
-    successes = [run_episode(agent, env) for _ in range(num_runs)]
-    print(f'Number of runs: {num_runs}')
-    print(f'Success rate: {np.mean(successes):.1%}')
+    return [run_episode(agent, env) for _ in range(num_runs)]
 
 
-def main_opt(env: OptEnv):
+def main_opt(env: OptEnv, num_runs: int) -> t.List[bool]:
     """Handler for `opt` mode."""
-    num_runs = 100
     bounds = bounds = scipy.optimize.Bounds(
         env.optimization_space.low,
         env.optimization_space.high,
     )
-    successes = [
+    return [
         scipy.optimize.minimize(
             fun=env.compute_loss,
             x0=env.optimization_space.sample(),
             bounds=bounds,
         ).success for _ in range(num_runs)
     ]
-    print(f'Number of runs: {num_runs}')
-    print(f'Success rate: {np.mean(successes):.1%}')
 
 
 def main(args):
     """Main function. Should be passed `sys.argv[1:]`."""
     args = get_parser().parse_args(args)
     env = Parabola()
-    dict(rl=main_rl, opt=main_opt)[args.mode](env)
+    check_env(env)
+    successes = dict(rl=main_rl, opt=main_opt)[args.mode](env, 100)
+    print(f'Success rate: {np.mean(successes):.1%}')
 
 
 if __name__ == '__main__':
