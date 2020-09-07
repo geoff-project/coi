@@ -3,17 +3,14 @@
 
 import sys
 import argparse
-import warnings
 
 import gym
 import gym.wrappers
 import numpy as np
 import scipy.optimize
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    import stable_baselines
+from stable_baselines3 import TD3
 
-from cdao_interfaces import OptEnv
+from cern.env_interfaces import OptEnv
 
 
 class Parabola(OptEnv):
@@ -21,41 +18,71 @@ class Parabola(OptEnv):
 
     The goal of this environment is to find the center of a 2D parabola.
     """
-    observation_space = gym.spaces.Box(-1.0, 1.0, shape=(2, ))
+    # Domain declarations.
+    observation_space = gym.spaces.Box(-2.0, 2.0, shape=(2, ))
     action_space = gym.spaces.Box(-1.0, 1.0, shape=(2, ))
-    opt_action_space = observation_space
-    reward_range = (-np.inf, 0.0)
+    optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2, ))
+    reward_range = (-np.sqrt(8.0), 0.0)
+
+    # The radius at which an episode is ended. We employ "reward dangling",
+    # i.e. we start with a very wide radius and restrict it with each
+    # successful episode, up to a certain limit. This improves training speed,
+    # as the agent gathers more positive feedback early in the training.
+    objective = -0.05
+    max_objective = -0.003
 
     def __init__(self):
-        self.x = np.zeros(2)  # pylint: disable=invalid-name
+        self.pos = np.zeros(2)
+        self._train = True
+
+    def train(self, train=True):
+        """Turn the environment's training mode on or off.
+
+        If the training mode is on, reward dangling is active and each
+        successful end of episode makes the objective stricter. If training
+        mode is off, the objective remains constant.
+        """
+        self._train = train
 
     def reset(self):
-        self.x = self.opt_action_space.sample()
-        return self.x.copy()
+        # Don't use the full observation space for initial states.
+        self.pos = self.action_space.sample()
+        return self.pos.copy()
 
     def step(self, action):
-        new_x = self.x + action
-        reward = -sum(new_x**2)
-        if new_x in self.observation_space:
-            self.x = new_x
-        obs = self.x.copy()
-        done = reward > -0.01
-        return obs, reward, done, {}
+        self.pos += action
+        reward = -sum(self.pos**2)
+        success = reward > self.objective
+        done = success or self.pos not in self.observation_space
+        info = dict(success=success, objective=self.objective)
+        if self._train and success and self.objective < self.max_objective:
+            self.objective *= 0.95
+        return self.pos.copy(), reward, done, info
 
-    def step_opt(self, opt_action):
-        if opt_action in self.opt_action_space:
-            self.x = opt_action
-        reward = -sum(opt_action**2)
-        return reward
+    def compute_loss(self, parameters):
+        self.pos = parameters
+        loss = sum(self.pos**2)
+        return loss
 
     def render(self, mode='human'):
-        return str(self.x)
+        return str(self.pos)
 
     def seed(self, seed=None):
-        seeds = self.observation_space.seed(seed)
-        seeds.extend(self.action_space.seed(seed))
-        seeds.extend(self.opt_action_space.seed(seed))
-        return seeds
+        return [
+            *self.observation_space.seed(seed),
+            *self.action_space.seed(seed),
+            *self.optimization_space.seed(seed),
+        ]
+
+
+def run_episode(agent, env):
+    """Run one episode of the given environment and return the success flag."""
+    obs = env.reset()
+    done = False
+    while not done:
+        action, _ = agent.predict(obs)
+        obs, _, done, info = env.step(action)
+    return info.get('success', False)
 
 
 def get_parser():
@@ -75,38 +102,32 @@ def get_parser():
 
 def main_rl(env: OptEnv):
     """Handler for `rl` mode."""
+    num_runs = 100
     env = gym.wrappers.TimeLimit(env, max_episode_steps=10)
-    agent = stable_baselines.TD3(
-        'MlpPolicy',
-        env,
-        learning_rate=1e-2,
-        learning_starts=50,
-    )
+    agent = TD3('MlpPolicy', env, learning_rate=2e-3)
     agent.learn(total_timesteps=300)
-    obs = env.reset()
-    done = False
-    trajectory = [obs]
-    while not done:
-        action, _ = agent.predict(obs)
-        obs, _, done, info = env.step(action)
-        trajectory.append(obs)
-    print('Success:', not info.get('TimeLimit.truncated', False))
-    print('x:', env.unwrapped.x)
+    env.train(False)
+    successes = [run_episode(agent, env) for _ in range(num_runs)]
+    print(f'Number of runs: {num_runs}')
+    print(f'Success rate: {np.mean(successes):.1%}')
 
 
 def main_opt(env: OptEnv):
     """Handler for `opt` mode."""
-    res = scipy.optimize.minimize(
-        fun=lambda x: -env.step_opt(x),
-        x0=env.opt_action_space.sample(),
-        bounds=scipy.optimize.Bounds(
-            env.opt_action_space.low,
-            env.opt_action_space.high,
-        ),
+    num_runs = 100
+    bounds = bounds = scipy.optimize.Bounds(
+        env.optimization_space.low,
+        env.optimization_space.high,
     )
-    print('Success:', res.success)
-    print('x:', res.x)
-    print(res.message)
+    successes = [
+        scipy.optimize.minimize(
+            fun=env.compute_loss,
+            x0=env.optimization_space.sample(),
+            bounds=bounds,
+        ).success for _ in range(num_runs)
+    ]
+    print(f'Number of runs: {num_runs}')
+    print(f'Success rate: {np.mean(successes):.1%}')
 
 
 def main(args):
