@@ -18,7 +18,7 @@ def strip_quotes(string):
 def get_version():
     """Read the version number from the repository."""
     version = None
-    path = THISDIR / 'cern' / 'env_interfaces' / '__init__.py'
+    path = THISDIR / 'cernml' / 'abc' / '__init__.py'
     with path.open() as infile:
         for line in infile:
             before, equals, after = line.partition('=')
@@ -35,10 +35,10 @@ for problems of optimal control at DESY and CERN.
 """
 
 setup(
-    name='cern-env-interfaces',
+    name='cernml-abc',
     version=get_version(),
     python_requires='>=3.6',
-    packages=find_namespace_packages(include=('cern', 'cern.*')),
+    packages=find_namespace_packages(include=('cernml', 'cernml.*')),
     install_requires=['gym >= 0.11'],
     zip_safe=True,
     author='Nico Madysa',
