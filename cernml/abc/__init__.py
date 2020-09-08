@@ -3,7 +3,7 @@
 
 from .env_checker import check_env
 from .machine import Machine
-from .optenv import OptEnv, OptGoalEnv, OptimizeMixin
+from .optenv import OptEnv, OptGoalEnv, Optimizable
 from .sepenv import (
     SeparableEnv,
     SeparableGoalEnv,

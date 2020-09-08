@@ -8,11 +8,11 @@ import gym
 __all__ = [
     'OptEnv',
     'OptGoalEnv',
-    'OptimizeMixin',
+    'Optimizable',
 ]
 
 
-class OptimizeMixin:
+class Optimizable:
     """Additional mix-in for environments that are optimizable.
 
     Fundamentally, an environment contains a hidden state on which actions can
@@ -70,17 +70,17 @@ class OptimizeMixin:
         raise NotImplementedError()
 
 
-class OptEnv(gym.Env, OptimizeMixin):
+class OptEnv(gym.Env, Optimizable):
     """An optimizable environment.
 
-    This is an intersection of `Env` and `OptimizeMixin`. See the respective
+    This is an intersection of `Env` and `Optimizable`. See the respective
     abstract classes for their documentation.
     """
 
 
-class OptGoalEnv(gym.GoalEnv, OptimizeMixin):
+class OptGoalEnv(gym.GoalEnv, Optimizable):
     """An optimizable multi-goal environment.
 
-    This is an intersection of `GoalEnv` and `OptimizeMixin`. See the
-    respective abstract classes for their documentation.
+    This is an intersection of `GoalEnv` and `Optimizable`. See the respective
+    abstract classes for their documentation.
     """
