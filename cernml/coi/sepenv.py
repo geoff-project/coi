@@ -111,7 +111,7 @@ class SeparableEnv(gym.Env):
         raise NotImplementedError()
 
 
-class SeparableOptEnv(gym.Env, Optimizable):
+class SeparableOptEnv(SeparableEnv, Optimizable):
     """An optimizable and separable environment.
 
     This is an intersection of `SeparableEnv` and `Optimizable`. See the
