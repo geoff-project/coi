@@ -3,6 +3,8 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
+from abc import ABCMeta, abstractmethod
+
 import gym
 
 __all__ = [
@@ -12,7 +14,7 @@ __all__ = [
 ]
 
 
-class Optimizable:
+class Optimizable(metaclass=ABCMeta):
     """Additional mix-in for environments that are optimizable.
 
     Fundamentally, an environment contains a hidden state on which actions can
@@ -48,6 +50,7 @@ class Optimizable:
     """
     optimization_space = None
 
+    @abstractmethod
     def compute_loss(self, parameters) -> float:
         """Perform an optimization step.
 
@@ -78,6 +81,7 @@ class OptEnv(gym.Env, Optimizable):
     """
 
 
+@OptEnv.register
 class OptGoalEnv(gym.GoalEnv, Optimizable):
     """An optimizable multi-goal environment.
 

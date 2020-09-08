@@ -4,7 +4,7 @@
 # pylint: disable = abstract-method, too-few-public-methods
 
 import gym
-from .optenv import Optimizable
+from .optenv import Optimizable, OptEnv, OptGoalEnv
 
 __all__ = [
     'SeparableEnv',
@@ -111,6 +111,7 @@ class SeparableEnv(gym.Env):
         raise NotImplementedError()
 
 
+@OptEnv.register
 class SeparableOptEnv(SeparableEnv, Optimizable):
     """An optimizable and separable environment.
 
@@ -120,16 +121,14 @@ class SeparableOptEnv(SeparableEnv, Optimizable):
 
 
 class SeparableGoalEnv(gym.GoalEnv):
-    """An environment whose calculations nicely separate.
+    """A multi-goal environment whose calculations nicely separate.
 
-    This interface is superficially similar to `gym.GoalEnv`, but doesn't pose
-    any requirements to the observation space. (By contrast, `GoalEnv` requires
-    that the observation space is a dict with keys `'observation'`,
-    `'desired_goal'` and `'achieved_goal'`.) The only requirement is that the
-    calculation of observation, reward and end-of-episode can be separated into
-    distinct steps.
+    This interface is superficially similar to `gym.GoalEnv`, but additionally
+    also splits out the calculation of the observation and the end-of-episode
+    flag. This class differs from `SeparableEnv` in the meaning of the
+    parameters that are passed to `compute_reward()`.
 
-    This makes two things possible:
+    The split introduced by this class makes two things possible:
     - replacing `compute_observation()` with a function approximator, e.g. a
       neural network;
     - estimating the goodness of the very initial observation of an episode via
@@ -194,6 +193,7 @@ class SeparableGoalEnv(gym.GoalEnv):
         raise NotImplementedError()
 
 
+@OptGoalEnv.register
 class SeparableOptGoalEnv(SeparableGoalEnv, Optimizable):
     """An optimizable and separable multi-goal environment.
 
