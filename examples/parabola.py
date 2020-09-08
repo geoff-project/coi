@@ -58,6 +58,7 @@ class Parabola(OptEnv):
     def step(self, action):
         self.pos += action
         reward = -sum(self.pos**2)
+        reward = max(reward, self.reward_range[0])
         success = reward > self.objective
         done = success or self.pos not in self.observation_space
         info = dict(success=success, objective=self.objective)

@@ -50,10 +50,14 @@ class MultiGoalParabola(SeparableOptGoalEnv):
         )
 
     def compute_reward(self, achieved_goal, desired_goal, info):
-        return -self.distance
+        return max(-self.distance, self.reward_range[0])
 
     def compute_done(self, obs, reward, info):
-        return bool(obs['observation'] < 0.05)
+        success = bool(obs['observation'] < 0.05)
+        done = success or obs not in self.observation_space
+        if done:
+            info['success'] = success
+        return done
 
     def compute_loss(self, parameters):
         self.pos = parameters.copy()
