@@ -7,6 +7,12 @@ from setuptools import setup, find_namespace_packages
 THISDIR = Path(__file__).parent.resolve()
 
 
+def get_long_description() -> str:
+    """Read the README into a string."""
+    with (THISDIR / 'README.md').open('rt') as infile:
+        return infile.read().strip()
+
+
 def strip_quotes(string):
     """Check if a string is surrounded by consistent quotes."""
     is_quoted = string[0] == string[-1] in ('"', "'")
@@ -29,11 +35,6 @@ def get_version():
     return version
 
 
-LONG_DESCRIPTION = """\
-Common interfaces to use both reinforcement learning and numerical optimization
-for problems of optimal control.
-"""
-
 setup(
     name='cernml-coi',
     version=get_version(),
@@ -49,7 +50,7 @@ setup(
     author='Nico Madysa',
     author_email='nico.madysa@cern.ch',
     description='Common optimization interfaces for RL/num. optimization',
-    long_description=LONG_DESCRIPTION,
+    long_description=get_long_description(),
     license='Other/Proprietary License',
     classifiers=[
         'Development Status :: 1 - Planning',
