@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Setup script for shared_interfaces."""
+"""Setup script for cernml-coi."""
 
 from pathlib import Path
 from setuptools import setup, find_namespace_packages
@@ -18,7 +18,7 @@ def strip_quotes(string):
 def get_version():
     """Read the version number from the repository."""
     version = None
-    path = THISDIR / 'cernml' / 'abc' / '__init__.py'
+    path = THISDIR / 'cernml' / 'coi' / '__init__.py'
     with path.open() as infile:
         for line in infile:
             before, equals, after = line.partition('=')
@@ -31,11 +31,11 @@ def get_version():
 
 LONG_DESCRIPTION = """\
 Common interfaces to use both reinforcement learning and numerical optimization
-for problems of optimal control at DESY and CERN.
+for problems of optimal control.
 """
 
 setup(
-    name='cernml-abc',
+    name='cernml-coi',
     version=get_version(),
     python_requires='>=3.6',
     packages=find_namespace_packages(include=('cernml', 'cernml.*')),
@@ -48,7 +48,7 @@ setup(
     zip_safe=True,
     author='Nico Madysa',
     author_email='nico.madysa@cern.ch',
-    description='Common interfaces for RL/num. optimization at DESY and CERN',
+    description='Common optimization interfaces for RL/num. optimization',
     long_description=LONG_DESCRIPTION,
     license='Other/Proprietary License',
     classifiers=[

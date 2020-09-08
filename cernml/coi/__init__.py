@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Interfaces for common optimization between DESY and CERN accelerators."""
+"""Common optimization interfaces for numerical optimization and RL."""
 
 from .env_checker import check_env
 from .machine import Machine

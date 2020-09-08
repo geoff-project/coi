@@ -12,7 +12,7 @@ import scipy.optimize
 from matplotlib import pyplot
 from stable_baselines3 import TD3
 
-from cernml.abc import Machine, OptEnv, check_env
+from cernml.coi import Machine, OptEnv, check_env
 
 
 class Parabola(OptEnv):
