@@ -102,9 +102,12 @@ def assert_returned_values(env: gym.Env):
     assert isinstance(reward, (float, int, numpy.floating, numpy.integer)), \
         'reward must be a float or integer'
     low, high = env.reward_range
-    assert low <= reward <= high, 'reward is out of range'
-    assert isinstance(done, bool), 'done signal must be a bool'
-    assert isinstance(info, dict), 'info must be a dictionary'
+    assert low <= reward <= high, \
+        f'reward is out of range [{low}, {high}]: {reward}'
+    assert isinstance(done, bool), \
+        f'done signal must be a bool: {done}'
+    assert isinstance(info, dict), \
+        f'info must be a dictionary: {info}'
     if isinstance(env, gym.GoalEnv):
         assert reward == env.compute_reward(
             obs['achieved_goal'],
