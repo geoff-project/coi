@@ -1,6 +1,0 @@
-tensorflow >= 1, < 2
-gym >= 0.11
-stable_baselines >= 2.0
-numpy >= 1.0
-scipy >= 1.4
-matplotlib >= 3.0
