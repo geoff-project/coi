@@ -27,13 +27,13 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
     assert_reward_range(env.reward_range)
     assert_returned_values(env)
     assert_no_nan(env)
+    assert_machine(env)
     if warn:
         if isinstance(env.observation_space, gym.spaces.Box):
             warn_observation_space(env.observation_space)
         elif isinstance(env.observation_space, gym.spaces.Dict):
             warn_observation_space(env.observation_space['observation'])
         warn_render_modes(env)
-        warn_machine(env)
 
 
 def assert_observation_space(env: gym.Env):
@@ -143,6 +143,15 @@ def assert_no_nan(env: gym.Env):
         assert _check_val(reward), 'reward turned NaN or inf'
 
 
+def assert_machine(env: gym.Env):
+    """Check that the environment defines the machine it pertains to."""
+    machine = env.metadata.get('cern.machine')
+    assert machine is not None, \
+        'missing key cern.machine in the environment metadata'
+    assert isinstance(machine, Machine), \
+        'declared cern.machine is not a Machine enum'
+
+
 def warn_observation_space(space: gym.spaces.Box):
     """Check that the observation space is either flat or an image."""
     ndims = len(space.shape)
@@ -174,12 +183,3 @@ def warn_render_modes(env: gym.Env):
     if 'qtembed' not in render_modes:
         warnings.warn('render mode "qtembed" has not been declared in the '
                       'environment metadata')
-
-
-def warn_machine(env: gym.Env):
-    """Check that the environment defines the machine it pertains to."""
-    machine = env.metadata.get('cern.machine')
-    if machine is None:
-        warnings.warn('missing key cern.machine in the environment metadata')
-    elif not isinstance(machine, Machine):
-        warnings.warn('declared cern.machine is not a Machine enum')
