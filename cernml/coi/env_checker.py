@@ -22,8 +22,8 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
         f'the environment {type(env)} must inherit from Optimizable, ' \
         'e.g. via OptEnv'
     assert_observation_space(env)
-    assert_action_space(env.action_space)
-    assert_optimization_space(env.optimization_space)
+    assert_action_space(env)
+    assert_optimization_space(env)
     assert_reward_range(env.reward_range)
     assert_returned_values(env)
     assert_no_nan(env)
@@ -61,8 +61,9 @@ def assert_observation_space(env: gym.Env):
             f'observation space {space} must be a gym.spaces.Box'
 
 
-def assert_action_space(space: gym.spaces.Box):
+def assert_action_space(env: gym.Env):
     """Check that the given space has symmetric and normalized limits."""
+    space = env.action_space
     assert isinstance(space, gym.spaces.Box), \
         f'action space {space} must be a gym.spaces.Box'
     assert numpy.all(abs(space.low) == abs(space.high)), \
@@ -71,10 +72,17 @@ def assert_action_space(space: gym.spaces.Box):
         'action space limits must be 1.0 or less'
 
 
-def assert_optimization_space(space: gym.spaces.Box):
-    """Check that the given space is a box."""
-    assert isinstance(space, gym.spaces.Box), \
-        f'optimization space {space} must be a gym.spaces.Box'
+def assert_optimization_space(env: OptEnv):
+    """Check that action and optimization space are boxes of the same shape."""
+    act_space = env.action_space
+    opt_space = env.optimization_space
+    assert isinstance(opt_space, gym.spaces.Box), \
+        f'optimization space {opt_space} must be a gym.spaces.Box'
+    assert isinstance(act_space, gym.spaces.Box), \
+        f'action space {act_space} must be a gym.spaces.Box'
+    assert act_space.shape == opt_space.shape, \
+        f'action {act_space.shape} and optimization {opt_space.shape} space ' \
+        'have the same shape'
 
 
 def assert_reward_range(reward_range: t.Tuple[float, float]):
