@@ -12,7 +12,7 @@ import scipy.optimize
 from matplotlib import pyplot
 from stable_baselines3 import TD3
 
-from cernml.abc import OptEnv, check_env
+from cernml.abc import Machine, OptEnv, check_env
 
 
 class Parabola(OptEnv):
@@ -27,6 +27,7 @@ class Parabola(OptEnv):
     reward_range = (-np.sqrt(8.0), 0.0)
     metadata = {
         'render.modes': ['ansi', 'qtembed'],
+        'cern.machine': Machine.NoMachine,
     }
 
     # The radius at which an episode is ended. We employ "reward dangling",

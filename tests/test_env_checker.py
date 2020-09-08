@@ -7,7 +7,7 @@ import gym
 import numpy as np
 from matplotlib import pyplot
 
-from cernml.abc import SeparableOptGoalEnv, check_env
+from cernml.abc import Machine, SeparableOptGoalEnv, check_env
 
 
 class MultiGoalParabola(SeparableOptGoalEnv):
@@ -21,6 +21,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
     reward_range = (-np.sqrt(8.0), 0.0)
     metadata = {
         'render.modes': ['ansi', 'human', 'qtembed'],
+        'cern.machine': Machine.NoMachine,
     }
 
     def __init__(self):

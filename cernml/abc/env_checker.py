@@ -7,6 +7,7 @@ import warnings
 import gym
 import numpy
 
+from .machine import Machine
 from .optenv import OptimizeMixin, OptEnv
 from .sepenv import SeparableEnv
 
@@ -32,6 +33,7 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
         elif isinstance(env.observation_space, gym.spaces.Dict):
             warn_observation_space(env.observation_space['observation'])
         warn_render_modes(env)
+        warn_machine(env)
 
 
 def assert_observation_space(env: gym.Env):
@@ -154,11 +156,19 @@ def warn_render_modes(env: gym.Env):
     """Check that the environment defines the required render modes."""
     render_modes = env.metadata.get('render.modes')
     if render_modes is None:
-        warnings.warn('no render modes have been declared in the environment '
-                      'metadata')
+        warnings.warn('missing key render.modes in the environment metadata')
     if 'ansi' not in render_modes:
         warnings.warn('render mode "ansi" has not been declared in the '
                       'environment metadata')
     if 'qtembed' not in render_modes:
         warnings.warn('render mode "qtembed" has not been declared in the '
                       'environment metadata')
+
+
+def warn_machine(env: gym.Env):
+    """Check that the environment defines the machine it pertains to."""
+    machine = env.metadata.get('cern.machine')
+    if machine is None:
+        warnings.warn('missing key cern.machine in the environment metadata')
+    elif not isinstance(machine, Machine):
+        warnings.warn('declared cern.machine is not a Machine enum')

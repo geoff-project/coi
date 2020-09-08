@@ -2,6 +2,7 @@
 """Interfaces for common optimization between DESY and CERN accelerators."""
 
 from .env_checker import check_env
+from .machine import Machine
 from .optenv import OptEnv, OptGoalEnv, OptimizeMixin
 from .sepenv import (
     SeparableEnv,
