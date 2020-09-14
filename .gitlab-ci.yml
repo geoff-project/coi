@@ -11,7 +11,7 @@ test_install:
   extends: .acc_py_full_test
   script:
       - mkdir -p not-the-source-dir && cd not-the-source-dir
-      - python -c 'import cernml.abc'
+      - python -c 'import cernml.coi'
 
 
 # A development installation of cern-awake-mltools tested with pytest.

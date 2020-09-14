@@ -75,4 +75,4 @@ from .sepenv import (
     SeparableOptGoalEnv,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
