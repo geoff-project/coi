@@ -4,7 +4,7 @@
 # pylint: disable = abstract-method, too-few-public-methods
 
 import gym
-from .optenv import Optimizable, OptEnv, OptGoalEnv
+from .optenv import Optimizable
 
 __all__ = [
     'SeparableEnv',
@@ -111,13 +111,18 @@ class SeparableEnv(gym.Env):
         raise NotImplementedError()
 
 
-@OptEnv.register
 class SeparableOptEnv(SeparableEnv, Optimizable):
     """An optimizable and separable environment.
 
     This is an intersection of `SeparableEnv` and `Optimizable`. See the
     respective abstract classes for their documentation.
     """
+    @classmethod
+    def __subclasshook__(cls, other):
+        if cls is SeparableOptEnv:
+            bases = other.__mro__
+            return SeparableEnv in bases and Optimizable in bases
+        return NotImplemented
 
 
 class SeparableGoalEnv(gym.GoalEnv):
@@ -193,10 +198,15 @@ class SeparableGoalEnv(gym.GoalEnv):
         raise NotImplementedError()
 
 
-@OptGoalEnv.register
 class SeparableOptGoalEnv(SeparableGoalEnv, Optimizable):
     """An optimizable and separable multi-goal environment.
 
     This is an intersection of `SeparableGoalEnv` and `Optimizable`. See the
     respective abstract classes for their documentation.
     """
+    @classmethod
+    def __subclasshook__(cls, other):
+        if cls is SeparableOptGoalEnv:
+            bases = other.__mro__
+            return SeparableGoalEnv in bases and Optimizable in bases
+        return NotImplemented

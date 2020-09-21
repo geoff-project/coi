@@ -56,8 +56,41 @@ def _assert_env_subclass(subclass, superclasses):
         assert (superclass in superclasses) == issubclass(subclass, superclass)
 
 
+def _is_abstract_base_class(abc, superclasses):
+    class NoDirectInheritance(*superclasses):
+        # pylint: disable = too-few-public-methods
+        pass
+
+    return issubclass(NoDirectInheritance, abc)
+
+
 def test_env_problem():
     assert issubclass(gym.Env, coi.Problem)
+
+
+def test_optenv_is_abstract():
+    assert _is_abstract_base_class(coi.OptEnv, [gym.Env, coi.Optimizable])
+
+
+def test_optgoalenv_is_abstract():
+    assert _is_abstract_base_class(
+        coi.OptGoalEnv,
+        [gym.GoalEnv, coi.Optimizable],
+    )
+
+
+def test_sepoptenv_is_abstract():
+    assert _is_abstract_base_class(
+        coi.SeparableOptEnv,
+        [coi.SeparableEnv, coi.Optimizable],
+    )
+
+
+def test_sepoptgoalenv_is_abstract():
+    assert _is_abstract_base_class(
+        coi.SeparableOptGoalEnv,
+        [coi.SeparableGoalEnv, coi.Optimizable],
+    )
 
 
 def test_env():

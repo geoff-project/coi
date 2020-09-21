@@ -79,12 +79,23 @@ class OptEnv(gym.Env, Optimizable):
     This is an intersection of `Env` and `Optimizable`. See the respective
     abstract classes for their documentation.
     """
+    @classmethod
+    def __subclasshook__(cls, other):
+        if cls is OptEnv:
+            bases = other.__mro__
+            return gym.Env in bases and Optimizable in bases
+        return NotImplemented
 
 
-@OptEnv.register
 class OptGoalEnv(gym.GoalEnv, Optimizable):
     """An optimizable multi-goal environment.
 
     This is an intersection of `GoalEnv` and `Optimizable`. See the respective
     abstract classes for their documentation.
     """
+    @classmethod
+    def __subclasshook__(cls, other):
+        if cls is OptGoalEnv:
+            bases = other.__mro__
+            return gym.GoalEnv in bases and Optimizable in bases
+        return NotImplemented
