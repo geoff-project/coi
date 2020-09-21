@@ -41,6 +41,10 @@ class ConcreteSeparableOptGoalEnv(coi.SeparableOptGoalEnv):
     pass
 
 
+def test_env_problem():
+    assert issubclass(gym.Env, coi.Problem)
+
+
 def test_env():
     assert issubclass(ConcreteEnv, gym.Env)
     assert not issubclass(ConcreteEnv, gym.GoalEnv)
