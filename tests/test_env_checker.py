@@ -19,6 +19,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
     )
     optimization_space = gym.spaces.Box(-2, 2, (2, ))
     reward_range = (-np.sqrt(8.0), 0.0)
+    objective_range = (0.0, np.sqrt(8.0))
     metadata = {
         'render.modes': ['ansi', 'human', 'qtembed'],
         'cern.machine': Machine.NoMachine,
@@ -59,8 +60,11 @@ class MultiGoalParabola(SeparableOptGoalEnv):
             info['success'] = success
         return done
 
-    def compute_loss(self, parameters):
-        self.pos = parameters.copy()
+    def get_initial_params(self):
+        return self.reset()['achieved_goal']
+
+    def compute_single_objective(self, params):
+        self.pos = params.copy()
         return self.distance
 
     def render(self, mode='human'):

@@ -6,16 +6,15 @@ import typing as t
 import argparse
 
 import gym
-import gym.wrappers
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot
 from stable_baselines3 import TD3
 
-from cernml.coi import Machine, OptEnv, check_env
+from cernml import coi
 
 
-class Parabola(OptEnv):
+class Parabola(coi.OptEnv):
     """Example implementation of `OptEnv`.
 
     The goal of this environment is to find the center of a 2D parabola.
@@ -25,9 +24,10 @@ class Parabola(OptEnv):
     action_space = gym.spaces.Box(-1.0, 1.0, shape=(2, ))
     optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2, ))
     reward_range = (-np.sqrt(8.0), 0.0)
+    objective_range = (0.0, np.sqrt(8.0))
     metadata = {
         'render.modes': ['ansi', 'qtembed'],
-        'cern.machine': Machine.NoMachine,
+        'cern.machine': coi.Machine.NoMachine,
     }
 
     # The radius at which an episode is ended. We employ "reward dangling",
@@ -66,8 +66,11 @@ class Parabola(OptEnv):
             self.objective *= 0.95
         return self.pos.copy(), reward, done, info
 
-    def compute_loss(self, parameters):
-        self.pos = parameters
+    def get_initial_params(self):
+        return self.reset()
+
+    def compute_single_objective(self, params):
+        self.pos = params
         loss = sum(self.pos**2)
         return loss
 
@@ -87,7 +90,10 @@ class Parabola(OptEnv):
         ]
 
 
-def run_episode(agent, env: OptEnv) -> bool:
+coi.register('Parabola-v0', entry_point=Parabola, max_episode_steps=10)
+
+
+def run_episode(agent, env: coi.OptEnv) -> bool:
     """Run one episode of the given environment and return the success flag."""
     obs = env.reset()
     done = False
@@ -112,16 +118,15 @@ def get_parser():
     return parser
 
 
-def main_rl(env: OptEnv, num_runs: int) -> t.List[bool]:
+def main_rl(env: coi.OptEnv, num_runs: int) -> t.List[bool]:
     """Handler for `rl` mode."""
-    env = gym.wrappers.TimeLimit(env, max_episode_steps=10)
     agent = TD3('MlpPolicy', env, learning_rate=2e-3)
     agent.learn(total_timesteps=300)
     env.train(False)
     return [run_episode(agent, env) for _ in range(num_runs)]
 
 
-def main_opt(env: OptEnv, num_runs: int) -> t.List[bool]:
+def main_opt(env: coi.OptEnv, num_runs: int) -> t.List[bool]:
     """Handler for `opt` mode."""
     bounds = bounds = scipy.optimize.Bounds(
         env.optimization_space.low,
@@ -129,8 +134,8 @@ def main_opt(env: OptEnv, num_runs: int) -> t.List[bool]:
     )
     return [
         scipy.optimize.minimize(
-            fun=env.compute_loss,
-            x0=env.optimization_space.sample(),
+            fun=env.compute_single_objective,
+            x0=env.get_initial_params(),
             bounds=bounds,
         ).success for _ in range(num_runs)
     ]
@@ -139,8 +144,8 @@ def main_opt(env: OptEnv, num_runs: int) -> t.List[bool]:
 def main(args):
     """Main function. Should be passed `sys.argv[1:]`."""
     args = get_parser().parse_args(args)
-    env = Parabola()
-    check_env(env)
+    env = coi.make('Parabola-v0')
+    coi.check_env(env)
     successes = dict(rl=main_rl, opt=main_opt)[args.mode](env, 100)
     print(f'Success rate: {np.mean(successes):.1%}')
 

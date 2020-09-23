@@ -6,9 +6,10 @@ import warnings
 
 import gym
 import numpy
+import scipy.optimize
 
 from .machine import Machine
-from .optenv import OptEnv, SingleOptimizable
+from .optenv import Constraint, OptEnv, SingleOptimizable
 from .sepenv import SeparableEnv
 
 __all__ = ['check_env']
@@ -24,7 +25,9 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
     assert_observation_space(env)
     assert_action_space(env)
     assert_optimization_space(env)
-    assert_reward_range(env.reward_range)
+    assert_range(env.reward_range, 'reward')
+    assert_range(env.objective_range, 'objective')
+    assert_constraints(env.constraints)
     assert_returned_values(env)
     assert_no_nan(env)
     assert_machine(env)
@@ -85,11 +88,25 @@ def assert_optimization_space(env: OptEnv):
         'have the same shape'
 
 
-def assert_reward_range(reward_range: t.Tuple[float, float]):
+def assert_range(reward_range: t.Tuple[float, float], name):
     """Check that the reward range is actually a range."""
-    assert len(reward_range) == 2, 'reward range must be tuple `(low, high)`.'
+    assert len(reward_range) == 2, \
+        f'{name} reward range must be tuple `(low, high)`.'
     low, high = reward_range
-    assert low <= high, 'lower reward range must be lower than upper bound'
+    assert low <= high, \
+        f'lower bound of {name} range must be lower than upper bound'
+
+
+def assert_constraints(constraints: t.List[Constraint]):
+    """Check that the list of constraints contains only constraints."""
+    allowed_types = (
+        scipy.optimize.LinearConstraint,
+        scipy.optimize.NonlinearConstraint,
+    )
+    for constraint in constraints:
+        assert isinstance(constraint, allowed_types), \
+            f'constraint {constraint!r} is neither LinearConstraint nor ' \
+            'NonlinearConstraint'
 
 
 def assert_returned_values(env: gym.Env):

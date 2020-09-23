@@ -43,6 +43,7 @@ setup(
     install_requires=[
         'gym >= 0.11',
         'numpy ~= 1.10',
+        'scipy ~= 1.1',
     ],
     extras_require={
         'test': [

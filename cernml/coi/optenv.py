@@ -3,17 +3,23 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
+import typing as t
 from abc import ABCMeta, abstractmethod
 
 import gym
+import scipy.optimize
 
 from .problem import Problem
 
 __all__ = [
+    'Constraint',
     'OptEnv',
     'OptGoalEnv',
     'SingleOptimizable',
 ]
+
+Constraint = t.Union[scipy.optimize.LinearConstraint,
+                     scipy.optimize.NonlinearConstraint]
 
 
 class SingleOptimizable(Problem, metaclass=ABCMeta):
@@ -49,11 +55,35 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         optimization_space: A `gym.Space` instance that describes the phase
             space of parameters. This may be the same or different from the
             `gym.Env.action_space`.
+        objective_range: Specifies the range in which the return value of
+            `compute_single_objective()` will lie. The default is to allow any
+            float value, but subclasses may restrict this e.g. for
+            normalization purposes.
+        constraints: The constraints that apply to this optimization problem.
+            For now, each constraint must be either a `LinearConstraint` or a
+            `NonlinearConstraint` as provided by the `scipy.optimize` module.
+            In the future, this might be relaxed to allow more optimization
+            algorithms.
     """
     optimization_space = None
+    objective_range = (-float('inf'), float('inf'))
+    constraints = []
 
     @abstractmethod
-    def compute_loss(self, parameters) -> float:
+    def get_initial_params(self) -> t.Any:
+        """Return an initial set of parameters for optimization.
+
+        The returned parameters should be within the optimization space, i.e.
+        `opt.get_initial_params() in opt.optimization_space` should be True.
+
+        This method is similar to `gym.Env.reset()` but is allowed to always
+        return the same value; or to skip certain calculations, in the case of
+        problems that are expensive to evalaute.
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def compute_single_objective(self, params) -> float:
         """Perform an optimization step.
 
         This function is similar to `Env.step()`, but it accepts parameters
@@ -64,8 +94,8 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         should return the same loss, excepting any stochastic noise.
 
         Args:
-            parameters: The parameters for which the loss shall be calculated.
-                This should be within `self.optimization_space`, but it must at
+            params: The parameters for which the loss shall be calculated. This
+                should be within `self.optimization_space`, but it must at
                 least have the same structure.
 
         Returns:
