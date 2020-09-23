@@ -44,7 +44,7 @@ class ConcreteSeparableOptGoalEnv(coi.SeparableOptGoalEnv):
 def _assert_env_subclass(subclass, superclasses):
     all_superclasses = (
         gym.GoalEnv,
-        coi.Optimizable,
+        coi.SingleOptimizable,
         coi.OptEnv,
         coi.OptGoalEnv,
         coi.SeparableEnv,
@@ -69,27 +69,28 @@ def test_env_problem():
 
 
 def test_optenv_is_abstract():
-    assert _is_abstract_base_class(coi.OptEnv, [gym.Env, coi.Optimizable])
+    assert _is_abstract_base_class(coi.OptEnv,
+                                   [gym.Env, coi.SingleOptimizable])
 
 
 def test_optgoalenv_is_abstract():
     assert _is_abstract_base_class(
         coi.OptGoalEnv,
-        [gym.GoalEnv, coi.Optimizable],
+        [gym.GoalEnv, coi.SingleOptimizable],
     )
 
 
 def test_sepoptenv_is_abstract():
     assert _is_abstract_base_class(
         coi.SeparableOptEnv,
-        [coi.SeparableEnv, coi.Optimizable],
+        [coi.SeparableEnv, coi.SingleOptimizable],
     )
 
 
 def test_sepoptgoalenv_is_abstract():
     assert _is_abstract_base_class(
         coi.SeparableOptGoalEnv,
-        [coi.SeparableGoalEnv, coi.Optimizable],
+        [coi.SeparableGoalEnv, coi.SingleOptimizable],
     )
 
 
@@ -100,7 +101,7 @@ def test_env():
 def test_optenv():
     _assert_env_subclass(
         ConcreteOptEnv,
-        [gym.Env, coi.Optimizable, coi.OptEnv],
+        [gym.Env, coi.SingleOptimizable, coi.OptEnv],
     )
 
 
@@ -111,7 +112,10 @@ def test_goalenv():
 def test_optgoalenv():
     _assert_env_subclass(
         ConcreteOptGoalEnv,
-        [gym.Env, gym.GoalEnv, coi.Optimizable, coi.OptEnv, coi.OptGoalEnv],
+        [
+            gym.Env, gym.GoalEnv, coi.SingleOptimizable, coi.OptEnv,
+            coi.OptGoalEnv
+        ],
     )
 
 
@@ -127,7 +131,7 @@ def test_sepoptenv():
         ConcreteSeparableOptEnv,
         [
             gym.Env,
-            coi.Optimizable,
+            coi.SingleOptimizable,
             coi.OptEnv,
             coi.SeparableEnv,
             coi.SeparableOptEnv,
@@ -152,7 +156,7 @@ def test_sepoptgoalenv():
         [
             gym.Env,
             gym.GoalEnv,
-            coi.Optimizable,
+            coi.SingleOptimizable,
             coi.OptEnv,
             coi.OptGoalEnv,
             coi.SeparableGoalEnv,

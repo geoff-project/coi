@@ -8,7 +8,7 @@ import gym
 import numpy
 
 from .machine import Machine
-from .optenv import Optimizable, OptEnv
+from .optenv import OptEnv, SingleOptimizable
 from .sepenv import SeparableEnv
 
 __all__ = ['check_env']
@@ -18,8 +18,8 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
     """Check that an environment follows the restricted API laid out here."""
     assert isinstance(env, gym.Env), \
         f'the environment {type(env)}, must inherit from gym.Env'
-    assert isinstance(env, Optimizable), \
-        f'the environment {type(env)} must inherit from Optimizable, ' \
+    assert isinstance(env, SingleOptimizable), \
+        f'the environment {type(env)} must inherit from SingleOptimizable, ' \
         'e.g. via OptEnv'
     assert_observation_space(env)
     assert_action_space(env)

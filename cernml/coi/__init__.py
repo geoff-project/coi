@@ -67,7 +67,7 @@ additional restrictions:
 
 from .env_checker import check_env
 from .machine import Machine
-from .optenv import OptEnv, OptGoalEnv, Optimizable
+from .optenv import OptEnv, OptGoalEnv, SingleOptimizable
 from .problem import Problem
 from .registration import registry, register, make, spec
 from .sepenv import (
