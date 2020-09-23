@@ -7,6 +7,8 @@ from abc import ABCMeta, abstractmethod
 
 import gym
 
+from .problem import Problem
+
 __all__ = [
     'OptEnv',
     'OptGoalEnv',
@@ -14,7 +16,7 @@ __all__ = [
 ]
 
 
-class SingleOptimizable(metaclass=ABCMeta):
+class SingleOptimizable(Problem, metaclass=ABCMeta):
     """Additional mix-in for environments that are optimizable.
 
     Fundamentally, an environment contains a hidden state on which actions can
@@ -54,8 +56,8 @@ class SingleOptimizable(metaclass=ABCMeta):
     def compute_loss(self, parameters) -> float:
         """Perform an optimization step.
 
-        This function is similar to `step()`, but it accepts parameters instead
-        of an action. See the class docstring for the difference.
+        This function is similar to `Env.step()`, but it accepts parameters
+        instead of an action. See the class docstring for the difference.
 
         This function may modify the environment, but it should fundamentally
         be stateless: Calling `compute_loss()` twice with the same parameters
