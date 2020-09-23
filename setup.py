@@ -48,6 +48,7 @@ setup(
     extras_require={
         'test': [
             'matplotlib ~= 3.0',
+            'stable_baselines3 >= 0.8.0',
         ],
     },
     zip_safe=True,
