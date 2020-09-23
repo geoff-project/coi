@@ -1,68 +1,57 @@
 #!/usr/bin/env python3
 """Common Optimization Interface that abstracts over optimizers and RL agents.
 
-# Motivation
+The most primitive interface provided by this package is the `Problem`, and it
+isn't very interesting on its own. More important are two interfaces that
+extend `Problem`:
 
-Several problems in accelerator control can be solved both using reinforcement
-learning (RL) and numerical optimization. However, both approaches usually
-slightly differ in their expected input and output:
+- `Env`, as provided by the `gym` package;
+- `SingleOptimizable`, provided by this package.
 
-- Num. optimizers pick certain _points_ in the phase space of modifiable
-  parameters and evaluate the loss of these parameters. They minimize this loss
-  through multiple evaluations and ultimately yield the optimal parameters.
-- RL agents assume that the problem has a certain state, which usually contains
-  the values of all modifiable parameters. They receive an observation (which
-  is usually higher-dimensional than the loss) and calculate a _correction_ of
-  the parameters. This correction yields a certain reward to them. Their goal
-  is to optimize the parameters incrementally by optimzing their corrections
-  for maximal reward.
+The former is implemented by classes that describe reinforcement learning (RL)
+problems; the latter by classes that describe numerical-optimization problems.
+A class may implement both, either explicitly or through the convenience class
+`OptEnv`.
 
-More informally, num. optimizers start from scratch each time they are applied
-and they yield a point in phase space. RL agents learn once, can be applied
-many times, and they yield a sequence of deltas in the phase space.
+This package comes with its own registry, similar to that of
+`gym.envs.registration`. This makes it possible to globally register both RL
+and numerical-optimization problems in one common list. To make your problem
+usable, don't forget to call `coi.register(name, entry_point=Class)` after your
+class definition.
 
-Even more informally, on a given machine, a num. optimizer performs the
-state transition `machine.parameters = new_parameters`, whereas an RL agent
-performs the state transition `machine.parameters += corrections` iteratively.
+For reasons of portability, this API does not support the full range of
+`gym.Env` classes, but rather puts several restrictions on them. This is
+inspired by `stable_baselines3.common.env_checker.check_env`, but comes with
+additional requirements:
 
-This package provides interfaces to implement for problems that should be
-compatible both with num. optimizers and RL agents. It is based on the [Gym][]
-environment API and enhances it with the `Optimizable` interface. In addition,
-the output and metadata of the environments is _restricted_ to make the
-behavior of environments more uniform and compatible to make them more easily
-visualizable and integrable into a generic machine-optimization application.
+1. The `observation_space`, `action_space` and `optimization_space` must all be
+   `gym.spaces.Box`es. The only exception is if the environment is a
+   `gym.GoalEnv`: in that case, `observation_space` must be `gym.spaces.Dict`
+   (with exactly the three expected keys) and the `'observation'` sub-space
+   must be a `Box`.
 
-[Gym]: https://github.com/openai/gym/
+2. The `action_space` and the `optimization_space` must have the same shape;
+   They must only differ in their bounds. The bounds of the action space must
+   be symmetric around zero and normalized (equal to or less than one).
 
-# The API
+3. The supported render modes must at least be `'ansi'` and `'qtembed'`. The
+   call `env.render('ansi')` must return a string that contains a string
+   representation of the environment's current state. The mode `'qtembed` has
+   yet to be specified, but it will allow visualizing the state embedded into a
+   PyQt application.
 
-The core interface is `Optimizable`, which can be implemented by any class that
-can be used with num. optimizers. Each class that describes a compatible
-problem should inherit both from `Optimizable` and from `gym.Env`. For
-convenience, the helper classes `OptEnv` and `OptGoalEnv` are provided, which
-already inherit from the two. Compatible classes then must implement these
-interfaces according to their specifications. This API makes the following
-additional restrictions:
+4. The environment metadata must contain a key `cern.machine` with a value of
+   type `Machine`. It tells users which CERN accelerator the environment
+   belongs to.
 
-- The `observation_space`, `action_space` and `optimization_space` must all be
-  `gym.spaces.Box`es. The only exception is if the environment is a
-  `gym.GoalEnv`: in that case, `observation_space` must be `gym.spaces.Dict`
-  (with exactly the three expected keys) and the `'observation'` sub-space must
-  be a `Box`.
-- The `action_space` and the `optimization_space` must have the same shape;
-  They must only differ in their bounds. The bounds of the action space must be
-  symmetric around zero and normalized (equal to or less than one).
-- The supported render modes must at least be `'ansi'` and `'qtembed'`. The
-  call `env.render('ansi')` must return a string that contains a string
-  represnetation of the environment's current state. The mode `'qtembed` has
-  yet to be specified, but it will allow visualizing the state embedded into a
-  PyQt application.
-- The environment metadata must contain a key `cern.machine` with a value of
-  type `Machine`. It tells users which CERN accelerator the environment belongs
-  to.
-- The reward range must be defined and rewards must always lie within it.
-  (Depending on feedback, this restriction may be lifted later.)
-- The environment must never diverge to NaN or infinity.
+5. The reward range must be defined and rewards must always lie within it.
+   (Depending on feedback, this restriction may be lifted later.)
+
+6. The objective range must be defined and the loss returned by
+   `compute_single_objective()` must always lie within it. (Depending on
+   feedback, this restriction may be lifted later.)
+
+7. The environment must never diverge to NaN or infinity.
 """
 
 from .env_checker import check_env
