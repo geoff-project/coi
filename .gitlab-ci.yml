@@ -3,18 +3,22 @@ include:
    file: acc_py_devtools/templates/gitlab-ci/python.yml
 
 variables:
-  project_name: cernml.abc
+  project_name: cernml.coi
 
 
-# A full installation of cern-awake-mltools, tested with pytest.
+# A full installation of the package, tested with pytest.
 test_install:
   extends: .acc_py_full_test
   script:
-      - mkdir -p not-the-source-dir && cd not-the-source-dir
-      - python -c 'import cernml.coi'
+      - mkdir -p not-the-source-dir
+      - cp examples/parabola.py ./not-the-source-dir/
+      - cd ./not-the-source-dir
+      - python -c "import ${project_name}"
+      - python ./parabola.py opt
+      - python ./parabola.py rl
 
 
-# A development installation of cern-awake-mltools tested with pytest.
+# A development installation of package, tested with pytest.
 test_dev:
   extends: .acc_py_dev_test
   script:
