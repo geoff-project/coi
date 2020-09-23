@@ -40,7 +40,10 @@ setup(
     version=get_version(),
     python_requires='>=3.6',
     packages=find_namespace_packages(include=('cernml', 'cernml.*')),
-    install_requires=['gym >= 0.11'],
+    install_requires=[
+        'gym >= 0.11',
+        'numpy ~= 1.10',
+    ],
     extras_require={
         'test': [
             'matplotlib ~= 3.0',
