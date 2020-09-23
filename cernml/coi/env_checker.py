@@ -17,11 +17,10 @@ __all__ = ['check_env']
 
 def check_env(env: OptEnv, warn: bool = True) -> None:
     """Check that an environment follows the restricted API laid out here."""
-    assert isinstance(env, gym.Env), \
-        f'the environment {type(env)}, must inherit from gym.Env'
-    assert isinstance(env, SingleOptimizable), \
-        f'the environment {type(env)} must inherit from SingleOptimizable, ' \
-        'e.g. via OptEnv'
+    unwrapped_env = getattr(env, 'unwrapped', None)
+    assert unwrapped_env is not None, \
+        f'missing propert "unwrapped" on {type(env)}'
+    assert_inheritance(unwrapped_env)
     assert_observation_space(env)
     assert_action_space(env)
     assert_optimization_space(env)
@@ -37,6 +36,15 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
         elif isinstance(env.observation_space, gym.spaces.Dict):
             warn_observation_space(env.observation_space['observation'])
         warn_render_modes(env)
+
+
+def assert_inheritance(env: OptEnv):
+    """Check that the object is an OptEnv."""
+    assert isinstance(env, gym.Env), \
+        f'the environment {type(env)}, must inherit from gym.Env'
+    assert isinstance(env, SingleOptimizable), \
+        f'the environment {type(env)} must inherit from SingleOptimizable, ' \
+        'e.g. via OptEnv'
 
 
 def assert_observation_space(env: gym.Env):
