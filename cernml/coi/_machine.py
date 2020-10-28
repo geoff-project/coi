@@ -3,8 +3,6 @@
 
 from enum import Enum
 
-__all__ = ["Machine"]
-
 
 class Machine(Enum):
     """Enum of the various accelerators at CERN.

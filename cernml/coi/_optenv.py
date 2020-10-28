@@ -3,24 +3,15 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
-import typing as t
 from abc import ABCMeta, abstractmethod
+from typing import Any, Union
 
 import gym
 import scipy.optimize
 
-from .problem import Problem
+from ._problem import Problem
 
-__all__ = [
-    "Constraint",
-    "OptEnv",
-    "OptGoalEnv",
-    "SingleOptimizable",
-]
-
-Constraint = t.Union[
-    scipy.optimize.LinearConstraint, scipy.optimize.NonlinearConstraint
-]
+Constraint = Union[scipy.optimize.LinearConstraint, scipy.optimize.NonlinearConstraint]
 
 
 class SingleOptimizable(Problem, metaclass=ABCMeta):
@@ -72,7 +63,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
     constraints = []
 
     @abstractmethod
-    def get_initial_params(self) -> t.Any:
+    def get_initial_params(self) -> Any:
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space, i.e.

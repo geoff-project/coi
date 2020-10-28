@@ -1,18 +1,16 @@
 #!/usr/bin/env python
 """Provides the function `check_env()`."""
 
-import typing as t
 import warnings
+from typing import List, Tuple
 
 import gym
 import numpy
 import scipy.optimize
 
-from .machine import Machine
-from .optenv import Constraint, OptEnv, SingleOptimizable
-from .sepenv import SeparableEnv
-
-__all__ = ["check_env"]
+from ._machine import Machine
+from ._optenv import Constraint, OptEnv, SingleOptimizable
+from ._sepenv import SeparableEnv
 
 
 def check_env(env: OptEnv, warn: bool = True) -> None:
@@ -101,14 +99,14 @@ def assert_optimization_space(env: OptEnv):
     )
 
 
-def assert_range(reward_range: t.Tuple[float, float], name):
+def assert_range(reward_range: Tuple[float, float], name):
     """Check that the reward range is actually a range."""
     assert len(reward_range) == 2, f"{name} reward range must be tuple `(low, high)`."
     low, high = reward_range
     assert low <= high, f"lower bound of {name} range must be lower than upper bound"
 
 
-def assert_constraints(constraints: t.List[Constraint]):
+def assert_constraints(constraints: List[Constraint]):
     """Check that the list of constraints contains only constraints."""
     allowed_types = (
         scipy.optimize.LinearConstraint,

@@ -1,16 +1,9 @@
 #!/usr/bin/env python
 """The registry used by CERNML-COI."""
 
-import typing as t
+from typing import Any, Callable, Mapping, Optional, Union
 
 from gym.envs.registration import EnvRegistry, EnvSpec
-
-__all__ = [
-    "registry",
-    "register",
-    "make",
-    "spec",
-]
 
 registry = EnvRegistry()
 
@@ -18,10 +11,10 @@ registry = EnvRegistry()
 def register(
     id: str,
     *,
-    entry_point: t.Union[str, t.Callable],
+    entry_point: Union[str, Callable],
     nondeterministic: bool = False,
-    max_episode_steps: t.Optional[int] = None,
-    kwargs: t.Optional[t.Dict[str, t.Any]] = None
+    max_episode_steps: Optional[int] = None,
+    kwargs: Optional[Mapping[str, Any]] = None
 ):
     """Register a new environment in the global registry.
 
@@ -68,7 +61,7 @@ def register(
     )
 
 
-def make(id: str, **kwargs) -> t.Any:
+def make(id: str, **kwargs) -> Any:
     """Instantiate a registered environment.
 
     Args:

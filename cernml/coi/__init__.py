@@ -54,12 +54,12 @@ additional requirements:
 7. The environment must never diverge to NaN or infinity.
 """
 
-from .env_checker import check_env
-from .machine import Machine
-from .optenv import Constraint, OptEnv, OptGoalEnv, SingleOptimizable
-from .problem import Problem
-from .registration import registry, register, make, spec
-from .sepenv import (
+from ._env_checker import check_env
+from ._machine import Machine
+from ._optenv import Constraint, OptEnv, OptGoalEnv, SingleOptimizable
+from ._problem import Problem
+from ._registration import registry, register, make, spec
+from ._sepenv import (
     SeparableEnv,
     SeparableGoalEnv,
     SeparableOptEnv,

@@ -4,14 +4,7 @@
 # pylint: disable = abstract-method, too-few-public-methods
 
 import gym
-from .optenv import SingleOptimizable
-
-__all__ = [
-    "SeparableEnv",
-    "SeparableGoalEnv",
-    "SeparableOptEnv",
-    "SeparableOptGoalEnv",
-]
+from ._optenv import SingleOptimizable
 
 
 class SeparableEnv(gym.Env):

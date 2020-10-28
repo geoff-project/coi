@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 """Provide `Problem`, the most fundamental API of this package."""
 
-import abc
-
-__all__ = ["Problem"]
+from abc import ABCMeta, abstractmethod
 
 
-class Problem(metaclass=abc.ABCMeta):
+class Problem(metaclass=ABCMeta):
     """Abstract base class of all problems.
 
     You should not derive from this class. Derive from one of the actual
@@ -43,7 +41,7 @@ class Problem(metaclass=abc.ABCMeta):
         """
         return self
 
-    @abc.abstractmethod
+    @abstractmethod
     def render(self, mode="human", **kwargs):
         """Render the environment.
 
