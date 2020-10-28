@@ -3,6 +3,7 @@ include:
    file: acc_py_devtools/templates/gitlab-ci/python.yml
 
 variables:
+  project_dir: cernml
   project_name: cernml.coi
 
 
@@ -18,12 +19,32 @@ test_install:
       - python ./parabola.py rl
 
 
-# A development installation of package, tested with pytest.
+# A development installation of the project tested with pytest.
 test_dev:
   extends: .acc_py_dev_test
   script:
-      - pytest ${project_root}/tests --cov=${project_name} --junitxml=report.xml
+   # Run the unit-tests with coverage output.
+   - cd ${project_root}
+   - python -m pytest ./${project_dir} --cov=${project_dir} --junitxml=report.xml
 
+# Ensure that PyLint runs without warnings.
+test_lint:
+  extends: .acc_py_base
+  stage: test
+  before_script:
+   - python -m pip install -e .[test]
+   - python -m pip install pylint
+  script:
+   - python -m pylint ${project_dir}
+
+# Ensure that code style is being upheld.
+test_style:
+  extends: .acc_py_base
+  stage: test
+  before_script:
+   - pip install black
+  script:
+   - python -m black --check .
 
 # A push of the source distribution to the acc-py PyPI, only on git tag.
 release_sdist_on_tag:
