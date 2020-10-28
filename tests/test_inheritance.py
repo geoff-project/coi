@@ -69,8 +69,7 @@ def test_env_problem():
 
 
 def test_optenv_is_abstract():
-    assert _is_abstract_base_class(coi.OptEnv,
-                                   [gym.Env, coi.SingleOptimizable])
+    assert _is_abstract_base_class(coi.OptEnv, [gym.Env, coi.SingleOptimizable])
 
 
 def test_optgoalenv_is_abstract():
@@ -112,10 +111,7 @@ def test_goalenv():
 def test_optgoalenv():
     _assert_env_subclass(
         ConcreteOptGoalEnv,
-        [
-            gym.Env, gym.GoalEnv, coi.SingleOptimizable, coi.OptEnv,
-            coi.OptGoalEnv
-        ],
+        [gym.Env, gym.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
     )
 
 

@@ -3,7 +3,7 @@
 
 import abc
 
-__all__ = ['Problem']
+__all__ = ["Problem"]
 
 
 class Problem(metaclass=abc.ABCMeta):
@@ -29,8 +29,8 @@ class Problem(metaclass=abc.ABCMeta):
     # Subclasses should make `metadata` just a regular dict. This is a mapping
     # proxy to prevent accidental mutation through inheritance.
     metadata = {
-        'render.modes': [],
-        'cern.machines': [],
+        "render.modes": [],
+        "cern.machines": [],
     }
 
     @property
@@ -44,7 +44,7 @@ class Problem(metaclass=abc.ABCMeta):
         return self
 
     @abc.abstractmethod
-    def render(self, mode='human', **kwargs):
+    def render(self, mode="human", **kwargs):
         """Render the environment.
 
         The set of supported modes varies per environment. (And some
@@ -87,7 +87,7 @@ class Problem(metaclass=abc.ABCMeta):
     @classmethod
     def __subclasshook__(cls, other):
         if cls is Problem:
-            return _check_methods(other, 'metadata', 'render', 'unwrapped')
+            return _check_methods(other, "metadata", "render", "unwrapped")
         return NotImplemented
 
 

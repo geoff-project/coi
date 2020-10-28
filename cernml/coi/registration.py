@@ -6,21 +6,23 @@ import typing as t
 from gym.envs.registration import EnvRegistry, EnvSpec
 
 __all__ = [
-    'registry',
-    'register',
-    'make',
-    'spec',
+    "registry",
+    "register",
+    "make",
+    "spec",
 ]
 
 registry = EnvRegistry()
 
 
-def register(id: str,
-             *,
-             entry_point: t.Union[str, t.Callable],
-             nondeterministic: bool = False,
-             max_episode_steps: t.Optional[int] = None,
-             kwargs: t.Optional[t.Dict[str, t.Any]] = None):
+def register(
+    id: str,
+    *,
+    entry_point: t.Union[str, t.Callable],
+    nondeterministic: bool = False,
+    max_episode_steps: t.Optional[int] = None,
+    kwargs: t.Optional[t.Dict[str, t.Any]] = None
+):
     """Register a new environment in the global registry.
 
     Args:

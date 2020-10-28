@@ -7,10 +7,10 @@ import gym
 from .optenv import SingleOptimizable
 
 __all__ = [
-    'SeparableEnv',
-    'SeparableGoalEnv',
-    'SeparableOptEnv',
-    'SeparableOptGoalEnv',
+    "SeparableEnv",
+    "SeparableGoalEnv",
+    "SeparableOptEnv",
+    "SeparableOptGoalEnv",
 ]
 
 
@@ -35,6 +35,7 @@ class SeparableEnv(gym.Env):
     `compute_reward()` and `compute_done()` multiple times without changing the
     internal state of the environment.
     """
+
     def step(self, action):
         info = {}
         obs = self.compute_observation(action, info)
@@ -117,6 +118,7 @@ class SeparableOptEnv(SeparableEnv, SingleOptimizable):
     This is an intersection of `SeparableEnv` and `SingleOptimizable`. Any
     class that inherits from both, also inherits from this class.
     """
+
     @classmethod
     def __subclasshook__(cls, other):
         if cls is SeparableOptEnv:
@@ -144,12 +146,13 @@ class SeparableGoalEnv(gym.GoalEnv):
     `compute_reward()` and `compute_done()` multiple times without changing the
     internal state of the environment.
     """
+
     def step(self, action):
         info = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(
-            obs['achieved_goal'],
-            obs['desired_goal'],
+            obs["achieved_goal"],
+            obs["desired_goal"],
             info,
         )
         done = self.compute_done(obs, reward, info)
@@ -204,6 +207,7 @@ class SeparableOptGoalEnv(SeparableGoalEnv, SingleOptimizable):
     This is an intersection of `SeparableGoalEnv` and `SingleOptimizable`. Any
     class that inherits from both, also inherits from this class.
     """
+
     @classmethod
     def __subclasshook__(cls, other):
         if cls is SeparableOptGoalEnv:

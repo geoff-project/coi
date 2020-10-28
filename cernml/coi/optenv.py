@@ -12,14 +12,15 @@ import scipy.optimize
 from .problem import Problem
 
 __all__ = [
-    'Constraint',
-    'OptEnv',
-    'OptGoalEnv',
-    'SingleOptimizable',
+    "Constraint",
+    "OptEnv",
+    "OptGoalEnv",
+    "SingleOptimizable",
 ]
 
-Constraint = t.Union[scipy.optimize.LinearConstraint,
-                     scipy.optimize.NonlinearConstraint]
+Constraint = t.Union[
+    scipy.optimize.LinearConstraint, scipy.optimize.NonlinearConstraint
+]
 
 
 class SingleOptimizable(Problem, metaclass=ABCMeta):
@@ -65,8 +66,9 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             In the future, this might be relaxed to allow more optimization
             algorithms.
     """
+
     optimization_space = None
-    objective_range = (-float('inf'), float('inf'))
+    objective_range = (-float("inf"), float("inf"))
     constraints = []
 
     @abstractmethod
@@ -111,6 +113,7 @@ class OptEnv(gym.Env, SingleOptimizable):
     This is an intersection of `gym.Env` and `SingleOptimizable`. Any class
     that inherits from both, also inherits from this class.
     """
+
     @classmethod
     def __subclasshook__(cls, other):
         if cls is OptEnv:
@@ -125,6 +128,7 @@ class OptGoalEnv(gym.GoalEnv, SingleOptimizable):
     This is an intersection of `gym.GoalEnv` and `SingleOptimizable`. Any class
     that inherits from both, also inherits from this class.
     """
+
     @classmethod
     def __subclasshook__(cls, other):
         if cls is OptGoalEnv:

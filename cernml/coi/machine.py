@@ -3,7 +3,7 @@
 
 from enum import Enum
 
-__all__ = ['Machine']
+__all__ = ["Machine"]
 
 
 class Machine(Enum):
@@ -18,13 +18,14 @@ class Machine(Enum):
     a machine that is not listed in this enum, please contact the developers to
     have it included.
     """
-    NoMachine = 'no machine'
-    Linac2 = 'Linac2'
-    Linac3 = 'Linac3'
-    Linac4 = 'Linac4'
-    Leir = 'Leir'
-    PS = 'PS'
-    PSB = 'PSB'
-    SPS = 'SPS'
-    Awake = 'AWAKE'
-    LHC = 'LHC'
+
+    NoMachine = "no machine"
+    Linac2 = "Linac2"
+    Linac3 = "Linac3"
+    Linac4 = "Linac4"
+    Leir = "Leir"
+    PS = "PS"
+    PSB = "PSB"
+    SPS = "SPS"
+    Awake = "AWAKE"
+    LHC = "LHC"
