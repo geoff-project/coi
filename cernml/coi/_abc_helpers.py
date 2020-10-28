@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+"""Provides check_methods(), a helper function for ABCs."""
+
+
+def check_methods(C: type, *methods: str):
+    """Check whether the class `C` provides all given methods.
+
+    Methods are searched in `C` and all its bases, but not in instances
+    of `C`. Only the name is checked, not the signature.
+
+    If the method is found, but explicitly set to `None`, the method is
+    considered unimplemented, even if a superclass provides it.
+
+    Args:
+        C: The class to be checked.
+        methods: The names of methods to be searched for.
+
+    Returns:
+        True if `C` implements all given methods, otherwise
+        `NotImplemented`.
+    """
+    # pylint: disable = invalid-name
+    mro = C.__mro__
+    for method in methods:
+        for B in mro:
+            if method in B.__dict__:
+                if B.__dict__[method] is None:
+                    return NotImplemented
+                break
+        else:
+            return NotImplemented
+    return True

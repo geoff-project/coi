@@ -3,6 +3,8 @@
 
 from abc import ABCMeta, abstractmethod
 
+from ._abc_helpers import check_methods as _check_methods
+
 
 class Problem(metaclass=ABCMeta):
     """Abstract base class of all problems.
@@ -87,17 +89,3 @@ class Problem(metaclass=ABCMeta):
         if cls is Problem:
             return _check_methods(other, "metadata", "render", "unwrapped")
         return NotImplemented
-
-
-def _check_methods(C, *methods):
-    # pylint: disable = invalid-name
-    mro = C.__mro__
-    for method in methods:
-        for B in mro:
-            if method in B.__dict__:
-                if B.__dict__[method] is None:
-                    return NotImplemented
-                break
-        else:
-            return NotImplemented
-    return True
