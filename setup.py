@@ -46,9 +46,13 @@ setup(
         "scipy ~= 1.1",
     ],
     extras_require={
-        "test": [
+        "examples": [
+            "PyQt5 ~= 5.0",
             "matplotlib ~= 3.0",
             "stable_baselines3 >= 0.8.0",
+        ],
+        "test": [
+            "matplotlib ~= 3.0",
         ],
     },
     zip_safe=True,
