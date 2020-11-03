@@ -10,6 +10,8 @@ variables:
 # A full installation of the package, tested with pytest.
 test_install:
   extends: .acc_py_full_test
+  before_script:
+      - python -m pip install .[examples]
   script:
       - mkdir -p not-the-source-dir
       - cp examples/parabola.py ./not-the-source-dir/
