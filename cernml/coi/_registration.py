@@ -15,7 +15,7 @@ def register(
     nondeterministic: bool = False,
     max_episode_steps: Optional[int] = None,
     kwargs: Optional[Mapping[str, Any]] = None
-):
+) -> None:
     """Register a new environment in the global registry.
 
     Args:
@@ -52,7 +52,7 @@ def register(
             a call `make(the_id)` will always succeed.
     """
     # pylint: disable = invalid-name, redefined-builtin
-    return registry.register(
+    registry.register(
         id,
         entry_point=entry_point,
         nondeterministic=nondeterministic,
@@ -61,7 +61,7 @@ def register(
     )
 
 
-def make(id: str, **kwargs) -> Any:
+def make(id: str, **kwargs: Any) -> Any:
     """Instantiate a registered environment.
 
     Args:

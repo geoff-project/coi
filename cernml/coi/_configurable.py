@@ -1,11 +1,20 @@
 #!/usr/bin/env python
 """Provide `Configurable`, an interface for GUI compatibility."""
 
-# self, string_choice, int_choice, enum_choice, int_range, seed, bool, float_range
-import typing as t
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from types import SimpleNamespace
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    NamedTuple,
+    Optional,
+    Tuple,
+)
 
 from ._abc_helpers import check_methods as _check_methods
 
@@ -47,7 +56,7 @@ class Config:
 
     # Note: Once Python 3.6 support is dropped, this should subclass
     # NamedTuple _and_ Generic[T].
-    class Field(t.NamedTuple):
+    class Field(NamedTuple):
         """A single configurable field.
 
         Don't instantiate this class yourself. Use `Config.add()`
@@ -55,18 +64,18 @@ class Config:
         """
 
         dest: str
-        value: t.Any
-        label: t.Optional[str]
-        type: t.Callable[[str], t.Any]
-        range: t.Optional[t.Tuple[t.Any, t.Any]]
-        choices: t.Optional[t.List[t.Any]]
-        default: t.Optional[t.Any]
+        value: Any
+        label: str
+        type: Callable[[str], Any]
+        range: Optional[Tuple[Any, Any]]
+        choices: Optional[List[Any]]
+        default: Optional[Any]
 
-        def validate(self, value: str) -> t.Any:
+        def validate(self, text_repr: str) -> Any:
             """Validate a user-chosen value.
 
             Args:
-                value: The string input to validate.
+                text_repr: The string input to validate.
 
             Returns:
                 The validated and converted value.
@@ -75,7 +84,7 @@ class Config:
                 BadConfig if the value could not be validated.
             """
             try:
-                value: t.Any = self.type(value)
+                value: Any = self.type(text_repr)
                 if self.range is not None:
                     low, high = self.range
                     if not low <= value <= high:
@@ -84,29 +93,31 @@ class Config:
                     if not value in self.choices:
                         raise ValueError(f"{value} not in {self.choices!r}")
             except Exception as exc:
-                raise BadConfig(f"invalid value for {self.dest}: {value!r}") from exc
+                raise BadConfig(
+                    f"invalid value for {self.dest}: {text_repr!r}"
+                ) from exc
             return value
 
-    def __init__(self):
-        self._fields: t.Mapping[str, self.Field] = OrderedDict()
+    def __init__(self) -> None:
+        self._fields: Dict[str, Config.Field] = OrderedDict()
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__}: {list(self._fields)}>"
 
-    def fields(self) -> t.Iterable[Field]:
+    def fields(self) -> Iterable[Field]:
         """Return a read-only view of all declared fields."""
         return self._fields.values()
 
     def add(
         self,
         dest: str,
-        value: t.Any,
+        value: Any,
         *,
-        label: t.Optional[str] = None,
-        type: t.Optional[t.Callable[[str], t.Any]] = None,
-        range: t.Optional[t.Tuple[t.Any, t.Any]] = None,
-        choices: t.Optional[t.List[t.Any]] = None,
-        default: t.Optional[t.Any] = None,
+        label: Optional[str] = None,
+        type: Optional[Callable[[str], Any]] = None,
+        range: Optional[Tuple[Any, Any]] = None,
+        choices: Optional[List[Any]] = None,
+        default: Optional[Any] = None,
     ) -> "Config":
         """Add a new config field.
 
@@ -158,13 +169,13 @@ class Config:
         )
         return self
 
-    def validate(self, name: str, value: str) -> t.Any:
+    def validate(self, name: str, text_repr: str) -> Any:
         """Validate a user-chosen value.
 
         Args:
             name: The name of the configurable field. This is the same
                 as the `dest` parameter of `Config.add()`.
-            value: The string input to validate.
+            text_repr: The string input to validate.
 
         Returns:
             The validated and converted value.
@@ -172,9 +183,9 @@ class Config:
         Raises:
             BadConfig if the value could not be validated.
         """
-        return self._fields[name].validate(value)
+        return self._fields[name].validate(text_repr)
 
-    def validate_all(self, values: t.Mapping[str, str]) -> SimpleNamespace:
+    def validate_all(self, values: Mapping[str, str]) -> SimpleNamespace:
         """Validate user-chosen set of configurations.
 
         Args:
@@ -264,7 +275,7 @@ class Configurable(metaclass=ABCMeta):
         """Return a declaration of configurable parameters."""
 
     @abstractmethod
-    def apply_config(self, values: SimpleNamespace):
+    def apply_config(self, values: SimpleNamespace) -> None:
         """Configure this object using the given values.
 
         The `values` must have already been validated using the
@@ -282,7 +293,7 @@ class Configurable(metaclass=ABCMeta):
         """
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, other: type) -> Any:
         if cls is Configurable:
             return _check_methods(other, "get_config", "apply_config")
         return NotImplemented

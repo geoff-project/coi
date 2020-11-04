@@ -2,7 +2,7 @@
 """Provides the function `check_env()`."""
 
 import warnings
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import gym
 import numpy
@@ -35,7 +35,7 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
         warn_render_modes(env)
 
 
-def assert_inheritance(env: OptEnv):
+def assert_inheritance(env: OptEnv) -> None:
     """Check that the object is an OptEnv."""
     assert isinstance(env, gym.Env), f"{type(env)} must inherit from gym.Env"
     assert isinstance(
@@ -43,7 +43,7 @@ def assert_inheritance(env: OptEnv):
     ), f"{type(env)} must inherit from SingleOptimizable"
 
 
-def assert_observation_space(env: gym.Env):
+def assert_observation_space(env: gym.Env) -> None:
     """Check that the observation space is as expected.
 
     The space must generally be a box. The exception are multi-goal
@@ -71,7 +71,7 @@ def assert_observation_space(env: gym.Env):
         ), f"observation space {space} must be a gym.spaces.Box"
 
 
-def assert_action_space(env: gym.Env):
+def assert_action_space(env: gym.Env) -> None:
     """Check that the given space has symmetric and normalized limits."""
     space = env.action_space
     assert isinstance(
@@ -83,7 +83,7 @@ def assert_action_space(env: gym.Env):
     assert numpy.any(abs(space.high) <= 1.0), "action space limits must be 1.0 or less"
 
 
-def assert_optimization_space(env: OptEnv):
+def assert_optimization_space(env: OptEnv) -> None:
     """Check that action and optimization space are boxes of the same shape."""
     act_space = env.action_space
     opt_space = env.optimization_space
@@ -99,14 +99,14 @@ def assert_optimization_space(env: OptEnv):
     )
 
 
-def assert_range(reward_range: Tuple[float, float], name):
+def assert_range(reward_range: Tuple[float, float], name: str) -> None:
     """Check that the reward range is actually a range."""
     assert len(reward_range) == 2, f"{name} reward range must be tuple `(low, high)`."
     low, high = reward_range
     assert low <= high, f"lower bound of {name} range must be lower than upper bound"
 
 
-def assert_constraints(constraints: List[Constraint]):
+def assert_constraints(constraints: List[Constraint]) -> None:
     """Check that the list of constraints contains only constraints."""
     allowed_types = (
         scipy.optimize.LinearConstraint,
@@ -119,10 +119,10 @@ def assert_constraints(constraints: List[Constraint]):
         )
 
 
-def assert_returned_values(env: gym.Env):
+def assert_returned_values(env: gym.Env) -> None:
     """Check at `env.rest()` and `env.step()` return the right values."""
 
-    def _check_obs(obs):
+    def _check_obs(obs: numpy.ndarray) -> None:
         assert obs in env.observation_space, "observation outside of space"
         inner_obs = obs["observation"] if isinstance(env, gym.GoalEnv) else obs
         assert isinstance(
@@ -152,10 +152,10 @@ def assert_returned_values(env: gym.Env):
         assert reward == env.compute_reward(obs, None, info), "reward does not match"
 
 
-def assert_no_nan(env: gym.Env):
+def assert_no_nan(env: gym.Env) -> None:
     """Check that the environment never produces infinity or NaN."""
 
-    def _check_val(val):
+    def _check_val(val: Union[float, numpy.ndarray, numpy.floating]) -> bool:
         isnan = numpy.any(numpy.isnan(val))
         isinf = numpy.any(numpy.isinf(val))
         return not isnan and not isinf
@@ -169,14 +169,14 @@ def assert_no_nan(env: gym.Env):
         assert _check_val(reward), "reward turned NaN or inf"
 
 
-def assert_machine(env: gym.Env):
+def assert_machine(env: gym.Env) -> None:
     """Check that the environment defines the machine it pertains to."""
     machine = env.metadata.get("cern.machine")
     assert machine is not None, "missing key cern.machine in the environment metadata"
     assert isinstance(machine, Machine), "declared cern.machine is not a Machine enum"
 
 
-def warn_observation_space(space: gym.spaces.Box):
+def warn_observation_space(space: gym.spaces.Box) -> None:
     """Check that the observation space is either flat or an image."""
     ndims = len(space.shape)
     if ndims == 3:
@@ -203,7 +203,7 @@ def warn_observation_space(space: gym.spaces.Box):
         )
 
 
-def warn_render_modes(env: gym.Env):
+def warn_render_modes(env: gym.Env) -> None:
     """Check that the environment defines the required render modes."""
     render_modes = env.metadata.get("render.modes")
     if render_modes is None:

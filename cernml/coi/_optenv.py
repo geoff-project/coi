@@ -4,9 +4,10 @@
 # pylint: disable = abstract-method, too-few-public-methods
 
 from abc import ABCMeta, abstractmethod
-from typing import Any, Union
+from typing import Any, List, Tuple, Union
 
 import gym
+import numpy
 import scipy.optimize
 
 from ._problem import Problem
@@ -58,9 +59,9 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             algorithms.
     """
 
-    optimization_space = None
-    objective_range = (-float("inf"), float("inf"))
-    constraints = []
+    optimization_space: gym.spaces.Space = None
+    objective_range: Tuple[float, float] = (-float("inf"), float("inf"))
+    constraints: List[Constraint] = []
 
     @abstractmethod
     def get_initial_params(self) -> Any:
@@ -76,7 +77,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def compute_single_objective(self, params) -> float:
+    def compute_single_objective(self, params: numpy.ndarray) -> float:
         """Perform an optimization step.
 
         This function is similar to `Env.step()`, but it accepts parameters
@@ -106,7 +107,7 @@ class OptEnv(gym.Env, SingleOptimizable):
     """
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, other: type) -> Any:
         if cls is OptEnv:
             bases = other.__mro__
             return gym.Env in bases and SingleOptimizable in bases
@@ -121,7 +122,7 @@ class OptGoalEnv(gym.GoalEnv, SingleOptimizable):
     """
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, other: type) -> Any:
         if cls is OptGoalEnv:
             bases = other.__mro__
             return gym.GoalEnv in bases and SingleOptimizable in bases

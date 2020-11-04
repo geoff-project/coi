@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """Provides check_methods(), a helper function for ABCs."""
 
+from typing import Any
 
-def check_methods(C: type, *methods: str):
+
+def check_methods(C: type, *methods: str) -> Any:
     """Check whether the class `C` provides all given methods.
 
     Methods are searched in `C` and all its bases, but not in instances

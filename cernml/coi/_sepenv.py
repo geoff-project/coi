@@ -3,7 +3,10 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
+from typing import Any
+
 import gym
+
 from ._optenv import SingleOptimizable
 
 
@@ -113,7 +116,7 @@ class SeparableOptEnv(SeparableEnv, SingleOptimizable):
     """
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, other: type) -> Any:
         if cls is SeparableOptEnv:
             bases = other.__mro__
             return SeparableEnv in bases and SingleOptimizable in bases
@@ -202,7 +205,7 @@ class SeparableOptGoalEnv(SeparableGoalEnv, SingleOptimizable):
     """
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, other: type) -> Any:
         if cls is SeparableOptGoalEnv:
             bases = other.__mro__
             return SeparableGoalEnv in bases and SingleOptimizable in bases

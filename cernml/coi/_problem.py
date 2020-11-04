@@ -2,6 +2,7 @@
 """Provide `Problem`, the most fundamental API of this package."""
 
 from abc import ABCMeta, abstractmethod
+from typing import Any, Dict
 
 from ._abc_helpers import check_methods as _check_methods
 
@@ -28,13 +29,13 @@ class Problem(metaclass=ABCMeta):
 
     # Subclasses should make `metadata` just a regular dict. This is a mapping
     # proxy to prevent accidental mutation through inheritance.
-    metadata = {
+    metadata: Dict[str, Any] = {
         "render.modes": [],
         "cern.machines": [],
     }
 
     @property
-    def unwrapped(self):
+    def unwrapped(self) -> "Problem":
         """Return the core problem.
 
         If this class is a wrapper around another problem, it should return
@@ -44,7 +45,7 @@ class Problem(metaclass=ABCMeta):
         return self
 
     @abstractmethod
-    def render(self, mode="human", **kwargs):
+    def render(self, mode: str = "human", **kwargs: Any) -> Any:
         """Render the environment.
 
         The set of supported modes varies per environment. (And some
@@ -85,7 +86,7 @@ class Problem(metaclass=ABCMeta):
         raise NotImplementedError
 
     @classmethod
-    def __subclasshook__(cls, other):
+    def __subclasshook__(cls, other: type) -> Any:
         if cls is Problem:
             return _check_methods(other, "metadata", "render", "unwrapped")
         return NotImplemented
