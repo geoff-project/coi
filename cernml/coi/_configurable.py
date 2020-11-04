@@ -66,6 +66,7 @@ class Config:
         dest: str
         value: Any
         label: str
+        help: Optional[str]
         type: Callable[[str], Any]
         range: Optional[Tuple[Any, Any]]
         choices: Optional[List[Any]]
@@ -114,6 +115,7 @@ class Config:
         value: Any,
         *,
         label: Optional[str] = None,
+        help: Optional[str] = None,
         type: Optional[Callable[[str], Any]] = None,
         range: Optional[Tuple[Any, Any]] = None,
         choices: Optional[List[Any]] = None,
@@ -130,6 +132,9 @@ class Config:
             label: The display name of the parameter. This will be
                 displayed to the user, if possible. If not passed,
                 `dest` is reused.
+            help: A string that further explains this configurable
+                parameter. A GUI might e.g. present this string as a
+                tooltip.
             type: A function used for type-checking and conversion. This
                 function should take a string and produce a value of the
                 same type as `value`. It will be applied to any user
@@ -162,6 +167,7 @@ class Config:
             dest,
             value=value,
             label=label,
+            help=help,
             type=type,
             range=range,
             choices=choices,
