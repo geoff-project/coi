@@ -16,7 +16,7 @@ from ._sepenv import SeparableEnv
 def check_env(env: OptEnv, warn: bool = True) -> None:
     """Check that an environment follows the restricted API laid out here."""
     unwrapped_env = getattr(env, "unwrapped", None)
-    assert unwrapped_env is not None, f'missing propert "unwrapped" on {type(env)}'
+    assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'
     assert_inheritance(unwrapped_env)
     assert_observation_space(env)
     assert_action_space(env)
