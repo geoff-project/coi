@@ -204,6 +204,11 @@ class ConfigureDialog(QDialog):
 
     def __init__(self, target: coi.Configurable, parent=None):
         super().__init__(parent)
+        try:
+            name = target.spec.id
+        except AttributeError:
+            name = type(target).__name__
+        self.setWindowTitle(f"Configure {name} ...")
         self.target = target
         self.config = self.target.get_config()
         self.current_values = {
