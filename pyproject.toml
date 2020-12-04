@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools >= 40.8", "wheel >= 0.34"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+target-version = ['py36', 'py37', 'py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+    | \.git
+    | \.mypy_cache
+    | build
+    | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+
+[tool.pylint.MASTER]
+extension-pkg-whitelist = "PyQt5"
+
+[tool.pylint.REPORTS]
+reports = false
+score = false
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = ["similarities"]

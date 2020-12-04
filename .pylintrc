@@ -1,8 +1,0 @@
-[MASTER]
-init-hook=sys.path.append(os.getcwd())
-extension-pkg-whitelist=PyQt5
-
-[REPORTS]
-output-format=parseable
-reports=no
-score=no
