@@ -17,6 +17,8 @@ class Machine(Enum):
     have it included.
     """
 
+    # pylint: disable = invalid-name
+
     NoMachine = "no machine"
     Linac2 = "Linac2"
     Linac3 = "Linac3"
