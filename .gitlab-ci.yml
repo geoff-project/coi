@@ -34,19 +34,12 @@ test_lint:
   extends: .acc_py_base
   stage: test
   before_script:
-   - python -m pip install -e .[test]
-   - python -m pip install pylint
+   - python -m pip install -e .[lint]
   script:
-   - python -m pylint ${project_dir}
-
-# Ensure that code style is being upheld.
-test_style:
-  extends: .acc_py_base
-  stage: test
-  before_script:
-   - pip install black
-  script:
-   - python -m black --check .
+   - python -m pylint ${project_dir} || pylint_exit=$?
+   - python -m black --check . || black_exit=$?
+   - python -m mypy ${project_dir} || mypy_exit=$?
+   - if [[ pylint_exit+black_exit+mypy_exit -gt 0 ]]; then false; fi
 
 # A push of the source distribution to the acc-py PyPI, only on git tag.
 release_sdist_on_tag:
