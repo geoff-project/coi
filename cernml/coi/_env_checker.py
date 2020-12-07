@@ -2,8 +2,8 @@
 """Provides the function `check_env()`."""
 
 import numbers
+import typing as t
 import warnings
-from typing import Any, List, Tuple, Union
 
 import gym
 import numpy
@@ -117,14 +117,14 @@ def assert_optimization_space(env: SingleOptimizable) -> None:
         )
 
 
-def assert_range(reward_range: Tuple[float, float], name: str) -> None:
+def assert_range(reward_range: t.Tuple[float, float], name: str) -> None:
     """Check that the reward range is actually a range."""
     assert len(reward_range) == 2, f"{name} reward range must be tuple `(low, high)`."
     low, high = reward_range
     assert low <= high, f"lower bound of {name} range must be lower than upper bound"
 
 
-def assert_constraints(constraints: List[Constraint]) -> None:
+def assert_constraints(constraints: t.List[Constraint]) -> None:
     """Check that the list of constraints contains only constraints."""
     allowed_types = (
         scipy.optimize.LinearConstraint,
@@ -182,7 +182,7 @@ def assert_env_returned_values(env: gym.Env) -> None:
 def assert_env_no_nan(env: gym.Env) -> None:
     """Check that the environment never produces infinity or NaN."""
 
-    def _check_val(val: Union[float, numpy.ndarray, numpy.floating]) -> bool:
+    def _check_val(val: t.Union[float, numpy.ndarray, numpy.floating]) -> bool:
         isnan = numpy.any(numpy.isnan(val))
         isinf = numpy.any(numpy.isinf(val))
         return not isnan and not isinf
@@ -245,7 +245,7 @@ def warn_render_modes(env: Problem) -> None:
         )
 
 
-def is_reward(reward: Any) -> bool:
+def is_reward(reward: t.Any) -> bool:
     """Return True if the object has the correct type for a reward."""
     return isinstance(reward, (numbers.Number, numpy.bool_))
 
