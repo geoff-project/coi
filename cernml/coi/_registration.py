@@ -14,7 +14,7 @@ def register(
     entry_point: Union[str, Callable],
     nondeterministic: bool = False,
     max_episode_steps: Optional[int] = None,
-    kwargs: Optional[Mapping[str, Any]] = None
+    kwargs: Optional[Mapping[str, Any]] = None,
 ) -> None:
     """Register a new environment in the global registry.
 

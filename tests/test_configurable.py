@@ -10,13 +10,13 @@ import pytest
 from cernml.coi import BadConfig, Config
 
 
-def test_bare_field():
+def test_bare_field() -> None:
     config = Config().add("foo", "bar")
     assert config.validate("foo", "bar") == "bar"
     assert config.validate("foo", "") == ""
 
 
-def test_choice():
+def test_choice() -> None:
     config = Config().add("foo", "bar", choices=["bar", "baz"])
     assert config.validate("foo", "bar") == "bar"
     assert config.validate("foo", "baz") == "baz"
@@ -24,7 +24,7 @@ def test_choice():
         config.validate("foo", "bam")
 
 
-def test_int():
+def test_int() -> None:
     config = Config().add("foo", 7)
     assert config.validate("foo", "7") == 7
     assert config.validate("foo", "-3") == -3
@@ -35,7 +35,7 @@ def test_int():
         config.validate("foo", "1.3")
 
 
-def test_int_range():
+def test_int_range() -> None:
     config = Config().add("foo", 0, range=(-10, 10))
     assert config.validate("foo", "-3") == -3
     for i in range(-10, 11):
@@ -48,7 +48,7 @@ def test_int_range():
         config.validate("foo", "10000")
 
 
-def test_int_choice():
+def test_int_choice() -> None:
     config = Config().add("foo", 0, choices=range(1, 4))
     assert config.validate("foo", "3") == 3
     assert config.validate("foo", "2") == 2
@@ -57,7 +57,7 @@ def test_int_choice():
         config.validate("foo", "0")
 
 
-def test_float():
+def test_float() -> None:
     config = Config().add("foo", 1.3)
     assert config.validate("foo", "1.3") == 1.3
     assert config.validate("foo", "-3") == -3
@@ -68,7 +68,7 @@ def test_float():
         config.validate("foo", "bar")
 
 
-def test_float_range():
+def test_float_range() -> None:
     config = Config().add("foo", 1.0, range=(0.0, 2.0))
     assert config.validate("foo", "1.3") == 1.3
     assert config.validate("foo", "0") == 0.0
@@ -83,7 +83,7 @@ def test_float_range():
         config.validate("foo", "inf")
 
 
-def test_float_range_half_open():
+def test_float_range_half_open() -> None:
     config = Config().add("foo", 1.0, range=(0.0, float("inf")))
     assert config.validate("foo", "1000.0") == 1000.0
     assert config.validate("foo", "inf") == float("inf")
@@ -93,7 +93,7 @@ def test_float_range_half_open():
         assert config.validate("foo", "nan")
 
 
-def test_int_range_half_open():
+def test_int_range_half_open() -> None:
     config = Config().add("foo", 1, range=(0.0, float("inf")))
     assert config.validate("foo", "1000") == 1000
     with pytest.raises(BadConfig):
@@ -102,7 +102,7 @@ def test_int_range_half_open():
         assert config.validate("foo", "3.0")
 
 
-def test_bool():
+def test_bool() -> None:
     config = Config().add("foo", False)
     assert config.validate("foo", "1000") is True
     assert config.validate("foo", "check") is True
@@ -110,8 +110,8 @@ def test_bool():
     assert config.validate("foo", "") is False
 
 
-def test_custom_type():
-    def even_number(string):
+def test_custom_type() -> None:
+    def even_number(string: str) -> int:
         number = int(string)
         if number % 2:
             raise ValueError("not an even number: " + repr(string))
@@ -127,7 +127,7 @@ def test_custom_type():
         assert config.validate("foo", "1")
 
 
-def test_validate_all():
+def test_validate_all() -> None:
     config = Config().add("foo", 0).add("bar", "a", choices=list("abc"))
     values = config.validate_all({"foo": "10", "bar": "b"})
     assert values.foo == 10

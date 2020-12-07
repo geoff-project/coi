@@ -4,6 +4,9 @@
 # pylint: disable = missing-class-docstring, missing-function-docstring
 # pylint: disable = abstract-method
 
+from types import new_class
+from typing import Sequence, Type
+
 import gym
 
 from cernml import coi
@@ -41,7 +44,7 @@ class ConcreteSeparableOptGoalEnv(coi.SeparableOptGoalEnv):
     pass
 
 
-def _assert_env_subclass(subclass, superclasses):
+def _assert_env_subclass(subclass: type, superclasses: Sequence[type]) -> None:
     all_superclasses = (
         gym.GoalEnv,
         coi.SingleOptimizable,
@@ -56,73 +59,61 @@ def _assert_env_subclass(subclass, superclasses):
         assert (superclass in superclasses) == issubclass(subclass, superclass)
 
 
-def _is_abstract_base_class(abc, superclasses):
-    class NoDirectInheritance(*superclasses):
-        # pylint: disable = too-few-public-methods
-        pass
-
-    return issubclass(NoDirectInheritance, abc)
+def _is_abstract_base_class(abc: type, env_class: Type[gym.Env]) -> bool:
+    mock = new_class("NoDirectInheritance", bases=(coi.SingleOptimizable, env_class))
+    return issubclass(mock, abc)
 
 
-def test_env_problem():
+def test_env_problem() -> None:
     assert issubclass(gym.Env, coi.Problem)
 
 
-def test_optenv_is_abstract():
-    assert _is_abstract_base_class(coi.OptEnv, [gym.Env, coi.SingleOptimizable])
+def test_optenv_is_abstract() -> None:
+    assert _is_abstract_base_class(coi.OptEnv, gym.Env)
 
 
-def test_optgoalenv_is_abstract():
-    assert _is_abstract_base_class(
-        coi.OptGoalEnv,
-        [gym.GoalEnv, coi.SingleOptimizable],
-    )
+def test_optgoalenv_is_abstract() -> None:
+    assert _is_abstract_base_class(coi.OptGoalEnv, gym.GoalEnv)
 
 
-def test_sepoptenv_is_abstract():
-    assert _is_abstract_base_class(
-        coi.SeparableOptEnv,
-        [coi.SeparableEnv, coi.SingleOptimizable],
-    )
+def test_sepoptenv_is_abstract() -> None:
+    assert _is_abstract_base_class(coi.SeparableOptEnv, coi.SeparableEnv)
 
 
-def test_sepoptgoalenv_is_abstract():
-    assert _is_abstract_base_class(
-        coi.SeparableOptGoalEnv,
-        [coi.SeparableGoalEnv, coi.SingleOptimizable],
-    )
+def test_sepoptgoalenv_is_abstract() -> None:
+    assert _is_abstract_base_class(coi.SeparableOptGoalEnv, coi.SeparableGoalEnv)
 
 
-def test_env():
+def test_env() -> None:
     _assert_env_subclass(ConcreteEnv, [gym.Env])
 
 
-def test_optenv():
+def test_optenv() -> None:
     _assert_env_subclass(
         ConcreteOptEnv,
         [gym.Env, coi.SingleOptimizable, coi.OptEnv],
     )
 
 
-def test_goalenv():
+def test_goalenv() -> None:
     _assert_env_subclass(ConcreteGoalEnv, [gym.Env, gym.GoalEnv])
 
 
-def test_optgoalenv():
+def test_optgoalenv() -> None:
     _assert_env_subclass(
         ConcreteOptGoalEnv,
         [gym.Env, gym.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
     )
 
 
-def test_sepenv():
+def test_sepenv() -> None:
     _assert_env_subclass(
         ConcreteSeparableEnv,
         [gym.Env, coi.SeparableEnv],
     )
 
 
-def test_sepoptenv():
+def test_sepoptenv() -> None:
     _assert_env_subclass(
         ConcreteSeparableOptEnv,
         [
@@ -135,7 +126,7 @@ def test_sepoptenv():
     )
 
 
-def test_sepgoalenv():
+def test_sepgoalenv() -> None:
     # SeparableGoalEnv is not a SeparableEnv. Their compute_reward() methods
     # are semantically different.
     _assert_env_subclass(
@@ -144,7 +135,7 @@ def test_sepgoalenv():
     )
 
 
-def test_sepoptgoalenv():
+def test_sepoptgoalenv() -> None:
     # SeparableOptGoalEnv is not a SeparableEnv. Their compute_reward() methods
     # are semantically different.
     _assert_env_subclass(

@@ -3,11 +3,15 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
-from typing import Any
+import typing as t
 
 import gym
+import numpy as np
 
 from ._optenv import SingleOptimizable
+
+InfoDict = t.Dict[str, t.Any]
+GoalObs = t.Dict[str, np.ndarray]  # Use t.TypedDict once we require Python 3.7.
 
 
 class SeparableEnv(gym.Env):
@@ -32,14 +36,14 @@ class SeparableEnv(gym.Env):
     internal state of the environment.
     """
 
-    def step(self, action):
-        info = {}
+    def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, InfoDict]:
+        info: InfoDict = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(obs, None, info)
         done = self.compute_done(obs, reward, info)
         return obs, reward, done, info
 
-    def compute_observation(self, action, info):
+    def compute_observation(self, action: np.ndarray, info: InfoDict) -> np.ndarray:
         """Compute the next observation if `action` is taken.
 
         This should encapsulate all state transitions of the environment. This
@@ -57,7 +61,7 @@ class SeparableEnv(gym.Env):
         """
         raise NotImplementedError()
 
-    def compute_reward(self, obs, goal, info):
+    def compute_reward(self, obs: np.ndarray, goal: None, info: InfoDict) -> float:
         """Compute the next observation if `action` is taken.
 
         This externalizes the reward function. In this regard, it is similar to
@@ -83,7 +87,7 @@ class SeparableEnv(gym.Env):
         """
         raise NotImplementedError()
 
-    def compute_done(self, obs, reward, info):
+    def compute_done(self, obs: np.ndarray, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
         This externalizes the determination of the end of episode. This
@@ -116,7 +120,7 @@ class SeparableOptEnv(SeparableEnv, SingleOptimizable):
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> Any:
+    def __subclasshook__(cls, other: type) -> t.Any:
         if cls is SeparableOptEnv:
             bases = other.__mro__
             return SeparableEnv in bases and SingleOptimizable in bases
@@ -143,8 +147,8 @@ class SeparableGoalEnv(gym.GoalEnv):
     internal state of the environment.
     """
 
-    def step(self, action):
-        info = {}
+    def step(self, action: np.ndarray) -> t.Tuple[GoalObs, float, bool, InfoDict]:
+        info: InfoDict = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(
             obs["achieved_goal"],
@@ -154,7 +158,7 @@ class SeparableGoalEnv(gym.GoalEnv):
         done = self.compute_done(obs, reward, info)
         return obs, reward, done, info
 
-    def compute_observation(self, action, info):
+    def compute_observation(self, action: np.ndarray, info: InfoDict) -> GoalObs:
         """Compute the next observation if `action` is taken.
 
         This should encapsulate all state transitions of the environment. This
@@ -172,7 +176,7 @@ class SeparableGoalEnv(gym.GoalEnv):
         """
         raise NotImplementedError()
 
-    def compute_done(self, obs, reward, info):
+    def compute_done(self, obs: GoalObs, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
         This externalizes the determination of the end of episode. This
@@ -205,7 +209,7 @@ class SeparableOptGoalEnv(SeparableGoalEnv, SingleOptimizable):
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> Any:
+    def __subclasshook__(cls, other: type) -> t.Any:
         if cls is SeparableOptGoalEnv:
             bases = other.__mro__
             return SeparableGoalEnv in bases and SingleOptimizable in bases

@@ -13,6 +13,7 @@ from typing import (
     Mapping,
     NamedTuple,
     Optional,
+    Sequence,
     Tuple,
 )
 
@@ -118,7 +119,7 @@ class Config:
         help: Optional[str] = None,
         type: Optional[Callable[[str], Any]] = None,
         range: Optional[Tuple[Any, Any]] = None,
-        choices: Optional[List[Any]] = None,
+        choices: Optional[Sequence[Any]] = None,
         default: Optional[Any] = None,
     ) -> "Config":
         """Add a new config field.

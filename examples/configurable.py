@@ -2,6 +2,7 @@
 """An example implementation of the `OptEnv` interface."""
 
 import sys
+from types import SimpleNamespace
 import typing as t
 
 import gym
@@ -75,9 +76,9 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         max_distance = self._distance(self.optimization_space.high)
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
-        self.figure = None
+        self.figure: t.Optional[Figure] = None
 
-    def get_config(self):
+    def get_config(self) -> coi.Config:
         (dim,) = self.pos.shape
         box_width = self.optimization_space.high[0]
         config = coi.Config()
@@ -88,7 +89,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         config.add("box_width", box_width, type=float, range=(0.0, float("inf")))
         return config
 
-    def apply_config(self, values):
+    def apply_config(self, values: SimpleNamespace) -> None:
         self.norm = values.norm
         self.seed(values.seed)
         self.dangling = values.enable_dangling
@@ -102,11 +103,11 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
 
-    def reset(self):
+    def reset(self) -> np.ndarray:
         self.pos = self.optimization_space.sample()
         return self.pos.copy()
 
-    def step(self, action):
+    def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
         self.pos += action
         reward = -self._distance()
         reward = max(reward, self.reward_range[0])
@@ -117,14 +118,14 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
             self.objective *= 0.95
         return self.pos.copy(), reward, done, info
 
-    def get_initial_params(self):
+    def get_initial_params(self) -> np.ndarray:
         return self.reset()
 
-    def compute_single_objective(self, params):
+    def compute_single_objective(self, params: np.ndarray) -> float:
         self.pos = params
         return self._distance()
 
-    def render(self, mode="human"):
+    def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
         if mode in ("matplotlib-figures", "human"):
             if self.figure is None:
                 self.figure = Figure()
@@ -141,16 +142,16 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
             return [self.figure]
         if mode == "ansi":
             return str(self.pos)
-        return super().render(mode)
+        return super().render(mode, **kwargs)
 
-    def seed(self, seed=None):
+    def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
         return [
             *self.observation_space.seed(seed),
             *self.action_space.seed(seed),
             *self.optimization_space.seed(seed),
         ]
 
-    def _distance(self, pos: t.Optional[np.ndarray] = None):
+    def _distance(self, pos: t.Optional[np.ndarray] = None) -> float:
         return np.linalg.norm(pos if pos is not None else self.pos, ord=self.norm)
 
 
@@ -166,19 +167,19 @@ class OptimizerThread(QThread):
 
     step = pyqtSignal()
 
-    def __init__(self, env: coi.SingleOptimizable):
+    def __init__(self, env: coi.SingleOptimizable) -> None:
         super().__init__()
         self.env = env
 
-    def run(self):
+    def run(self) -> None:
         """Thread main function."""
 
-        def constraint(params):
+        def constraint(params: np.ndarray) -> float:
             space = self.env.optimization_space
             width = space.high - space.low
             return np.linalg.norm(2 * params / width, ord=np.inf)
 
-        def func(params):
+        def func(params: np.ndarray) -> float:
             loss = self.env.compute_single_objective(params)
             QThread.msleep(100)  # Simulate machine latency.
             self.step.emit()
@@ -202,12 +203,12 @@ class ConfigureDialog(QDialog):
         parent: The parent widget to attach to.
     """
 
-    def __init__(self, target: coi.Configurable, parent=None):
+    def __init__(
+        self, target: coi.Configurable, parent: t.Optional[QWidget] = None
+    ) -> None:
         super().__init__(parent)
-        try:
-            name = target.spec.id
-        except AttributeError:
-            name = type(target).__name__
+        spec = getattr(target, "spec", None)
+        name = getattr(spec, "id", type(target).__name__)
         self.setWindowTitle(f"Configure {name} ...")
         self.target = target
         self.config = self.target.get_config()
@@ -232,20 +233,20 @@ class ConfigureDialog(QDialog):
         controls.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
         main_layout.addWidget(controls)
 
-    def on_ok_clicked(self):
+    def on_ok_clicked(self) -> None:
         """Apply the configs and close the window."""
         values = self.config.validate_all(self.current_values)
         print(values)
         self.target.apply_config(values)
         self.accept()
 
-    def on_apply_clicked(self):
+    def on_apply_clicked(self) -> None:
         """Apply the configs."""
         values = self.config.validate_all(self.current_values)
         print(values)
         self.target.apply_config(values)
 
-    def on_cancel_clicked(self):
+    def on_cancel_clicked(self) -> None:
         """Discard any changes and close the window."""
         self.reject()
 
@@ -295,10 +296,10 @@ class ConfigureDialog(QDialog):
         self,
         field: coi.Config.Field,
         get: t.Optional[t.Callable[[], str]] = None,
-    ):
+    ) -> QWidget:
         """Return a callback that can be used to update a field's value."""
 
-        def _setter(value=None):
+        def _setter(value: t.Any = None) -> None:
             if get is not None:
                 value = get()
             if isinstance(field.value, (bool, np.bool_)):
@@ -313,7 +314,7 @@ class ConfigureDialog(QDialog):
 class MainWindow(QMainWindow):
     """Main window of the Qt application."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.env = coi.make("ConfParabola-v0")
         self.worker = OptimizerThread(self.env)
@@ -339,27 +340,27 @@ class MainWindow(QMainWindow):
         controls_layout.addWidget(self.configure_env)
         self.configure_env.clicked.connect(self.on_configure)
 
-    def on_configure(self):
+    def on_configure(self) -> None:
         """Open the dialog to configure the environment."""
         dialog = ConfigureDialog(self.env, parent=self)
         dialog.open()
 
-    def on_launch(self):
+    def on_launch(self) -> None:
         """Disable the GUI and start optimization."""
         self.launch.setEnabled(False)
         self.worker.start()
 
-    def on_opt_step(self):
+    def on_opt_step(self) -> None:
         """Update the plots."""
         self.env.render("matplotlib-figures")
         self.canvas.draw()
 
-    def on_opt_finished(self):
+    def on_opt_finished(self) -> None:
         """Re-enable the GUI."""
         self.launch.setEnabled(True)
 
 
-def main(argv):
+def main(argv: t.List[str]) -> int:
     """Main function. You should pass in `sys.argv`."""
     app = QApplication(argv)
     window = MainWindow()

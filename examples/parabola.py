@@ -9,7 +9,8 @@ import gym
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot
-from stable_baselines3 import TD3
+from stable_baselines3.common.base_class import BaseAlgorithm
+from stable_baselines3.td3 import TD3
 
 from cernml import coi
 
@@ -38,11 +39,11 @@ class Parabola(coi.OptEnv):
     objective = -0.05
     max_objective = -0.003
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.pos = np.zeros(2)
         self._train = True
 
-    def train(self, train=True):
+    def train(self, train: bool = True) -> None:
         """Turn the environment's training mode on or off.
 
         If the training mode is on, reward dangling is active and each
@@ -51,12 +52,12 @@ class Parabola(coi.OptEnv):
         """
         self._train = train
 
-    def reset(self):
+    def reset(self) -> np.ndarray:
         # Don't use the full observation space for initial states.
         self.pos = self.action_space.sample()
         return self.pos.copy()
 
-    def step(self, action):
+    def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
         self.pos += action
         reward = -sum(self.pos ** 2)
         reward = max(reward, self.reward_range[0])
@@ -67,23 +68,23 @@ class Parabola(coi.OptEnv):
             self.objective *= 0.95
         return self.pos.copy(), reward, done, info
 
-    def get_initial_params(self):
+    def get_initial_params(self) -> np.ndarray:
         return self.reset()
 
-    def compute_single_objective(self, params):
+    def compute_single_objective(self, params: np.ndarray) -> float:
         self.pos = params
         loss = sum(self.pos ** 2)
         return loss
 
-    def render(self, mode="human"):
+    def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
         if mode in ("human", "qtembed"):
             pyplot.scatter(*self.pos)
             return None
         if mode == "qtembed":
             return str(self.pos)
-        return super().render(mode)
+        return super().render(mode, **kwargs)
 
-    def seed(self, seed=None):
+    def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
         return [
             *self.observation_space.seed(seed),
             *self.action_space.seed(seed),
@@ -94,7 +95,7 @@ class Parabola(coi.OptEnv):
 coi.register("Parabola-v0", entry_point=Parabola, max_episode_steps=10)
 
 
-def run_episode(agent, env: coi.OptEnv) -> bool:
+def run_episode(agent: BaseAlgorithm, env: coi.OptEnv) -> bool:
     """Run one episode of the given environment and return the success flag."""
     obs = env.reset()
     done = False
@@ -104,7 +105,7 @@ def run_episode(agent, env: coi.OptEnv) -> bool:
     return info.get("success", False)
 
 
-def get_parser():
+def get_parser() -> argparse.ArgumentParser:
     """Return an `ArgumentParser` instance."""
     description, _, epilog = __doc__.partition("\n\n")
     parser = argparse.ArgumentParser(
@@ -143,9 +144,9 @@ def main_opt(env: coi.OptEnv, num_runs: int) -> t.List[bool]:
     ]
 
 
-def main(args):
+def main(argv: t.List[str]) -> None:
     """Main function. Should be passed `sys.argv[1:]`."""
-    args = get_parser().parse_args(args)
+    args = get_parser().parse_args(argv)
     env = coi.make("Parabola-v0")
     coi.check_env(env)
     successes = dict(rl=main_rl, opt=main_opt)[args.mode](env, 100)
