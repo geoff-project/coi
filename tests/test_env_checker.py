@@ -68,7 +68,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
         reward: float,
         info: t.Dict[str, t.Any],
     ) -> bool:
-        success = bool(obs["observation"] < 0.05)
+        success = obs["observation"] < 0.05
         done = success or obs not in self.observation_space
         if done:
             info["success"] = success

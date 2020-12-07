@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """Provides the function `check_env()`."""
 
+import numbers
 import warnings
-from typing import List, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 import gym
 import numpy
@@ -28,7 +29,7 @@ def check_env(env: OptEnv, warn: bool = True) -> None:
     assert_no_nan(env)
     assert_machine(env)
     if warn:
-        if isinstance(env.observation_space, gym.spaces.Box):
+        if is_box(env.observation_space):
             warn_observation_space(env.observation_space)
         elif isinstance(env.observation_space, gym.spaces.Dict):
             warn_observation_space(env.observation_space["observation"])
@@ -62,21 +63,17 @@ def assert_observation_space(env: gym.Env) -> None:
             f"GoalEnv observation space must have keys {expected_keys}, "
             f"not {actual_keys}"
         )
-        assert isinstance(space["observation"], gym.spaces.Box), (
+        assert is_box(space["observation"]), (
             f'observation space {space["observation"]} must be a ' "gym.spaces.Box"
         )
     else:
-        assert isinstance(
-            space, gym.spaces.Box
-        ), f"observation space {space} must be a gym.spaces.Box"
+        assert is_box(space), f"observation space {space} must be a gym.spaces.Box"
 
 
 def assert_action_space(env: gym.Env) -> None:
     """Check that the given space has symmetric and normalized limits."""
     space = env.action_space
-    assert isinstance(
-        space, gym.spaces.Box
-    ), f"action space {space} must be a gym.spaces.Box"
+    assert is_box(space), f"action space {space} must be a gym.spaces.Box"
     assert numpy.all(
         abs(space.low) == abs(space.high)
     ), "action space must have symmetric limits"
@@ -87,12 +84,8 @@ def assert_optimization_space(env: OptEnv) -> None:
     """Check that action and optimization space are boxes of the same shape."""
     act_space = env.action_space
     opt_space = env.optimization_space
-    assert isinstance(
-        opt_space, gym.spaces.Box
-    ), f"optimization space {opt_space} must be a gym.spaces.Box"
-    assert isinstance(
-        act_space, gym.spaces.Box
-    ), f"action space {act_space} must be a gym.spaces.Box"
+    assert is_box(opt_space), f"optimization space {opt_space} must be a gym.spaces.Box"
+    assert is_box(act_space), f"action space {act_space} must be a gym.spaces.Box"
     assert act_space.shape == opt_space.shape, (
         f"action {act_space.shape} and optimization {opt_space.shape} space "
         "have the same shape"
@@ -135,12 +128,10 @@ def assert_returned_values(env: gym.Env) -> None:
     assert len(data) == 4, "step() must return four values: obs, reward, done, info"
     obs, reward, done, info = data
     _check_obs(obs)
-    assert isinstance(
-        reward, (float, int, numpy.floating, numpy.integer)
-    ), "reward must be a float or integer"
+    assert is_reward(reward), "reward must be a float or integer"
     low, high = env.reward_range
     assert low <= reward <= high, f"reward is out of range [{low}, {high}]: {reward}"
-    assert isinstance(done, bool), f"done signal must be a bool: {done}"
+    assert isinstance(done, (bool, numpy.bool_)), f"done signal must be a bool: {done}"
     assert isinstance(info, dict), f"info must be a dictionary: {info}"
     if isinstance(env, gym.GoalEnv):
         assert reward == env.compute_reward(
@@ -216,3 +207,13 @@ def warn_render_modes(env: gym.Env) -> None:
         warnings.warn(
             'render mode "qtembed" has not been declared in the environment metadata'
         )
+
+
+def is_reward(reward: Any) -> bool:
+    """Return True if the object has the correct type for a reward."""
+    return isinstance(reward, (numbers.Number, numpy.bool_))
+
+
+def is_box(space: gym.Space) -> bool:
+    """Return True if the given space is a Box."""
+    return isinstance(space, gym.spaces.Box)
