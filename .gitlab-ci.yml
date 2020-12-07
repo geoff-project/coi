@@ -36,9 +36,9 @@ test_lint:
   before_script:
    - python -m pip install -e .[lint]
   script:
-   - python -m pylint ${project_dir} || pylint_exit=$?
+   - python -m pylint ${project_dir} tests/*.py || pylint_exit=$?
    - python -m black --check . || black_exit=$?
-   - python -m mypy ${project_dir} || mypy_exit=$?
+   - python -m mypy ${project_dir} examples/ tests/ || mypy_exit=$?
    - if [[ pylint_exit+black_exit+mypy_exit -gt 0 ]]; then false; fi
 
 # A push of the source distribution to the acc-py PyPI, only on git tag.
