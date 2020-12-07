@@ -25,8 +25,8 @@ class Parabola(coi.OptEnv):
     observation_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
     action_space = gym.spaces.Box(-1.0, 1.0, shape=(2,))
     optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
-    reward_range = (-np.sqrt(8.0), 0.0)
-    objective_range = (0.0, np.sqrt(8.0))
+    reward_range = (-8.0, 0.0)
+    objective_range = (0.0, 8.0)
     metadata = {
         "render.modes": ["ansi", "qtembed"],
         "cern.machine": coi.Machine.NoMachine,
@@ -148,7 +148,7 @@ def main(argv: t.List[str]) -> None:
     """Main function. Should be passed `sys.argv[1:]`."""
     args = get_parser().parse_args(argv)
     env = coi.make("Parabola-v0")
-    coi.check_env(env)
+    coi.check(env)
     successes = dict(rl=main_rl, opt=main_opt)[args.mode](env, 100)
     print(f"Success rate: {np.mean(successes):.1%}")
 

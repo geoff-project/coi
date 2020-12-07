@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Test the check_env() function."""
+"""Test the check() function."""
 
 # pylint: disable = missing-class-docstring, missing-function-docstring
 
@@ -9,7 +9,7 @@ import gym
 import numpy as np
 from matplotlib import pyplot
 
-from cernml.coi import Machine, SeparableOptGoalEnv, check_env
+from cernml.coi import Machine, SeparableOptGoalEnv, check
 
 
 class MultiGoalParabola(SeparableOptGoalEnv):
@@ -98,4 +98,4 @@ class MultiGoalParabola(SeparableOptGoalEnv):
 
 
 def test_check_env() -> None:
-    check_env(MultiGoalParabola())
+    check(MultiGoalParabola())

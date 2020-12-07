@@ -60,7 +60,7 @@ from ._configurable import (
     Configurable,
     DuplicateConfig,
 )
-from ._env_checker import check_env
+from ._env_checker import check, check_problem, check_single_optimizable, check_env
 from ._machine import Machine
 from ._optenv import (
     Constraint,

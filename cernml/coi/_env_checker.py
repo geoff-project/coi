@@ -11,29 +11,53 @@ import scipy.optimize
 
 from ._machine import Machine
 from ._optenv import Constraint, OptEnv, SingleOptimizable
+from ._problem import Problem
 from ._sepenv import SeparableEnv
 
 
-def check_env(env: OptEnv, warn: bool = True) -> None:
+def check(env: OptEnv, warn: bool = True) -> None:
     """Check that an environment follows the restricted API laid out here."""
     unwrapped_env = getattr(env, "unwrapped", None)
     assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'
-    assert_inheritance(unwrapped_env)
+    assert isinstance(
+        unwrapped_env, Problem
+    ), f"{type(unwrapped_env)} must inherit from Problem"
+    check_problem(env, warn=warn)
+    if isinstance(unwrapped_env, SingleOptimizable):
+        check_single_optimizable(env, warn=warn)
+    if isinstance(unwrapped_env, gym.Env):
+        check_env(env, warn=warn)
+
+
+def check_problem(problem: Problem, warn: bool = True) -> None:
+    """Check that a problem follows our conventions."""
+    assert_machine(problem)
+    if warn:
+        warn_render_modes(problem)
+
+
+def check_single_optimizable(opt: SingleOptimizable, warn: bool = True) -> None:
+    """Check that an optimizable follows our conventions."""
+    _ = warn  # Flag is currently unused, keep it for forward compatibility.
+    assert_optimization_space(opt)
+    assert_range(opt.objective_range, "objective")
+    assert_constraints(opt.constraints)
+    assert_opt_returned_values(opt)
+
+
+def check_env(env: gym.Env, warn: bool = True) -> None:
+    """Check that an environment follows our conventions."""
+    assert isinstance(env, gym.Env), f"{type(env)} must inherit from gym.Env"
     assert_observation_space(env)
     assert_action_space(env)
-    assert_optimization_space(env)
     assert_range(env.reward_range, "reward")
-    assert_range(env.objective_range, "objective")
-    assert_constraints(env.constraints)
-    assert_returned_values(env)
-    assert_no_nan(env)
-    assert_machine(env)
+    assert_env_returned_values(env)
+    assert_env_no_nan(env)
     if warn:
         if is_box(env.observation_space):
             warn_observation_space(env.observation_space)
         elif isinstance(env.observation_space, gym.spaces.Dict):
             warn_observation_space(env.observation_space["observation"])
-        warn_render_modes(env)
 
 
 def assert_inheritance(env: OptEnv) -> None:
@@ -80,16 +104,17 @@ def assert_action_space(env: gym.Env) -> None:
     assert numpy.any(abs(space.high) <= 1.0), "action space limits must be 1.0 or less"
 
 
-def assert_optimization_space(env: OptEnv) -> None:
+def assert_optimization_space(env: SingleOptimizable) -> None:
     """Check that action and optimization space are boxes of the same shape."""
-    act_space = env.action_space
     opt_space = env.optimization_space
     assert is_box(opt_space), f"optimization space {opt_space} must be a gym.spaces.Box"
-    assert is_box(act_space), f"action space {act_space} must be a gym.spaces.Box"
-    assert act_space.shape == opt_space.shape, (
-        f"action {act_space.shape} and optimization {opt_space.shape} space "
-        "have the same shape"
-    )
+    if isinstance(env, gym.Env):
+        act_space = env.action_space
+        assert is_box(act_space), f"action space {act_space} must be a gym.spaces.Box"
+        assert act_space.shape == opt_space.shape, (
+            f"action {act_space.shape} and optimization {opt_space.shape} space "
+            "have the same shape"
+        )
 
 
 def assert_range(reward_range: Tuple[float, float], name: str) -> None:
@@ -112,8 +137,19 @@ def assert_constraints(constraints: List[Constraint]) -> None:
         )
 
 
-def assert_returned_values(env: gym.Env) -> None:
-    """Check at `env.rest()` and `env.step()` return the right values."""
+def assert_opt_returned_values(opt: SingleOptimizable) -> None:
+    """Check that the `SingleOptimizable` methods return the right values."""
+    params = opt.get_initial_params()
+    assert params in opt.optimization_space, "parameters outside of space"
+    assert isinstance(params, numpy.ndarray), "parameters must be NumPy array"
+    loss = opt.compute_single_objective(opt.optimization_space.sample())
+    assert is_reward(loss), "loss must be a float or integer"
+    low, high = opt.objective_range
+    assert low <= loss <= high, f"loss is out of range [{low}, {high}]: {loss}"
+
+
+def assert_env_returned_values(env: gym.Env) -> None:
+    """Check that `env.rest()` and `env.step()` return the right values."""
 
     def _check_obs(obs: numpy.ndarray) -> None:
         assert obs in env.observation_space, "observation outside of space"
@@ -143,7 +179,7 @@ def assert_returned_values(env: gym.Env) -> None:
         assert reward == env.compute_reward(obs, None, info), "reward does not match"
 
 
-def assert_no_nan(env: gym.Env) -> None:
+def assert_env_no_nan(env: gym.Env) -> None:
     """Check that the environment never produces infinity or NaN."""
 
     def _check_val(val: Union[float, numpy.ndarray, numpy.floating]) -> bool:
@@ -160,7 +196,7 @@ def assert_no_nan(env: gym.Env) -> None:
         assert _check_val(reward), "reward turned NaN or inf"
 
 
-def assert_machine(env: gym.Env) -> None:
+def assert_machine(env: Problem) -> None:
     """Check that the environment defines the machine it pertains to."""
     machine = env.metadata.get("cern.machine")
     assert machine is not None, "missing key cern.machine in the environment metadata"
@@ -194,7 +230,7 @@ def warn_observation_space(space: gym.spaces.Box) -> None:
         )
 
 
-def warn_render_modes(env: gym.Env) -> None:
+def warn_render_modes(env: Problem) -> None:
     """Check that the environment defines the required render modes."""
     render_modes = env.metadata.get("render.modes")
     if render_modes is None:
