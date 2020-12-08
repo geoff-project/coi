@@ -14,9 +14,12 @@ from .._problem import Problem
 from ..utils import iter_matplotlib_figures
 
 
-def check_problem(problem: Problem, warn: bool = True, headless: bool = True) -> None:
+def check_problem(
+    problem: Problem, *, warn: bool = True, headless: bool = True
+) -> None:
     """Check that a problem follows our conventions."""
     assert_machine(problem)
+    assert_no_undeclared_render(problem, warn=warn, headless=headless)
     assert_execute_render(problem, headless=headless)
     if warn:
         warn_render_modes(problem)
@@ -39,6 +42,35 @@ def assert_render_modes(problem: Problem) -> None:
     assert isinstance(render_modes, t.Collection), "render.modes must be a collection"
     for mode in render_modes:
         assert isinstance(mode, str), f"render mode must be string: {mode!r}"
+
+
+def assert_no_undeclared_render(
+    problem: Problem, *, warn: bool = True, headless: bool = True
+) -> None:
+    """Check for render modes that are implemented but not declared."""
+    # pylint: disable = broad-except
+    # pylint: disable = unsubscriptable-object
+    blocked_modes = set(_get_blocked_modes(headless=headless))
+    render_modes = set(t.cast(t.Collection[str], problem.metadata["render.modes"]))
+    known_modes = {"ansi", "human", "matplotlib_figures", "rgb_array"}
+    modes_to_check = known_modes - blocked_modes - render_modes
+    for mode in modes_to_check:
+        try:
+            problem.render(mode)
+        except (NotImplementedError, ValueError):
+            pass
+        except Exception as exc:
+            if warn:
+                warnings.warn(
+                    f"calling render({mode!r}) should raise "
+                    f"NotImplementedError or ValueError, but raises "
+                    f"instead: {exc!r}"
+                )
+        else:
+            raise AssertionError(
+                f"calling render({mode!r}) with undeclared render "
+                f"mode doesn't raise NotImplementedError"
+            )
 
 
 def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
@@ -83,13 +115,13 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
         "ansi": _assert_ansi,
         "matplotlib_figures": _assert_matplotlib_figures,
     }
-    blocked_modes = ["human"] if headless else []
+    blocked_modes = _get_blocked_modes(headless=headless)
     render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
     for mode in render_modes:
         if mode in blocked_modes:
             continue
         try:
-            result = problem.render(mode=mode)
+            result = problem.render(mode)
         except NotImplementedError as exc:
             raise AssertionError(
                 f"render mode {mode!r} declared but not implemented"
@@ -128,3 +160,8 @@ def warn_render_modes(problem: Problem) -> None:
             "`matplotlib.figure.Figure()` objects, but not display "
             "in any way. This will be handled by the GUI instead."
         )
+
+
+def _get_blocked_modes(*, headless: bool = True) -> t.Sequence[str]:
+    """Return a list of render modes that should _not_ be executed."""
+    return ("human",) if headless else ()
