@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 
 from .._machine import Machine
 from .._problem import Problem
+from ..utils import iter_matplotlib_figures
 
 
 def check_problem(problem: Problem, warn: bool = True, headless: bool = True) -> None:
@@ -43,7 +44,7 @@ def assert_render_modes(problem: Problem) -> None:
 def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
     """Check that each declared render mode can be executed."""
 
-    def check_rgb_array(result: t.Any) -> None:
+    def _assert_rgb_array(result: t.Any) -> None:
         assert isinstance(
             result, np.ndarray
         ), f"render('rgb_array') should return a NumPy array, not {result!r}"
@@ -54,19 +55,20 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
             num_colors == 3
         ), f"render('rgb_array') array should have shape (x, y, 3), not (x, y, {num_colors})"
 
-    def check_human(result: t.Any) -> None:
+    def _assert_human(result: t.Any) -> None:
         assert result is None, f"render('rgb_array') should return None, not {result!r}"
 
-    def check_ansi(result: t.Any) -> None:
+    def _assert_ansi(result: t.Any) -> None:
         assert isinstance(
             result, (str, io.StringIO)
         ), f"render('ansi') should return str or StringIO, not {result!r}"
 
-    def check_matplotlib_figures(result: t.Any) -> None:
+    def _assert_matplotlib_figures(result: t.Any) -> None:
         assert isinstance(
             result, t.Collection
         ), f"render('matplotlib_figures') should return a collection, not {result!r}"
-        for figure in result:
+        for title, figure in iter_matplotlib_figures(result):
+            assert isinstance(title, str), f"not a string: {title!r}"
             assert isinstance(figure, Figure), f"not a figure: {figure}"
             assert not hasattr(figure, "number"), (
                 "figures returned by render('matplotlib_figures') "
@@ -76,10 +78,10 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
 
     # pylint: disable = unsubscriptable-object
     additional_checks = {
-        "rgb_array": check_rgb_array,
-        "human": check_human,
-        "ansi": check_ansi,
-        "matplotlib_figures": check_matplotlib_figures,
+        "rgb_array": _assert_rgb_array,
+        "human": _assert_human,
+        "ansi": _assert_ansi,
+        "matplotlib_figures": _assert_matplotlib_figures,
     }
     blocked_modes = ["human"] if headless else []
     render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
