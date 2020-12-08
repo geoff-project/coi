@@ -8,6 +8,8 @@ import typing as t
 import gym
 import numpy as np
 import scipy.optimize
+from matplotlib import pyplot
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -49,7 +51,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
 
     # Domain declarations.
     metadata = {
-        "render.modes": ["ansi", "matplotlib-figures"],
+        "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NoMachine,
     }
 
@@ -126,23 +128,36 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         return self._distance()
 
     def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
-        if mode in ("matplotlib-figures", "human"):
+        if mode == "human":
+            _, axes = pyplot.subplots()
+            self._update_axes(axes)
+            pyplot.show()
+            return None
+        if mode == "matplotlib_figures":
             if self.figure is None:
                 self.figure = Figure()
                 axes = self.figure.subplots()
             else:
-                (axes,) = self.figure.axes
-            axes.cla()
-            axes.plot(self.pos, "o")
-            axes.plot(self.observation_space.low, "k--")
-            axes.plot(self.observation_space.high, "k--")
-            axes.plot(0.0 * self.observation_space.high, "k--")
-            axes.set_xlabel("Axes")
-            axes.set_ylabel("Position")
+                [axes] = self.figure.axes
+            self._update_axes(axes)
             return [self.figure]
         if mode == "ansi":
             return str(self.pos)
         return super().render(mode, **kwargs)
+
+    def _update_axes(self, axes: Axes) -> None:
+        """Plot this environment onto the given axes.
+
+        This method allows us to implement plotting once for both the
+        "human" and the "matplotlib_figures" render mode.
+        """
+        axes.cla()
+        axes.plot(self.pos, "o")
+        axes.plot(self.observation_space.low, "k--")
+        axes.plot(self.observation_space.high, "k--")
+        axes.plot(0.0 * self.observation_space.high, "k--")
+        axes.set_xlabel("Axes")
+        axes.set_ylabel("Position")
 
     def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
         return [
@@ -321,7 +336,7 @@ class MainWindow(QMainWindow):
         self.worker.step.connect(self.on_opt_step)
         self.worker.finished.connect(self.on_opt_finished)
         self.env.reset()
-        [figure] = self.env.render(mode="matplotlib-figures")
+        [figure] = self.env.render(mode="matplotlib_figures")
         window = QWidget()
         self.setCentralWidget(window)
         main_layout = QVBoxLayout()
@@ -352,7 +367,7 @@ class MainWindow(QMainWindow):
 
     def on_opt_step(self) -> None:
         """Update the plots."""
-        self.env.render("matplotlib-figures")
+        self.env.render("matplotlib_figures")
         self.canvas.draw()
 
     def on_opt_finished(self) -> None:

@@ -7,6 +7,7 @@ import typing as t
 
 import gym
 import numpy as np
+import matplotlib.figure
 from matplotlib import pyplot
 
 from cernml.coi import Machine, SeparableOptGoalEnv, check
@@ -23,7 +24,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
     reward_range = (-np.sqrt(8.0), 0.0)
     objective_range = (0.0, np.sqrt(8.0))
     metadata = {
-        "render.modes": ["ansi", "human", "qtembed"],
+        "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": Machine.NoMachine,
     }
 
@@ -82,10 +83,16 @@ class MultiGoalParabola(SeparableOptGoalEnv):
         return self.distance
 
     def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
-        if mode in ("human", "qtembed"):
+        if mode == "human":
+            pyplot.figure()
             xdata, ydata = zip(self.pos, self.goal)
             pyplot.scatter(xdata, ydata, c=[0, 1])
             return None
+        if mode == "matplotlib_figures":
+            xdata, ydata = zip(self.pos, self.goal)
+            figure = matplotlib.figure.Figure()
+            figure.subplots().scatter(xdata, ydata, c=[0, 1])
+            return [figure]
         if mode == "ansi":
             return f"{self.pos} -> {self.goal}"
         return super().render(mode, **kwargs)

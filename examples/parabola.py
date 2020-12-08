@@ -9,6 +9,7 @@ import gym
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot
+from matplotlib.figure import Figure
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.td3 import TD3
 
@@ -28,7 +29,7 @@ class Parabola(coi.OptEnv):
     reward_range = (-8.0, 0.0)
     objective_range = (0.0, 8.0)
     metadata = {
-        "render.modes": ["ansi", "qtembed"],
+        "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NoMachine,
     }
 
@@ -42,6 +43,7 @@ class Parabola(coi.OptEnv):
     def __init__(self) -> None:
         self.pos = np.zeros(2)
         self._train = True
+        self.figure: t.Optional[Figure] = None
 
     def train(self, train: bool = True) -> None:
         """Turn the environment's training mode on or off.
@@ -77,10 +79,20 @@ class Parabola(coi.OptEnv):
         return loss
 
     def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
-        if mode in ("human", "qtembed"):
+        if mode == "human":
+            pyplot.figure()
             pyplot.scatter(*self.pos)
+            pyplot.show()
             return None
-        if mode == "qtembed":
+        if mode == "matplotlib_figures":
+            if self.figure is None:
+                self.figure = Figure()
+                axes = self.figure.subplots()
+            else:
+                [axes] = self.figure.axes
+            axes.scatter(*self.pos)
+            return [self.figure]
+        if mode == "ansi":
             return str(self.pos)
         return super().render(mode, **kwargs)
 
