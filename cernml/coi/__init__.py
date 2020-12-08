@@ -54,6 +54,7 @@ additional requirements:
 7. The environment must never diverge to NaN or infinity.
 """
 
+from . import utils
 from ._configurable import (
     BadConfig,
     Config,
