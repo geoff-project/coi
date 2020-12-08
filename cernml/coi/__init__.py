@@ -54,14 +54,12 @@ additional requirements:
 7. The environment must never diverge to NaN or infinity.
 """
 
-from . import utils
 from ._configurable import (
     BadConfig,
     Config,
     Configurable,
     DuplicateConfig,
 )
-from ._env_checker import check, check_problem, check_single_optimizable, check_env
 from ._machine import Machine
 from ._optenv import (
     Constraint,
@@ -82,5 +80,6 @@ from ._sepenv import (
     SeparableOptEnv,
     SeparableOptGoalEnv,
 )
+from .checkers import check
 
 __version__ = "0.3.3"
