@@ -88,7 +88,12 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
     for mode in render_modes:
         if mode in blocked_modes:
             continue
-        result = problem.render(mode=mode)
+        try:
+            result = problem.render(mode=mode)
+        except NotImplementedError as exc:
+            raise AssertionError(
+                f"render mode {mode!r} declared but not implemented"
+            ) from exc
         additional_check = additional_checks.get(mode)
         if additional_check:
             additional_check(result)
