@@ -8,6 +8,8 @@ import typing as t
 import gym
 import numpy as np
 import scipy.optimize
+from matplotlib import pyplot
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas,
@@ -49,7 +51,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
 
     # Domain declarations.
     metadata = {
-        "render.modes": ["ansi", "matplotlib-figures"],
+        "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NoMachine,
     }
 
@@ -65,7 +67,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         norm: int = 2,
         dangling: bool = True,
         box_width: float = 2.0,
-        dim: int = 2,
+        dim: int = 5,
     ):
         self.norm = norm
         self.dangling = dangling
@@ -126,23 +128,36 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         return self._distance()
 
     def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
-        if mode in ("matplotlib-figures", "human"):
+        if mode == "human":
+            _, axes = pyplot.subplots()
+            self._update_axes(axes)
+            pyplot.show()
+            return None
+        if mode == "matplotlib_figures":
             if self.figure is None:
                 self.figure = Figure()
                 axes = self.figure.subplots()
             else:
-                (axes,) = self.figure.axes
-            axes.cla()
-            axes.plot(self.pos, "o")
-            axes.plot(self.observation_space.low, "k--")
-            axes.plot(self.observation_space.high, "k--")
-            axes.plot(0.0 * self.observation_space.high, "k--")
-            axes.set_xlabel("Axes")
-            axes.set_ylabel("Position")
+                [axes] = self.figure.axes
+            self._update_axes(axes)
             return [self.figure]
         if mode == "ansi":
             return str(self.pos)
         return super().render(mode, **kwargs)
+
+    def _update_axes(self, axes: Axes) -> None:
+        """Plot this environment onto the given axes.
+
+        This method allows us to implement plotting once for both the
+        "human" and the "matplotlib_figures" render mode.
+        """
+        axes.cla()
+        axes.plot(self.pos, "o")
+        axes.plot(self.observation_space.low, "k--")
+        axes.plot(self.observation_space.high, "k--")
+        axes.plot(0.0 * self.observation_space.high, "k--")
+        axes.set_xlabel("Axes")
+        axes.set_ylabel("Position")
 
     def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
         return [
@@ -316,29 +331,29 @@ class MainWindow(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
+
         self.env = coi.make("ConfParabola-v0")
         self.worker = OptimizerThread(self.env)
         self.worker.step.connect(self.on_opt_step)
         self.worker.finished.connect(self.on_opt_finished)
         self.env.reset()
-        [figure] = self.env.render(mode="matplotlib-figures")
-        window = QWidget()
-        self.setCentralWidget(window)
-        main_layout = QVBoxLayout()
-        window.setLayout(main_layout)
+
+        [figure] = self.env.render(mode="matplotlib_figures")
         self.canvas = FigureCanvas(figure)
-        self.addToolBar(NavigationToolbar(self.canvas, parent=self))
-        main_layout.addWidget(self.canvas)
-        controls = QWidget()
-        main_layout.addWidget(controls)
-        controls_layout = QHBoxLayout()
-        controls.setLayout(controls_layout)
         self.launch = QPushButton("Launch")
-        controls_layout.addWidget(self.launch)
         self.launch.clicked.connect(self.on_launch)
         self.configure_env = QPushButton("Configure…")
-        controls_layout.addWidget(self.configure_env)
         self.configure_env.clicked.connect(self.on_configure)
+
+        window = QWidget()
+        self.setCentralWidget(window)
+        main_layout = QVBoxLayout(window)
+        buttons_layout = QHBoxLayout()
+        main_layout.addWidget(self.canvas)
+        main_layout.addLayout(buttons_layout)
+        buttons_layout.addWidget(self.launch)
+        buttons_layout.addWidget(self.configure_env)
+        self.addToolBar(NavigationToolbar(self.canvas, parent=self))
 
     def on_configure(self) -> None:
         """Open the dialog to configure the environment."""
@@ -348,16 +363,18 @@ class MainWindow(QMainWindow):
     def on_launch(self) -> None:
         """Disable the GUI and start optimization."""
         self.launch.setEnabled(False)
+        self.configure_env.setEnabled(False)
         self.worker.start()
 
     def on_opt_step(self) -> None:
         """Update the plots."""
-        self.env.render("matplotlib-figures")
+        self.env.render("matplotlib_figures")
         self.canvas.draw()
 
     def on_opt_finished(self) -> None:
         """Re-enable the GUI."""
         self.launch.setEnabled(True)
+        self.configure_env.setEnabled(True)
 
 
 def main(argv: t.List[str]) -> int:

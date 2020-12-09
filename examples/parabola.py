@@ -9,6 +9,7 @@ import gym
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot
+from matplotlib.figure import Figure
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.td3 import TD3
 
@@ -25,10 +26,10 @@ class Parabola(coi.OptEnv):
     observation_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
     action_space = gym.spaces.Box(-1.0, 1.0, shape=(2,))
     optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
-    reward_range = (-np.sqrt(8.0), 0.0)
-    objective_range = (0.0, np.sqrt(8.0))
+    reward_range = (-8.0, 0.0)
+    objective_range = (0.0, 8.0)
     metadata = {
-        "render.modes": ["ansi", "qtembed"],
+        "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NoMachine,
     }
 
@@ -42,6 +43,7 @@ class Parabola(coi.OptEnv):
     def __init__(self) -> None:
         self.pos = np.zeros(2)
         self._train = True
+        self.figure: t.Optional[Figure] = None
 
     def train(self, train: bool = True) -> None:
         """Turn the environment's training mode on or off.
@@ -77,10 +79,20 @@ class Parabola(coi.OptEnv):
         return loss
 
     def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
-        if mode in ("human", "qtembed"):
+        if mode == "human":
+            pyplot.figure()
             pyplot.scatter(*self.pos)
+            pyplot.show()
             return None
-        if mode == "qtembed":
+        if mode == "matplotlib_figures":
+            if self.figure is None:
+                self.figure = Figure()
+                axes = self.figure.subplots()
+            else:
+                [axes] = self.figure.axes
+            axes.scatter(*self.pos)
+            return [self.figure]
+        if mode == "ansi":
             return str(self.pos)
         return super().render(mode, **kwargs)
 
@@ -148,7 +160,7 @@ def main(argv: t.List[str]) -> None:
     """Main function. Should be passed `sys.argv[1:]`."""
     args = get_parser().parse_args(argv)
     env = coi.make("Parabola-v0")
-    coi.check_env(env)
+    coi.check(env)
     successes = dict(rl=main_rl, opt=main_opt)[args.mode](env, 100)
     print(f"Success rate: {np.mean(successes):.1%}")
 

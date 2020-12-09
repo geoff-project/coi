@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Test the check_env() function."""
+"""Test the Configurable API."""
 
 # pylint: disable = missing-class-docstring, missing-function-docstring
 

@@ -60,7 +60,6 @@ from ._configurable import (
     Configurable,
     DuplicateConfig,
 )
-from ._env_checker import check_env
 from ._machine import Machine
 from ._optenv import (
     Constraint,
@@ -81,5 +80,6 @@ from ._sepenv import (
     SeparableOptEnv,
     SeparableOptGoalEnv,
 )
+from .checkers import check
 
 __version__ = "0.3.3"
