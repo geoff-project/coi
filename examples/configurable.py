@@ -67,7 +67,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         norm: int = 2,
         dangling: bool = True,
         box_width: float = 2.0,
-        dim: int = 2,
+        dim: int = 5,
     ):
         self.norm = norm
         self.dangling = dangling
@@ -331,29 +331,29 @@ class MainWindow(QMainWindow):
 
     def __init__(self) -> None:
         super().__init__()
+
         self.env = coi.make("ConfParabola-v0")
         self.worker = OptimizerThread(self.env)
         self.worker.step.connect(self.on_opt_step)
         self.worker.finished.connect(self.on_opt_finished)
         self.env.reset()
+
         [figure] = self.env.render(mode="matplotlib_figures")
-        window = QWidget()
-        self.setCentralWidget(window)
-        main_layout = QVBoxLayout()
-        window.setLayout(main_layout)
         self.canvas = FigureCanvas(figure)
-        self.addToolBar(NavigationToolbar(self.canvas, parent=self))
-        main_layout.addWidget(self.canvas)
-        controls = QWidget()
-        main_layout.addWidget(controls)
-        controls_layout = QHBoxLayout()
-        controls.setLayout(controls_layout)
         self.launch = QPushButton("Launch")
-        controls_layout.addWidget(self.launch)
         self.launch.clicked.connect(self.on_launch)
         self.configure_env = QPushButton("Configure…")
-        controls_layout.addWidget(self.configure_env)
         self.configure_env.clicked.connect(self.on_configure)
+
+        window = QWidget()
+        self.setCentralWidget(window)
+        main_layout = QVBoxLayout(window)
+        buttons_layout = QHBoxLayout()
+        main_layout.addWidget(self.canvas)
+        main_layout.addLayout(buttons_layout)
+        buttons_layout.addWidget(self.launch)
+        buttons_layout.addWidget(self.configure_env)
+        self.addToolBar(NavigationToolbar(self.canvas, parent=self))
 
     def on_configure(self) -> None:
         """Open the dialog to configure the environment."""
@@ -363,6 +363,7 @@ class MainWindow(QMainWindow):
     def on_launch(self) -> None:
         """Disable the GUI and start optimization."""
         self.launch.setEnabled(False)
+        self.configure_env.setEnabled(False)
         self.worker.start()
 
     def on_opt_step(self) -> None:
@@ -373,6 +374,7 @@ class MainWindow(QMainWindow):
     def on_opt_finished(self) -> None:
         """Re-enable the GUI."""
         self.launch.setEnabled(True)
+        self.configure_env.setEnabled(True)
 
 
 def main(argv: t.List[str]) -> int:
