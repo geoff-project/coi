@@ -31,13 +31,14 @@ class BadConfig(Exception):
 class Config:
     """Declaration of configurable parameters.
 
-    This is the expected return type of `Configurable.get_config()`. It
-    is used by environments to *declare* their configurable parameters,
-    including each parameter's validity invariants. This makes it
-    possible for users of the environment to automatically generate an
-    interface that prevents invalid values as early as possible.
+    This is the expected return type of
+    :py:meth:`Configurable.get_config()`. It is used by environments to
+    *declare* their configurable parameters, including each parameter's
+    validity invariants. This makes it possible for users of the
+    environment to automatically generate an interface that prevents
+    invalid values as early as possible.
 
-    For more information, see `Configurable`.
+    For more information, see :py:class:`Configurable`.
 
     Usage:
 
@@ -60,8 +61,8 @@ class Config:
     class Field(NamedTuple):
         """A single configurable field.
 
-        Don't instantiate this class yourself. Use `Config.add()`
-        instead.
+        Don't instantiate this class yourself. Use
+        :py:meth:`Config.add()` instead.
         """
 
         dest: str
@@ -83,7 +84,8 @@ class Config:
                 The validated and converted value.
 
             Raises:
-                BadConfig if the value could not be validated.
+                :py:exc:`BadConfig`: if the value could not be
+                    validated.
             """
             try:
                 value: Any = self.type(text_repr)
@@ -127,28 +129,28 @@ class Config:
         Args:
             dest: The name of the configurable parameter being declared.
                 This is the name under which the value will be available
-                in `Configurable.apply_config()`.
+                in :py:meth:`Configurable.apply_config()`.
             value: The value to initialize this parameter with.
                 Typically, this is the current setting for this field.
             label: The display name of the parameter. This will be
                 displayed to the user, if possible. If not passed,
-                `dest` is reused.
+                ``dest`` is reused.
             help: A string that further explains this configurable
                 parameter. A GUI might e.g. present this string as a
                 tooltip.
             type: A function used for type-checking and conversion. This
                 function should take a string and produce a value of the
-                same type as `value`. It will be applied to any user
+                same type as ``value``. It will be applied to any user
                 input that produces a new configuration. If the given
                 string is not a valid input, this function should raise
                 an exception. If not passed, this is simply the type of
-                `value`, e.g. `int`, `float`, etc.
-            range: If passed, must be a tuple `(low, high)`. A
+                ``value``, e.g. ``int``, ``float``, etc.
+            range: If passed, must be a tuple ``(low, high)``. A
                 user-chosen value for this field must be within the
                 closed interval described by these values.
             choices: If passed, must be a list of values of the same
-                type as `value`. A user-chosen value for this field must
-                be one of this list.
+                type as ``value``. A user-chosen value for this field
+                must be one of this list.
             default: If passed, a default value that the user should be
                 able to easily reset this field to. This is preferrable
                 if there is a single obvious choice for this field.
@@ -181,14 +183,14 @@ class Config:
 
         Args:
             name: The name of the configurable field. This is the same
-                as the `dest` parameter of `Config.add()`.
+                as the ``dest`` parameter of :py:meth:`add()`.
             text_repr: The string input to validate.
 
         Returns:
             The validated and converted value.
 
         Raises:
-            BadConfig if the value could not be validated.
+            BadConfig: if the value could not be validated.
         """
         return self._fields[name].validate(text_repr)
 
@@ -196,7 +198,7 @@ class Config:
         """Validate user-chosen set of configurations.
 
         Args:
-            values: The mapping `dest` to unparsed string values. This
+            values: The mapping ``dest`` to unparsed string values. This
                 must have exactly one item for every configurable field.
                 Neither missing nor excess items are allowed.
 
@@ -205,8 +207,8 @@ class Config:
             attributes.
 
         Raises:
-            BadConfig if a field fails to validate, if `values` has too
-                many items or if it misses an item.
+            BadConfig: if a field fails to validate, if ``values`` has
+                too many items or if it misses an item.
         """
         values = dict(values)  # Make a copy, we want to manipulate it.
         result = SimpleNamespace()
@@ -225,10 +227,11 @@ class Config:
 class Configurable(metaclass=ABCMeta):
     """Interface for problems that are configurable.
 
-    Some `SingleOptimizable` or `Env` problems have several parameters
-    that determine certain details of how they are solved. A classic
-    configurable parameter of environments is the reward objective, i.e.
-    the minimum step reward upon which an episode is considered solved.
+    Some :py:class:`Problem` classes have several parameters that
+    determine certain details of how they are solved. A classic
+    configurable parameter of environments is the *reward objective*,
+    i.e. the minimum reward for a step upon which an episode is
+    considered solved.
 
     While these parameters can be set through the initializer, this has
     the problem that it is difficult to annotate them with limits,
@@ -237,11 +240,13 @@ class Configurable(metaclass=ABCMeta):
     For this reason, this interface provides a uniform way for problem
     authors to declare which parameters of their class are configurable
     and what each parameter's invariants are. Its usage is extremely
-    trivial. The `get_config()` method returns a declaration of
-    configurable aprameters, the `apply_config()` takes a collection of
-    configurations and applies them to the problem. At any point of the
-    update, an exception may be raised to signal that an invariant has
-    been violated.
+    trivial:
+
+    1. :py:meth:`get_config()` returns a declaration of configurable
+       parameters;
+    2. :py:meth:`apply_config()` takes a collection of configurations
+       and applies them to the problem. At any point, it may raise an
+       exception to signal that an invariant has been violated.
 
     Usage example:
 
@@ -256,7 +261,7 @@ class Configurable(metaclass=ABCMeta):
         ...             label='Action scale (mrad)',
         ...             range=(0.0, 2.0),
         ...             default=1.0,
-        ...             )
+        ...         )
         ...         return config
         ...     def apply_config(self, values):
         ...         self.action_scale = values.action_scale
@@ -285,18 +290,22 @@ class Configurable(metaclass=ABCMeta):
     def apply_config(self, values: SimpleNamespace) -> None:
         """Configure this object using the given values.
 
-        The `values` must have already been validated using the
-        information given in `get_config()`, but this method may apply
-        further checks. If validation fails, this method may raise an
-        exception.
+        The ``values`` have already been validated using the information
+        given in :py:meth:`get_config()`, but this method may apply
+        further checks.
 
-        This method is atomic, i.e. in the case of failure, no value at
-        all is applied.
+        This method should be *transactional*, i.e. in the case of
+        failure, an effort should be made that none of the values are
+        applied.
 
         Args:
-            values: A namespace object. It must have one attribute for
-                each field declared in `get_config()`. The attribute
-                name is exactly the `dest` parameter of `Config.add()`.
+            values: A namespace object. It has one attribute for each
+                field declared in :py:meth:`get_config()`. The attribute
+                name is exactly the ``dest`` parameter of
+                :py:meth:`Config.add()`.
+
+        Raises:
+            Exception: If any additional validation checks fail.
         """
 
     @classmethod

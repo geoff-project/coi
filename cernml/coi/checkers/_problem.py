@@ -43,6 +43,7 @@ def assert_machine(env: Problem) -> None:
 def assert_render_modes_defined(problem: Problem) -> None:
     """Check that the environment defines render modes correctly."""
     # pylint: disable = unsubscriptable-object
+    # pylint: disable = isinstance-second-argument-not-valid-type
     render_modes = t.cast(t.Collection[str], problem.metadata.get("render.modes"))
     assert (
         render_modes is not None
@@ -61,6 +62,7 @@ def assert_no_undeclared_render(
     """Check for render modes that are implemented but not declared."""
     # pylint: disable = broad-except
     # pylint: disable = unsubscriptable-object
+    # pylint: disable = isinstance-second-argument-not-valid-type
     blocked_modes = set(_get_blocked_modes(headless=headless))
     render_modes = set(t.cast(t.Collection[str], problem.metadata["render.modes"]))
     known_modes = {"ansi", "human", "matplotlib_figures", "rgb_array"}
@@ -86,6 +88,8 @@ def assert_no_undeclared_render(
 
 def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
     """Check that each declared render mode can be executed."""
+    # pylint: disable = unsubscriptable-object
+    # pylint: disable = isinstance-second-argument-not-valid-type
 
     def _assert_rgb_array(result: t.Any) -> None:
         assert isinstance(
@@ -120,7 +124,6 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
                 "`matplotlib.figure.Figure()`"
             )
 
-    # pylint: disable = unsubscriptable-object
     additional_checks = {
         "rgb_array": _assert_rgb_array,
         "human": _assert_human,

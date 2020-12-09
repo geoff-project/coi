@@ -67,16 +67,20 @@ def assert_env_returned_values(env: gym.Env) -> None:
     """Check that `env.rest()` and `env.step()` return the right values."""
 
     def _check_obs(obs: np.ndarray) -> None:
-        assert obs in env.observation_space, "observation outside of space"
+        assert (
+            obs in env.observation_space
+        ), f"observation {obs} outside of space {env.observation_space}"
         inner_obs = obs["observation"] if isinstance(env, gym.GoalEnv) else obs
         assert isinstance(
             inner_obs, np.ndarray
-        ), "observation of box space must be NumPy array"
+        ), f"observation {inner_obs} must be NumPy array"
 
     obs = env.reset()
     _check_obs(obs)
     data = env.step(env.action_space.sample())
-    assert len(data) == 4, "step() must return four values: obs, reward, done, info"
+    assert (
+        len(data) == 4
+    ), f"step() must return four values: obs, reward, done, info; not {data}"
     obs, reward, done, info = data
     _check_obs(obs)
     assert is_reward(reward), "reward must be a float or integer"
@@ -85,13 +89,11 @@ def assert_env_returned_values(env: gym.Env) -> None:
     assert isinstance(done, (bool, np.bool_)), f"done signal must be a bool: {done}"
     assert isinstance(info, dict), f"info must be a dictionary: {info}"
     if isinstance(env, gym.GoalEnv):
-        assert reward == env.compute_reward(
-            obs["achieved_goal"],
-            obs["desired_goal"],
-            info,
-        ), "reward does not match"
+        expected = env.compute_reward(obs["achieved_goal"], obs["desired_goal"], info)
+        assert reward == expected, f"reward does not match: {reward} != {expected}"
     elif isinstance(env, SeparableEnv):
-        assert reward == env.compute_reward(obs, None, info), "reward does not match"
+        expected = env.compute_reward(obs, None, info)
+        assert reward == expected, f"reward does not match: {reward} != {expected}"
 
 
 def assert_env_no_nan(env: gym.Env) -> None:
@@ -106,9 +108,9 @@ def assert_env_no_nan(env: gym.Env) -> None:
     for _ in range(10):
         if isinstance(env, gym.GoalEnv):
             obs = obs["observation"]
-        assert _check_val(obs), "observation turned NaN or inf"
+        assert _check_val(obs), f"NaN or inf in observation: {obs}"
         obs, reward, _, _ = env.step(env.action_space.sample())
-        assert _check_val(reward), "reward turned NaN or inf"
+        assert _check_val(reward), f"NaN or inf in reward: {reward}"
 
 
 def warn_observation_space(space: gym.spaces.Box) -> None:

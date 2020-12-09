@@ -12,12 +12,20 @@ FiguresCollection = t.Union[t.Mapping[str, Figure], t.Iterable[FigureSpec]]
 
 
 def iter_matplotlib_figures(figures: FiguresCollection) -> t.Iterator[FigureWithTitle]:
-    """Iterate over the result of `Problem(mode='matplotlib_figures')`.
+    """Handle result of render mode ``"matplotlib_figures"``.
 
     Problem authors are given a lot of freedom in what they return from
-    `render()`. This method unifies all possible return types of
-    `render() and always returns an iterator over title-figure tuples.
-    If a figure does not have a title, the empty string is yielded.
+    :py:meth:`cernml.coi.Problem.render()`. This method unifies all
+    possible return types and produces one consistent iterator.
+
+    Args:
+        figures: The result of calling
+            :py:meth:`cernml.coi.Problem.render()` in the mode
+            ``"matplotlib_figures"``.
+
+    Yields:
+        A tuple ``(title, figure)`` for every item in ``figures``. If a
+        figure doesn't have a title, the empty string is used.
 
     Examples:
 

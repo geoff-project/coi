@@ -20,8 +20,9 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
 
     Args:
         env: The object whose API is to be checked. Must at least be a
-            `cernml.coi.Problem`. If it is a `SingleOptimizable` or a
-            `gym.Env` (or both), those APIs are checked as well.
+            :py:class:`Problem`. If it is a
+            :py:class:`SingleOptimizable` or a :py:class:`gym.Env` (or
+            both), those APIs are checked as well.
         headless: If True (the default), do not run tests that require a
             GUI.
         warn: If True (the default), run additional tests that might be
@@ -29,7 +30,7 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
             positives.
 
     Raises:
-        AssertionError if any check fails.
+        AssertionError: if any check fails.
     """
     unwrapped_env = getattr(env, "unwrapped", None)
     assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'
