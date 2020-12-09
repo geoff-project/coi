@@ -2,7 +2,8 @@
 """Provide `Problem`, the most fundamental API of this package."""
 
 from abc import ABCMeta
-from typing import Any, Dict
+from types import MappingProxyType
+from typing import Any, Mapping
 
 from ._abc_helpers import check_methods as _check_methods
 
@@ -27,12 +28,14 @@ class Problem(metaclass=ABCMeta):
       keys `render.modes` and `cern.machines`.
     """
 
-    # Subclasses should make `metadata` just a regular dict. This is a mapping
-    # proxy to prevent accidental mutation through inheritance.
-    metadata: Dict[str, Any] = {
-        "render.modes": [],
-        "cern.machines": [],
-    }
+    # Subclasses should make `metadata` just a regular dict. This is a
+    # mapping proxy to prevent accidental mutation through inheritance.
+    metadata: Mapping[str, Any] = MappingProxyType(
+        {
+            "render.modes": [],
+            "cern.machines": [],
+        }
+    )
 
     @property
     def unwrapped(self) -> "Problem":
