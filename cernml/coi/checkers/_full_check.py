@@ -11,14 +11,28 @@ from ._single_opt import SingleOptimizable, check_single_optimizable
 from ._env import check_env
 
 
-def check(env: Problem, warn: bool = True) -> None:
-    """Check that a problem follows the API of this package."""
+def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
+    """Check that a problem follows the API of this package.
+
+    Args:
+        env: The object whose API is to be checked. Must at least be a
+            `cernml.coi.Problem`. If it is a `SingleOptimizable` or a
+            `gym.Env` (or both), those APIs are checked as well.
+        headless: If True (the default), do not run tests that require a
+            GUI.
+        warn: If True (the default), run additional tests that might be
+            indicative of problems but might also exhibit false
+            positives.
+
+    Raises:
+        AssertionError if any check fails.
+    """
     unwrapped_env = getattr(env, "unwrapped", None)
     assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'
     assert isinstance(
         unwrapped_env, Problem
     ), f"{type(unwrapped_env)} must inherit from Problem"
-    check_problem(env, warn=warn)
+    check_problem(env, warn=warn, headless=headless)
     if isinstance(unwrapped_env, SingleOptimizable):
         check_single_optimizable(t.cast(SingleOptimizable, env), warn=warn)
     if isinstance(unwrapped_env, gym.Env):
