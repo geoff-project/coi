@@ -19,6 +19,7 @@ def check_problem(
 ) -> None:
     """Check that a problem follows our conventions."""
     assert_machine(problem)
+    assert_render_modes_defined(problem)
     assert_no_undeclared_render(problem, warn=warn, headless=headless)
     assert_execute_render(problem, headless=headless)
     if warn:
@@ -32,7 +33,7 @@ def assert_machine(env: Problem) -> None:
     assert isinstance(machine, Machine), "declared cern.machine is not a Machine enum"
 
 
-def assert_render_modes(problem: Problem) -> None:
+def assert_render_modes_defined(problem: Problem) -> None:
     """Check that the environment defines render modes correctly."""
     # pylint: disable = unsubscriptable-object
     render_modes = t.cast(t.Collection[str], problem.metadata.get("render.modes"))
