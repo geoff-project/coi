@@ -7,11 +7,17 @@ import typing as t
 import warnings
 
 import numpy as np
-from matplotlib.figure import Figure
 
 from .._machine import Machine
 from .._problem import Problem
-from ..utils import iter_matplotlib_figures
+
+try:
+    from matplotlib.figure import Figure
+    from ..utils import iter_matplotlib_figures
+except ImportError:
+    MPL_AVAILABLE = False
+else:
+    MPL_AVAILABLE = True
 
 
 def check_problem(
@@ -114,8 +120,10 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
         "rgb_array": _assert_rgb_array,
         "human": _assert_human,
         "ansi": _assert_ansi,
-        "matplotlib_figures": _assert_matplotlib_figures,
     }
+    # Don't fail on missing matplotlib.
+    if MPL_AVAILABLE:
+        additional_checks["matplotlib_figures"] = _assert_matplotlib_figures
     blocked_modes = _get_blocked_modes(headless=headless)
     render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
     for mode in render_modes:

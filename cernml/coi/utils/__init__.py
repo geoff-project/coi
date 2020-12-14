@@ -2,4 +2,8 @@
 
 """Package of various tools that make working with the COIs."""
 
-from ._render import iter_matplotlib_figures
+try:
+    from ._render import iter_matplotlib_figures
+except ImportError:
+    # Optional dependency: No error if matplotlib is missing.
+    pass
