@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Provide `Problem`, the most fundamental API of this package."""
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import Any, Dict
 
 from ._abc_helpers import check_methods as _check_methods
@@ -44,7 +44,6 @@ class Problem(metaclass=ABCMeta):
         """
         return self
 
-    @abstractmethod
     def render(self, mode: str = "human", **kwargs: Any) -> Any:
         """Render the environment.
 
@@ -83,7 +82,7 @@ class Problem(metaclass=ABCMeta):
                         # just raise an exception
                         super(MyEnv, self).render(mode=mode)
         """
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @classmethod
     def __subclasshook__(cls, other: type) -> Any:
