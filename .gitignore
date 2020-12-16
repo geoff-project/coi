@@ -1,3 +1,13 @@
+# Automatically generated files.
+cernml/coi/_version.py
+
+# Caches and build directories.
 __pycache__
 build/
+dist/
 *.egg-info/
+
+# Vim-Gutentags temp files.
+tags
+tags.lock
+tags.temp

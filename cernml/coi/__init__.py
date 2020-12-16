@@ -82,4 +82,12 @@ from ._sepenv import (
 )
 from .checkers import check
 
-__version__ = "0.4.2"
+try:
+    from ._version import VERSION as __version__
+except ImportError:
+    from setuptools_scm import get_version
+
+    try:
+        __version__ = get_version()
+    finally:
+        del get_version
