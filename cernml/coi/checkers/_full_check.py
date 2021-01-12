@@ -6,6 +6,7 @@ import logging
 import typing as t
 
 import gym
+import importlib_metadata
 
 from ._problem import Problem, check_problem
 from ._single_opt import SingleOptimizable, check_single_optimizable
@@ -35,6 +36,7 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     assert isinstance(
         unwrapped_env, Problem
     ), f"{type(unwrapped_env)} must inherit from Problem"
+    # Run built-in checkers.
     LOG.debug("Checking Problem interface of %s", env)
     check_problem(env, warn=warn, headless=headless)
     if isinstance(unwrapped_env, SingleOptimizable):
@@ -43,3 +45,10 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     if isinstance(unwrapped_env, gym.Env):
         LOG.debug("Checking Env interface of %s", env)
         check_env(t.cast(gym.Env, env), warn=warn)
+    # Run plug-in checkers.
+    entry_points = importlib_metadata.entry_points().get("cernml.coi.checkers", ())
+    for entry_point in entry_points:
+        LOG.debug("Loading checker plugin %s", entry_point.name)
+        check_extra = entry_point.load()
+        LOG.debug("Running checker plugin %s on %s", entry_point.name, env)
+        check_extra(env, warn=warn, headless=headless)
