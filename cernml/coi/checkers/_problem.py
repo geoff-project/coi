@@ -2,6 +2,7 @@
 
 """Checker for the `Problem` ABC."""
 
+import collections.abc
 import io
 import typing as t
 import warnings
@@ -46,7 +47,10 @@ def assert_render_modes_defined(problem: Problem) -> None:
     assert (
         render_modes is not None
     ), "missing key render.modes in the environment metadata"
-    assert isinstance(render_modes, t.Collection), "render.modes must be a collection"
+    # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
+    assert isinstance(
+        render_modes, collections.abc.Collection
+    ), "render.modes must be a collection"
     for mode in render_modes:
         assert isinstance(mode, str), f"render mode must be string: {mode!r}"
 
@@ -103,8 +107,9 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
         ), f"render('ansi') should return str or StringIO, not {result!r}"
 
     def _assert_matplotlib_figures(result: t.Any) -> None:
+        # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
         assert isinstance(
-            result, t.Collection
+            result, collections.abc.Collection
         ), f"render('matplotlib_figures') should return a collection, not {result!r}"
         for title, figure in iter_matplotlib_figures(result):
             assert isinstance(title, str), f"not a string: {title!r}"
