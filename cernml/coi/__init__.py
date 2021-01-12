@@ -82,8 +82,9 @@ from ._sepenv import (
 )
 from .checkers import check
 
+__version__: str
 try:
-    from ._version import VERSION as __version__
+    from ._version import VERSION as __version__  # type: ignore
 except ImportError:
     from setuptools_scm import get_version
 
