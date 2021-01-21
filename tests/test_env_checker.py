@@ -82,7 +82,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
         self.pos = params.copy()
         return self.distance
 
-    def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
+    def render(self, mode: str = "human") -> t.Any:
         if mode == "human":
             pyplot.figure()
             xdata, ydata = zip(self.pos, self.goal)
@@ -95,7 +95,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
             return [figure]
         if mode == "ansi":
             return f"{self.pos} -> {self.goal}"
-        return super().render(mode, **kwargs)
+        return super().render(mode)
 
     def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
         return [

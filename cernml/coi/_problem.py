@@ -44,7 +44,7 @@ class Problem(metaclass=ABCMeta):
         """
         return self
 
-    def render(self, mode: str = "human", **kwargs: Any) -> Any:
+    def render(self, mode: str = "human") -> Any:
         """Render the environment.
 
         The set of supported modes varies per environment. (And some

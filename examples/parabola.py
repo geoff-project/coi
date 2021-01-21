@@ -78,7 +78,7 @@ class Parabola(coi.OptEnv):
         loss = sum(self.pos ** 2)
         return loss
 
-    def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
+    def render(self, mode: str = "human") -> t.Any:
         if mode == "human":
             pyplot.figure()
             pyplot.scatter(*self.pos)
@@ -94,7 +94,7 @@ class Parabola(coi.OptEnv):
             return [self.figure]
         if mode == "ansi":
             return str(self.pos)
-        return super().render(mode, **kwargs)
+        return super().render(mode)
 
     def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
         return [

@@ -127,7 +127,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.pos = params
         return self._distance()
 
-    def render(self, mode: str = "human", **kwargs: t.Any) -> t.Any:
+    def render(self, mode: str = "human") -> t.Any:
         if mode == "human":
             _, axes = pyplot.subplots()
             self._update_axes(axes)
@@ -143,7 +143,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
             return [self.figure]
         if mode == "ansi":
             return str(self.pos)
-        return super().render(mode, **kwargs)
+        return super().render(mode)
 
     def _update_axes(self, axes: Axes) -> None:
         """Plot this environment onto the given axes.
