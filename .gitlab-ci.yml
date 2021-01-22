@@ -1,46 +1,50 @@
 include:
- - project: acc-co/devops/python/acc-py-devtools
-   file: acc_py_devtools/templates/gitlab-ci/python.yml
+  - project: acc-co/devops/python/acc-py-devtools
+    file: acc_py_devtools/templates/gitlab-ci/python.yml
 
 variables:
   project_dir: cernml
   project_name: cernml.coi
 
 
-# A full installation of the package, tested with pytest.
-test_install:
-  extends: .acc_py_full_test
-  before_script:
-      - python -m pip install .[examples]
-  script:
-      - mkdir -p not-the-source-dir
-      - cp examples/parabola.py ./not-the-source-dir/
-      - cd ./not-the-source-dir
-      - python -c "import ${project_name}"
-      - python ./parabola.py opt
-      - python ./parabola.py rl
+# Build: Create a wheel to speed up installation.
 
+build_wheel:
+  extends:
+    - .acc_py_build_wheel
 
-# A development installation of the project tested with pytest.
-test_dev:
-  extends: .acc_py_dev_test
-  script:
-   # Run the unit-tests with coverage output.
-   - cd ${project_root}
-   - python -m pytest ./${project_dir} --cov=${project_dir} --junitxml=report.xml
+# Test: Run linters and unit tests. Run tests both in-tree and out-of-tree.
 
-# Ensure that PyLint runs without warnings.
 test_lint:
   extends: .acc_py_base
   stage: test
   before_script:
-   - python -m pip install -e .[lint]
+    - python -m pip install -e .[lint]
   script:
-   - python -m pylint ${project_dir} tests/*.py || pylint_exit=$?
-   - python -m black --check . || black_exit=$?
-   - python -m mypy ${project_dir} examples/ tests/ || mypy_exit=$?
-   - if [[ pylint_exit+black_exit+mypy_exit -gt 0 ]]; then false; fi
+    - python -m pylint ${project_dir} tests/*.py || pylint_exit=$?
+    - python -m black --check . || black_exit=$?
+    - python -m mypy ${project_dir} examples/ tests/ || mypy_exit=$?
+    - if [[ pylint_exit+black_exit+mypy_exit -gt 0 ]]; then false; fi
 
-# A push of the source distribution to the acc-py PyPI, only on git tag.
-release_sdist_on_tag:
-  extends: .acc_py_release_sdist
+test_dev:
+  extends: .acc_py_dev_test
+  script:
+    - cd ${project_root}
+    - python -m pytest ./${project_dir} --cov=${project_dir} --junitxml=report.xml
+
+test_install:
+  extends: .acc_py_full_test
+  before_script:
+    - python -m pip install .[examples]
+  script:
+    - mkdir -p not-the-source-dir
+    - cp examples/parabola.py ./not-the-source-dir/
+    - cd ./not-the-source-dir
+    - python -c "import ${project_name}"
+    - python ./parabola.py opt
+    - python ./parabola.py rl
+
+# Deploy: Publish the wheel on acc-py-repo.cern.ch.
+
+release_wheel:
+  extends: .acc_py_release_wheel
