@@ -6,6 +6,7 @@ from types import MappingProxyType
 from typing import Any, Mapping
 
 from ._abc_helpers import check_methods as _check_methods
+from ._machine import Machine
 
 
 class Problem(metaclass=ABCMeta):
@@ -63,7 +64,7 @@ class Problem(metaclass=ABCMeta):
     metadata: Mapping[str, Any] = MappingProxyType(
         {
             "render.modes": [],
-            "cern.machines": [],
+            "cern.machine": Machine.NoMachine,
         }
     )
 
