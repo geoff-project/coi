@@ -25,8 +25,9 @@ test_lint:
   script:
     - python -m pylint ${project_dir} tests/*.py || pylint_exit=$?
     - python -m black --check . || black_exit=$?
-    - python -m mypy ${project_dir} examples/ tests/ || mypy_exit=$?
-    - if [[ pylint_exit+black_exit+mypy_exit -gt 0 ]]; then false; fi
+    - python -m mypy --namespace-packages -p ${project_dir} || mypy_pkg_exit=$?
+    - python -m mypy examples/ tests/ || mypy_aux_exit=$?
+    - if [[ pylint_exit+black_exit+mypy_pkg_exit+mypy_aux_exit -gt 0 ]]; then false; fi
 
 test_dev:
   extends: .acc_py_dev_test
