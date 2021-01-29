@@ -110,11 +110,15 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         return self.pos.copy()
 
     def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
-        self.pos += action
+        next_pos = self.pos + action
+        self.pos = np.clip(
+            next_pos,
+            self.observation_space.low,
+            self.observation_space.high,
+        )
         reward = -self._distance()
-        reward = max(reward, self.reward_range[0])
         success = reward > self.objective
-        done = success or self.pos not in self.observation_space
+        done = success or next_pos not in self.observation_space
         info = dict(success=success, objective=self.objective)
         if self.dangling and success and self.objective < self.max_objective:
             self.objective *= 0.95
@@ -124,7 +128,11 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         return self.reset()
 
     def compute_single_objective(self, params: np.ndarray) -> float:
-        self.pos = params
+        self.pos = np.clip(
+            params,
+            self.observation_space.low,
+            self.observation_space.high,
+        )
         return self._distance()
 
     def render(self, mode: str = "human") -> t.Any:

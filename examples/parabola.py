@@ -60,11 +60,15 @@ class Parabola(coi.OptEnv):
         return self.pos.copy()
 
     def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
-        self.pos += action
+        next_pos = self.pos + action
+        self.pos = np.clip(
+            next_pos,
+            self.observation_space.low,
+            self.observation_space.high,
+        )
         reward = -sum(self.pos ** 2)
-        reward = max(reward, self.reward_range[0])
         success = reward > self.objective
-        done = success or self.pos not in self.observation_space
+        done = success or next_pos not in self.observation_space
         info = dict(success=success, objective=self.objective)
         if self._train and success and self.objective < self.max_objective:
             self.objective *= 0.95
@@ -74,7 +78,11 @@ class Parabola(coi.OptEnv):
         return self.reset()
 
     def compute_single_objective(self, params: np.ndarray) -> float:
-        self.pos = params
+        self.pos = np.clip(
+            params,
+            self.observation_space.low,
+            self.observation_space.high,
+        )
         loss = sum(self.pos ** 2)
         return loss
 
