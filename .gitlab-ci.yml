@@ -5,7 +5,8 @@ include:
 variables:
   project_dir: cernml
   project_name: cernml.coi
-
+  pyqt_image: gitlab-registry.cern.ch/acc-co/devops/python/distribution/ci/pyqt:v2020-11rc2
+  PY_VERSION: "3.7"
 
 # Build: Create a wheel to speed up installation.
 
@@ -15,9 +16,10 @@ build_wheel:
 
 # Test: Run linters and unit tests. Run tests both in-tree and out-of-tree.
 
+# Requires PyQt in order to lint the examples correctly.
 test_lint:
-  extends: .acc_py_base
   stage: test
+  image: ${pyqt_image}
   before_script:
     - python -m pip install -e .[lint]
   script:
@@ -32,19 +34,30 @@ test_dev:
     - cd ${project_root}
     - python -m pytest ./${project_dir} --cov=${project_dir} --junitxml=report.xml
 
+# Requires PyQt in order to run some of the examples.
 test_install:
   extends: .acc_py_full_test
   before_script:
     - python -m pip install .[examples]
   script:
-    - mkdir -p not-the-source-dir
-    - cp examples/parabola.py ./not-the-source-dir/
-    - cd ./not-the-source-dir
-    - python -c "import ${project_name}"
-    - python ./parabola.py opt
-    - python ./parabola.py rl
+    - cd ./examples
+    - python parabola.py opt
+    - python parabola.py rl
+    - python _check_example_envs.py
+
+build_docs:
+  extends: .acc_py_build_docs
+  image: ${pyqt_image}
+  before_script:
+    - yum -y install graphviz
 
 # Deploy: Publish the wheel on acc-py-repo.cern.ch.
 
 release_wheel:
   extends: .acc_py_release_wheel
+
+build_docs_on_tag:
+  extends: .acc_py_build_docs_on_tag
+  image: ${pyqt_image}
+  before_script:
+    - yum -y install graphviz

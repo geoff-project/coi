@@ -6,6 +6,7 @@ __pycache__
 build/
 dist/
 *.egg-info/
+docs/html/
 
 # Vim-Gutentags temp files.
 tags
