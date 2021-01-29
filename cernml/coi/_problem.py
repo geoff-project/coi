@@ -3,7 +3,7 @@
 
 from abc import ABCMeta
 from types import MappingProxyType
-from typing import Any, Mapping
+from typing import Any, ClassVar, Mapping
 
 from ._abc_helpers import check_methods as _check_methods
 from ._machine import Machine
@@ -61,7 +61,7 @@ class Problem(metaclass=ABCMeta):
 
     # Subclasses should make `metadata` just a regular dict. This is a
     # mapping proxy to prevent accidental mutation through inheritance.
-    metadata: Mapping[str, Any] = MappingProxyType(
+    metadata: ClassVar[Mapping[str, Any]] = MappingProxyType(
         {
             "render.modes": [],
             "cern.machine": Machine.NoMachine,
