@@ -38,13 +38,14 @@ test_dev:
 # Requires PyQt in order to run some of the examples.
 test_install:
   extends: .acc_py_full_test
+  image: ${pyqt_image}
   before_script:
     - python -m pip install .[examples]
   script:
     - cd ./examples
+    - python _check_example_envs.py
     - python parabola.py opt
     - python parabola.py rl
-    - python _check_example_envs.py
 
 build_docs:
   extends: .acc_py_build_docs
