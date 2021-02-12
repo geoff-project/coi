@@ -40,9 +40,10 @@ test_install:
   extends: .acc_py_full_test
   image: ${pyqt_image}
   before_script:
-    - python -m pip install .[examples]
+    - python -m pip install .[examples,test]
   script:
     - cd ./examples
+    - pytest --pyargs ${project_name}
     - python _check_example_envs.py
     - python parabola.py opt
     - python parabola.py rl
