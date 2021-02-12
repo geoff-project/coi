@@ -25,6 +25,7 @@ class Problem(metaclass=ABCMeta):
     subclass, a class must merely:
 
     - provide a method :py:meth:`render()`,
+    - provide a method :py:meth:`close()`,
     - provide a property :py:attr:`unwrapped`,
     - provide a class attribute :py:attr:`metadata` that is a
       mapping with at least the keys `"render.modes"` and
@@ -67,6 +68,21 @@ class Problem(metaclass=ABCMeta):
             "cern.machine": Machine.NoMachine,
         }
     )
+
+    def close(self) -> None:
+        """Perform any necessary cleanup.
+
+        This method may be overridden to perform cleanup that does not
+        happen automatically. Examples include stopping JAPC
+        subscriptions or canceling any spawned threads. By default, this
+        method does nothing.
+
+        After this method has been called, no further methods may be
+        called on the problem, with the following exceptions:
+
+        - :py:attr:`unwrapped` must continue to behave as expected;
+        - calling :py:meth:`close()` again should do nothing.
+        """
 
     @property
     def unwrapped(self) -> "Problem":
@@ -165,5 +181,5 @@ class Problem(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, other: type) -> Any:
         if cls is Problem:
-            return _check_methods(other, "metadata", "render", "unwrapped")
+            return _check_methods(other, "close", "metadata", "render", "unwrapped")
         return NotImplemented

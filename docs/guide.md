@@ -24,8 +24,8 @@ application must be able to query such properties.
 
     problem[label=<{
         cernml.coi.<b>Problem</b>|
-        render(<i>mode</i>: str) → Any|
-        <i>metadata</i>: Dict[str, Any]}>,
+        render(<i>mode</i>: str) → Any<br/>close() → None|
+        <i>metadata</i>: Dict[str, Any]<br/><i>unwrapped</i>: Problem}>,
     ];
 
     sopt[label=<{
@@ -36,7 +36,7 @@ application must be able to query such properties.
 
     env[label=<{
         gym.<b>Env</b>|
-        reset() → Obs<br/>step(<i>a</i>: Action) → Obs, …<br/>seed(…) → …<br/>close() → None|
+        reset() → Obs<br/>step(<i>a</i>: Action) → Obs, …<br/>seed(…) → …|
         <i>action_space</i><br/><i>observation_space</i><br/><i>reward_range</i>}>,
     ];
 
@@ -107,6 +107,45 @@ The following render modes are standardized by either Gym or this package:
   suitable for embedding into a GUI application.
 
 See the [API docs][`render()`] for a full spec of each render mode.
+
+### Closing
+
+Some optimization problems have to acquire certain resources in order to
+perform their tasks. Examples include:
+
+- spawning processes,
+- starting threads,
+- subscribing to JAPC parameters.
+
+While Python garbage-collects objects which are no longer accessible (including
+`Problem` instances), some of these resources require manual function calls in
+order to be properly cleaned up.
+
+If such is the case for an optimization problem, it should override the
+[`close()`][] method and define all such actions in it. A host application is
+required to call [`close()`][] when it has no more need for an optimization
+problem.
+
+**Warning:** The [`close()`][] method is *not* called after an optimization
+procedure is done. In particular, a host application may perform several
+optimization runs on the same problem and call [`close()`][] only at the very
+end. Furthermore, an arbitrary amount of time may pass between the last call to
+[`compute_single_objective()`][] and the call to [`close()`].
+
+**Note:** If you want to use an optimization problem in your own application or
+script, consider using a [context
+manager](https://docs.python.org/3/library/contextlib.html#contextlib.closing)
+to ensure that [`close()`][] is called:
+
+```python
+from contextlib import closing
+
+with closing(MyProblem(...)) as problem:
+    optimize(problem)
+```
+
+The context manager ensures that [`close()`][] is called under all
+circumstances – even if an exception occurs.
 
 ### Spaces
 
@@ -406,6 +445,7 @@ combine each of the separable interfaces with [`SingleOptimizable`][]. They are
 [`Problem`]: api.html#cernml.coi.Problem
 [`metadata`]: api.html#cernml.coi.Problem.metadata
 [`render()`]: api.html#cernml.coi.Problem.render
+[`close()`]: api.html#cernml.coi.Problem.close
 
 [`SingleOptimizable`]: api.html#cernml.coi.SingleOptimizable
 [`optimization_space`]: api.html#cernml.coi.SingleOptimizable.optimization_space
