@@ -21,7 +21,7 @@ test_lint:
   stage: test
   image: ${pyqt_image}
   before_script:
-    - python -m pip install -e .[lint]
+    - python -m pip install -e '.[lint]'
   script:
     - python -m pylint ${project_dir} tests/*.py || pylint_exit=$?
     - python -m black --check . || black_exit=$?
@@ -40,7 +40,7 @@ test_install:
   extends: .acc_py_full_test
   image: ${pyqt_image}
   before_script:
-    - python -m pip install .[examples,test]
+    - python -m pip install '.[examples,test]'
   script:
     - cd ./examples
     - pytest --pyargs ${project_name}
