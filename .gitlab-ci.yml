@@ -33,7 +33,7 @@ test_dev:
   extends: .acc_py_dev_test
   script:
     - cd ${project_root}
-    - python -m pytest ./${project_dir} --cov=${project_dir} --junitxml=report.xml
+    - python -m pytest --cov=${project_dir} --junitxml=report.xml
 
 # Requires PyQt in order to run some of the examples.
 test_install:

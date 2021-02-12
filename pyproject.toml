@@ -33,6 +33,7 @@ exclude = '''
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"
+testpaths = ["tests", "cernml"]
 
 [tool.pylint.MASTER]
 extension-pkg-whitelist = "PyQt5"
