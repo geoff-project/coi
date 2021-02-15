@@ -107,8 +107,11 @@
 .. autofunction:: cernml.coi.checkers.check_env
 ```
 
-## Utilities
+## Matplotlib Utilities
+
+The following functions and types are only available if the
+[Matplotlib](https://matplotlib.org/) is importable.
 
 ```eval_rst
-.. autofunction:: cernml.coi.utils.iter_matplotlib_figures
+.. autofunction:: cernml.coi.mpl_utils.iter_matplotlib_figures
 ```

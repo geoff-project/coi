@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""Utilities for `Problem.render()`."""
+"""Utilities for working with the Matplotlib."""
 
 import typing as t
 
