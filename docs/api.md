@@ -114,4 +114,26 @@ The following functions and types are only available if the
 
 ```eval_rst
 .. autofunction:: cernml.coi.mpl_utils.iter_matplotlib_figures
+
+.. autoclass:: cernml.coi.unstable.renderer.Renderer
+    :members:
+    :show-inheritance:
+
+    .. warning::
+        This class is considered *unstable* and may change arbitrarily between
+        minor releases.
+
+.. autoclass:: cernml.coi.unstable.renderer.SimpleRenderer
+    :members:
+    :show-inheritance:
+
+    .. warning::
+        This class is considered *unstable* and may change arbitrarily between
+        minor releases.
+
+.. autodecorator:: cernml.coi.unstable.renderer.render_generator
+
+    .. warning::
+        This decorator is considered *unstable* and may change arbitrarily
+        between minor releases.
 ```
