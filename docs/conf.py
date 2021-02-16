@@ -72,7 +72,8 @@ exclude_patterns = [
 
 autodoc_typehints = "signature"
 autodoc_type_aliases = {
-    "Problem": "cernml.coi._problem.Problem",
+    "MatplotlibFigures": "cernml.coi.mpl_utils.MatplotlibFigures",
+    "MaybeTitledFigure": "cernml.coi.mpl_utils.MaybeTitledFigure",
 }
 
 napoleon_google_docstring = True

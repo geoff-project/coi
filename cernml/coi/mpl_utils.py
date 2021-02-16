@@ -6,12 +6,15 @@ import typing as t
 
 from matplotlib.figure import Figure
 
-FigureWithTitle = t.Tuple[str, Figure]
-FigureSpec = t.Union[Figure, FigureWithTitle]
-FiguresCollection = t.Union[t.Mapping[str, Figure], t.Iterable[FigureSpec]]
+MaybeTitledFigure = t.Union[Figure, t.Tuple[str, Figure]]
+"""Helper annotation for :py:class:`MatplotlibFigures`."""
+MatplotlibFigures = t.Union[t.Iterable[MaybeTitledFigure], t.Mapping[str, Figure]]
+"""Type of the return value of render mode ``"matplotlib_figures``."""
 
 
-def iter_matplotlib_figures(figures: FiguresCollection) -> t.Iterator[FigureWithTitle]:
+def iter_matplotlib_figures(
+    figures: MatplotlibFigures,
+) -> t.Iterator[t.Tuple[str, Figure]]:
     """Handle result of render mode ``"matplotlib_figures"``.
 
     Problem authors are given a lot of freedom in what they return from
