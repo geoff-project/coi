@@ -130,6 +130,21 @@ optimize_in_some_way(problem)
 
 [GeOFF]: https://gitlab.cern.ch/vkain/acc-app-optimisation
 
+Stability
+---------
+
+This package uses a variant of [Semantic Versioning][SemVer] that makes
+additional promises during the initial development (major version 0): whenever
+backwards-incompatible changes to the public API are published, the first
+non-zero version number will increase. This means that code that uses COI
+version `0.6.0` will continue to work with version `0.6.1`, but may break with
+version `0.7.0`.
+
+The exception to this are the contents of `cernml.coi.unstable`, which may
+change in any given release.
+
+[SemVer]: https://semver.org/
+
 Documentation
 -------------
 
