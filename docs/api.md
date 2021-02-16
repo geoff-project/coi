@@ -137,3 +137,65 @@ The following functions and types are only available if the
         This decorator is considered *unstable* and may change arbitrarily
         between minor releases.
 ```
+
+## PyJapc Utilities
+
+The following functions and types are only available if
+[PyJapc](https://gitlab.cern.ch/scripting-tools/pyjapc) is importable.
+
+```eval_rst
+.. autofunction:: cernml.coi.unstable.japc_utils.monitoring
+
+    .. warning::
+        This function is considered *unstable* and may change arbitrarily
+        between minor releases.
+
+.. autofunction:: cernml.coi.unstable.japc_utils.subscriptions
+
+    .. warning::
+        This function is considered *unstable* and may change arbitrarily
+        between minor releases.
+
+.. autofunction:: cernml.coi.unstable.japc_utils.subscribe_stream
+
+    .. warning::
+        This function is considered *unstable* and may change arbitrarily
+        between minor releases.
+
+.. autoclass:: cernml.coi.unstable.japc_utils.ParamStream
+    :members:
+    :inherited-members:
+
+    .. warning::
+        This class is considered *unstable* and may change arbitrarily between
+        minor releases.
+
+.. autoclass:: cernml.coi.unstable.japc_utils.ParamGroupStream
+    :members:
+    :inherited-members:
+
+    .. warning::
+        This class is considered *unstable* and may change arbitrarily between
+        minor releases.
+
+.. autoclass:: cernml.coi.unstable.japc_utils.Header
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+    .. warning::
+        This class is considered *unstable* and may change arbitrarily between
+        minor releases.
+
+.. autoexception:: cernml.coi.unstable.japc_utils.StreamError
+
+    .. warning::
+        This exception is considered *unstable* and may change arbitrarily
+        between minor releases.
+
+.. autoexception:: cernml.coi.unstable.japc_utils.JavaException
+
+    .. warning::
+        This exception is considered *unstable* and may change arbitrarily
+        between minor releases.
+```

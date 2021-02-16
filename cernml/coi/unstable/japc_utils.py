@@ -1,0 +1,513 @@
+"""Provide :py:class:`ParamStream`."""
+
+import abc
+import contextlib
+import datetime
+import functools
+import logging
+import threading
+import types
+import typing as t
+from collections import deque
+
+if t.TYPE_CHECKING:
+    from pyjapc import PyJapc  # pylint: disable=import-error, unused-import
+
+LOG = logging.getLogger(__name__)
+
+
+class StreamError(Exception):
+    """A logical error while operating on a stream."""
+
+
+class JavaException(Exception):
+    """An error occurred on the Java side."""
+
+
+class Header(dict):
+    """Convenience wrapper around the JAPC header.
+
+    This is a dict for all intents and purposes, but also allows
+    attribute access to the most common fields.
+    """
+
+    # pylint: disable = missing-function-docstring
+
+    @property
+    def acquisition_stamp(self) -> datetime.datetime:
+        return self["acqStamp"]
+
+    @property
+    def cycle_stamp(self) -> datetime.datetime:
+        return self["cycleStamp"]
+
+    @property
+    def set_stamp(self) -> datetime.datetime:
+        return self["setStamp"]
+
+    @property
+    def selector(self) -> str:
+        return self["selector"]
+
+    @property
+    def is_first_update(self) -> bool:
+        return self["isFirstUpdate"]
+
+    @property
+    def is_immediate_update(self) -> bool:
+        return self["isImmediateUpdate"]
+
+
+T = t.TypeVar("T")  # pylint: disable=invalid-name
+_OneOrList = t.Union[T, t.List[T]]
+_Item = _OneOrList[t.Tuple[object, Header]]
+_Event = t.Union[_Item, JavaException]
+
+
+def _unwrap_event(event: _Event) -> _Item:
+    if isinstance(event, JavaException):
+        raise event
+    return event
+
+
+@contextlib.contextmanager
+def subscriptions(japc: "PyJapc") -> "PyJapc":
+    """Return a context manager for :py:class:`PyJapc`.
+
+    The returned context manager simply starts all subscriptions when
+    entering its context and stops all subscriptions when leaving it. It
+    is neither reentrant nor reusable.
+
+    Usage:
+
+        >>> from pyjapc import PyJapc
+        >>> def main():
+        ...     japc = PyJapc()
+        ...     ... # Subscribe to various parameters.
+        ...     with subscriptions(japc):
+        ...         ... # Subscriptions are active here.
+        ...     ... # Subscriptions are stopped here.
+    """
+    japc.startSubscriptions()
+    try:
+        yield japc
+    finally:
+        japc.stopSubscriptions()
+
+
+@contextlib.contextmanager
+def monitoring(handle: T) -> t.Iterator[T]:
+    """Return a context manager for JAPC subscription handles.
+
+    The returned context manager simply starts monitoring the handle
+    when entering its context and stops when leaving it. It is neither
+    reentrant nor reusable.
+
+    Usage:
+
+        >>> from pyjapc import PyJapc
+        >>> def main():
+        ...     japc = PyJapc()
+        ...     handle = japc.subscribeParam(...)
+        ...     with monitoring(handle):
+        ...         ... # Subscription is active here.
+        ...     ... # Subscription are stopped here.
+    """
+    # Avoid annotating Java types; bringing them into scope is more of a
+    # headache than it gains us.
+    t.cast(t.Any, handle).startMonitoring()
+    try:
+        yield handle
+    finally:
+        t.cast(t.Any, handle).stopMonitoring()
+
+
+class _BaseStream(metaclass=abc.ABCMeta):
+    """A synchronized PyJapc subscription handle.
+
+    Do not instantiate this class yourself. Use
+    :py:func:`subscribe_stream` instead to get one of its subclasses.
+    """
+
+    Self = t.TypeVar("Self", bound="_BaseStream")
+
+    def __init__(
+        self,
+        japc: "PyJapc",
+        name: t.Union[str, t.Iterable[str]],
+        *,
+        maxlen: t.Optional[int],
+        **kwargs: t.Any,
+    ) -> None:
+        self._handle = japc.subscribeParam(
+            name,
+            onValueReceived=self._on_value,
+            onException=self._on_exception,
+            getHeader=True,
+            **kwargs,
+        )
+        self._queue: t.Deque[_Event] = deque(maxlen=maxlen)
+        # Threading: We _need_ this condition to use an `RLock`, which
+        # happens to be the default.
+        self.condition = threading.Condition()
+
+    def __repr__(self) -> str:
+        name = self._handle.getParameter().getName()
+        return f"<{type(self).__name__}({name!r})>"
+
+    def __enter__(self: Self) -> Self:
+        self.start_monitoring()
+        return self
+
+    def __exit__(
+        self,
+        exc_type: t.Type[Exception],
+        exc_value: Exception,
+        exc_tb: types.TracebackType,
+    ) -> None:
+        self.stop_monitoring()
+
+    @property
+    def monitoring(self) -> bool:
+        """True if this stream is receiving values, False otherwise."""
+        return self._handle.isMonitoring()
+
+    def start_monitoring(self) -> None:
+        """Start receiving values on this stream."""
+        self._handle.startMonitoring()
+
+    def stop_monitoring(self) -> None:
+        """Stop receiving values on this stream."""
+        self._handle.stopMonitoring()
+
+    def clear(self) -> None:
+        """Empty the queue."""
+        with self.condition:
+            self._queue.clear()
+
+    @contextlib.contextmanager
+    def locked(self) -> t.Iterator[None]:
+        """Return a context manager that locks this stream.
+
+        While the stream is locked, no new items can be enqueued by the
+        subscription handler. This is useful to prevent `TOC/TOU`_
+        errors. The returned context manager is neither reentrant nor
+        reusable.
+
+        .. _TOC/TOU: https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
+
+        Example:
+
+            >>> def take_newest(stream: ParamStream) -> t.Tuple[object, Header]:
+            ...     '''Return the latest value, discarding all others.'''
+            ...     with stream.locked():
+            ...         if stream.ready:
+            ...             value = stream.newest
+            ...             # Without the lock, the subscription handler
+            ...             # might enqueue an item here, which would be
+            ...             # lost forever.
+            ...             stream.clear()
+            ...             return value
+            ...         # `ParamStream` uses a reentrant lock, so
+            ...         # nothing bad happens if you call `wait_next()`
+            ...         # while it is locked.
+            ...         return stream.wait_next()
+
+        Note:
+            You should ensure that no operation will block (i.e. sleep,
+            wait, perform I/O) while the stream is locked. Otherwise,
+            you risk blocking the subscription handler and data may be
+            lost. However, you *may* call :py:meth:`wait_next()`, as it
+            releases the lock while blocking.
+        """
+        with self.condition:
+            yield
+
+    @property
+    def ready(self) -> bool:
+        """True if there is an event in the queue."""
+        with self.condition:
+            return bool(self._queue)
+
+    @property
+    @abc.abstractmethod
+    def oldest(self) -> _Item:
+        """The oldest item in the queue.
+
+        Raises:
+            IndexError: if the queue is empty.
+            JavaException: if an exception occurred on the Java side
+                while receiving this value.
+        """
+        with self.condition:
+            event = self._queue[0]
+        return _unwrap_event(event)
+
+    @property
+    @abc.abstractmethod
+    def newest(self) -> _Item:
+        """The most recent item in the queue.
+
+        Raises:
+            IndexError: if the queue is empty.
+            JavaException: if an exception occurred on the Java side
+                while receiving this value.
+        """
+        with self.condition:
+            event = self._queue[-1]
+        return _unwrap_event(event)
+
+    def _wait_next(self, timeout: t.Optional[float]) -> t.Optional[_Item]:
+        """Wait for the next value received by the stream.
+
+        If there already is an item in the queue, it is removed and this
+        function returns immediately. If there is none, this function
+        blocks and waits for a new value to arrive.
+
+        Args:
+            timeout: If passed and not None, the amount of time (in
+                seconds) for which to wait if there is no value in the
+                queue.
+
+        Returns:
+            The oldest value in the queue or, if there is none, the next
+            value received. None if the specified timeout elapses before
+            a new value has arrived.
+
+        Raises:
+            JavaException: if an exception occurred on the Java side
+                while receiving this value.
+            StreamError: if the queue is empty, the subscription is not
+                active and no timeout has been specified; this serves to
+                prevent a deadlock in the application.
+        """
+        with self.condition:
+            if not self._queue:
+                # Prevent deadlock.
+                if not self.monitoring and timeout is not None:
+                    raise StreamError("queue is empty, wait_next() would deadlock")
+                success = self.condition.wait(timeout)
+                if not success:
+                    return None
+            event = self._queue.popleft()
+        return _unwrap_event(event)
+
+    def _on_value(
+        self,
+        names: _OneOrList[str],
+        values: _OneOrList[object],
+        headers: _OneOrList[dict],
+    ) -> None:
+        with self.condition:
+            event: _Event
+            if isinstance(names, str):
+                event = (t.cast(object, values), Header(t.cast(dict, headers)))
+            else:
+                event = [
+                    (value, Header(header))
+                    for value, header in zip(
+                        t.cast(t.List[object], values), t.cast(t.List[dict], headers)
+                    )
+                ]
+            self._queue.append(event)
+            self.condition.notify_all()
+
+    def _on_exception(
+        self, _names: _OneOrList[str], _desc: str, exc: Exception
+    ) -> None:
+        with self.condition:
+            self._queue.append(JavaException(exc))
+            self.condition.notify_all()
+
+
+class ParamStream(_BaseStream):
+    """A synchronized handle to a one-parameter PyJapc subscription.
+
+    Do not instantiate this class yourself. Use
+    :py:func:`subscribe_stream` instead.
+    """
+
+    def __init__(
+        self,
+        japc: "PyJapc",
+        name: str,
+        *,
+        maxlen: t.Optional[int],
+        **kwargs: t.Any,
+    ) -> None:
+        super().__init__(japc, name, maxlen=maxlen, **kwargs)
+
+    @property
+    def oldest(self) -> t.Tuple[object, Header]:
+        return t.cast(t.Tuple[object, Header], super().oldest)
+
+    @property
+    def newest(self) -> t.Tuple[object, Header]:
+        return t.cast(t.Tuple[object, Header], super().newest)
+
+    @t.overload
+    def wait_next(self) -> t.Tuple[object, Header]:
+        ...
+
+    @t.overload
+    def wait_next(self, timeout: float) -> t.Optional[t.Tuple[object, Header]]:
+        ...
+
+    @functools.wraps(_BaseStream._wait_next, assigned=["__doc__"], updated=[])
+    def wait_next(
+        self, timeout: t.Optional[float] = None
+    ) -> t.Optional[t.Tuple[object, Header]]:
+        # pylint: disable = missing-function-docstring
+        return t.cast(t.Tuple[object, Header], super()._wait_next(timeout))
+
+    def next_if_ready(self) -> t.Optional[t.Tuple[object, Header]]:
+        """Return the next value or None if the queue is empty.
+
+        This is a synonym for ``wait_next(timeout=0.0)``. It makes no
+        clear that no waiting will happen, except to acquire the
+        stream's lock.
+        """
+        return self.wait_next(0.0)
+
+
+class ParamGroupStream(_BaseStream):
+    """A synchronized handle to a multi-parameter PyJapc subscription.
+
+    Do not instantiate this class yourself. Use
+    :py:func:`subscribe_stream` instead.
+    """
+
+    def __init__(
+        self,
+        japc: "PyJapc",
+        name: t.Iterable[str],
+        *,
+        maxlen: t.Optional[int],
+        **kwargs: t.Any,
+    ) -> None:
+        super().__init__(japc, name, maxlen=maxlen, **kwargs)
+
+    @property
+    def oldest(self) -> t.List[t.Tuple[object, Header]]:
+        return t.cast(t.List[t.Tuple[object, Header]], super().oldest)
+
+    @property
+    def newest(self) -> t.List[t.Tuple[object, Header]]:
+        return t.cast(t.List[t.Tuple[object, Header]], super().newest)
+
+    @t.overload
+    def wait_next(self) -> t.List[t.Tuple[object, Header]]:
+        ...
+
+    @t.overload
+    def wait_next(self, timeout: float) -> t.Optional[t.List[t.Tuple[object, Header]]]:
+        ...
+
+    @functools.wraps(_BaseStream._wait_next, assigned=["__doc__"], updated=[])
+    def wait_next(
+        self, timeout: t.Optional[float] = None
+    ) -> t.Optional[t.List[t.Tuple[object, Header]]]:
+        # pylint: disable = missing-function-docstring
+        return t.cast(t.List[t.Tuple[object, Header]], super()._wait_next(timeout))
+
+    def next_if_ready(self) -> t.Optional[t.List[t.Tuple[object, Header]]]:
+        """Return the next value or None if the queue is empty.
+
+        This is a synonym for ``wait_next(timeout=0.0)``. It makes no
+        clear that no waiting will happen, except to acquire the
+        stream's lock.
+
+        Returns:
+            The oldest value in the queue or None, if the queue is empty.
+
+        Raises:
+            JavaException: if an exception occurred on the Java side
+                while receiving this value.
+        """
+        return self.wait_next(0.0)
+
+
+@t.overload
+def subscribe_stream(
+    japc: "PyJapc",
+    name_or_names: str,
+    *,
+    maxlen: t.Optional[int] = ...,
+    convert_to_python: bool = ...,
+    selector: t.Optional[str] = ...,
+    data_filter: t.Optional[str] = ...,
+) -> ParamStream:
+    ...
+
+
+# Note: `name_or_names` is annotated as a list on purpose. The reason is
+# that Python's strings themselves are collections of strings:
+# `list("foo") == ["f", "o", "o"]`. Hence, `t.Collection[str]` and
+# `t.Iterable[str]` will conflict with plain `str`. This likely will
+# never be fixable.
+@t.overload
+def subscribe_stream(
+    japc: "PyJapc",
+    name_or_names: t.List[str],
+    *,
+    maxlen: t.Optional[int] = ...,
+    convert_to_python: bool = ...,
+    selector: t.Optional[str] = ...,
+    data_filter: t.Optional[str] = ...,
+) -> ParamGroupStream:
+    ...
+
+
+def subscribe_stream(
+    japc: "PyJapc",
+    name_or_names: t.Union[str, t.List[str]],
+    *,
+    maxlen: t.Optional[int] = 1,
+    convert_to_python: bool = True,
+    selector: t.Optional[str] = None,
+    data_filter: t.Optional[str] = None,
+) -> t.Union[ParamStream, ParamGroupStream]:
+    """Subscribe to a parameter and create a stream of its values.
+
+    The returned stream synchronizes with the subscription handler to
+    ensure that no race conditions occur. It provides methods that allow
+    the caller to wait for the next value to arrive. By default, the
+    stream also maintains a queue to ensure that no values are lost.
+
+    Args:
+        japc: The :py:class:`PyJapc` object on which to subscribe.
+        name_or_names: The parameter(s) to which to subscribe. Pass a
+            single string to subscribe to a parameter, a list of strings
+            to subscribe to a parameter group.
+
+    Keyword args:
+        maxlen: The maximum length of the stream's internal queue. The
+            default is ``1``, i.e. only the most recent value is
+            retained. If None, there is no limit and the queue might
+            grow beyond all bounds if not emptied regularly.
+        convert_to_python: If passed and False, return raw Java objects.
+            By default, JAPC attempts to convert Java objects to Python
+            objects.
+        selector: If passed, use this instead of ``japc``'s default
+            timing selector.
+        data_filter: If passed, use this instead of ``japc``'s default
+            data filter.
+
+    Returns:
+        A :py:class:`ParamStream` for a single parameter and a
+        :py:class:`ParamGroupStream` for a parameter group.
+
+    Note:
+        The synchronization happens purely on a threading level. No
+        timestamps are inspected or acted upon. If you need to ensure
+        certain timing behavior, you must inspect the :py:class:`Header`
+        returned by the stream.
+    """
+    subscribe_kwargs: t.Dict[str, t.Any] = {"noPyConversion": not convert_to_python}
+    if selector is not None:
+        subscribe_kwargs["timingSelectorOverride"] = selector
+    if data_filter is not None:
+        subscribe_kwargs["dataFilterOverride"] = data_filter
+    if isinstance(name_or_names, str):
+        return ParamStream(japc, name_or_names, maxlen=maxlen, **subscribe_kwargs)
+    return ParamGroupStream(japc, name_or_names, maxlen=maxlen, **subscribe_kwargs)

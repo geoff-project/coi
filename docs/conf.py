@@ -70,6 +70,7 @@ exclude_patterns = [
 
 # -- Options for Autodoc -----------------------------------------------------
 
+autodoc_member_order = "groupwise"
 autodoc_typehints = "signature"
 autodoc_type_aliases = {
     "MatplotlibFigures": "cernml.coi.mpl_utils.MatplotlibFigures",
