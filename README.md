@@ -66,7 +66,7 @@ application that will optimize your problem.
 [options]
 install_requires =
     gym >= 0.11
-    cernml-coi ~= 0.4.0
+    cernml-coi >= 0.6.0
 ```
 
 Then, write a class that implements one or multiple of the optimization
