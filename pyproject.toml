@@ -41,6 +41,9 @@ testpaths = ["tests", "cernml"]
 [tool.pylint.MASTER]
 extension-pkg-whitelist = "PyQt5"
 
+[tool.pylint.FORMAT]
+ignore-long-lines = '<?https?://\S+>?$'
+
 [tool.pylint.REPORTS]
 reports = false
 score = false
