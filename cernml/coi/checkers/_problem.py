@@ -14,6 +14,7 @@ from .._problem import Problem
 
 try:
     from matplotlib.figure import Figure
+
     from ..utils import iter_matplotlib_figures
 except ImportError:
     MPL_AVAILABLE = False

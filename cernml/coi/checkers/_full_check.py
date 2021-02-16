@@ -8,9 +8,9 @@ import typing as t
 import gym
 import importlib_metadata
 
+from ._env import check_env
 from ._problem import Problem, check_problem
 from ._single_opt import SingleOptimizable, check_single_optimizable
-from ._env import check_env
 
 LOG = logging.getLogger(__name__)
 

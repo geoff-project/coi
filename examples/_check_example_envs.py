@@ -3,10 +3,10 @@
 
 # pylint: disable = unused-import
 
-from cernml import coi
-import parabola
 import configurable
+import parabola
 
+from cernml import coi
 
 if not coi.registry.all():
     raise AssertionError("no environments registered")

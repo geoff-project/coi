@@ -54,26 +54,11 @@ additional requirements:
 7. The environment must never diverge to NaN or infinity.
 """
 
-from ._configurable import (
-    BadConfig,
-    Config,
-    Configurable,
-    DuplicateConfig,
-)
+from ._configurable import BadConfig, Config, Configurable, DuplicateConfig
 from ._machine import Machine
-from ._optenv import (
-    Constraint,
-    OptEnv,
-    OptGoalEnv,
-    SingleOptimizable,
-)
+from ._optenv import Constraint, OptEnv, OptGoalEnv, SingleOptimizable
 from ._problem import Problem
-from ._registration import (
-    registry,
-    register,
-    make,
-    spec,
-)
+from ._registration import make, register, registry, spec
 from ._sepenv import (
     SeparableEnv,
     SeparableGoalEnv,

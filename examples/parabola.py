@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """An example implementation of the `OptEnv` interface."""
 
+import argparse
 import sys
 import typing as t
-import argparse
 
 import gym
 import numpy as np

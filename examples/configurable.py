@@ -2,40 +2,35 @@
 """An example implementation of the `OptEnv` interface."""
 
 import sys
-from types import SimpleNamespace
 import typing as t
+from types import SimpleNamespace
 
 import gym
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot
 from matplotlib.axes import Axes
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg as FigureCanvas,
-    NavigationToolbar2QT as NavigationToolbar,
-)
 from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtGui import QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QApplication,
+    QCheckBox,
     QComboBox,
-    QHBoxLayout,
-    QMainWindow,
-    QPushButton,
-    QVBoxLayout,
-    QLabel,
-    QWidget,
     QDialog,
     QDialogButtonBox,
-    QFormLayout,
-    QSpinBox,
     QDoubleSpinBox,
+    QFormLayout,
+    QHBoxLayout,
+    QLabel,
     QLineEdit,
-    QCheckBox,
-)
-from PyQt5.QtGui import (
-    QIntValidator,
-    QDoubleValidator,
+    QMainWindow,
+    QPushButton,
+    QSpinBox,
+    QVBoxLayout,
+    QWidget,
 )
 
 from cernml import coi

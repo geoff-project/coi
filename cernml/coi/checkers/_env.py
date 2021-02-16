@@ -8,8 +8,8 @@ import warnings
 import gym
 import numpy as np
 
-from ._generic import assert_range, is_box, is_reward
 from .._sepenv import SeparableEnv
+from ._generic import assert_range, is_box, is_reward
 
 
 def check_env(env: gym.Env, warn: bool = True) -> None:

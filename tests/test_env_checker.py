@@ -6,8 +6,8 @@
 import typing as t
 
 import gym
-import numpy as np
 import matplotlib.figure
+import numpy as np
 from matplotlib import pyplot
 
 from cernml.coi import Machine, SeparableOptGoalEnv, check

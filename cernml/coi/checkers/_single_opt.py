@@ -8,8 +8,8 @@ import gym
 import numpy as np
 from scipy.optimize import LinearConstraint, NonlinearConstraint
 
-from ._generic import assert_range, is_box, is_reward
 from .._optenv import Constraint, SingleOptimizable
+from ._generic import assert_range, is_box, is_reward
 
 
 def check_single_optimizable(opt: SingleOptimizable, warn: bool = True) -> None:
