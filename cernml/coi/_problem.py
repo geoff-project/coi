@@ -136,13 +136,14 @@ class Problem(metaclass=ABCMeta):
             terminal-style text representation. The text can include
             newlines and ANSI escape sequences (e.g. for colors).
         ``"matplotlib_figures"``
-            Render to one or more `matplotlib.figure.Figure` objects.
-            This should return all figures whose contents have changed.
-            The following return types are allowed:
+            Render to one or more :py:class:`matplotlib.figure.Figure`
+            objects. This should return all figures whose contents have
+            changed. The following return types are allowed:
 
-            - a list containing :py:class`Figure` objects and ``(str,
-              Figure)`` tuples;
-            - a mapping with ``str`` keys and :py:class:`Figure` values.
+            - a single ``Figure`` object;
+            - an iterable containing either ``Figure``s or tuples
+              ``(str, Figure)`` or both;
+            - a mapping with ``str`` keys and ``Figure`` values.
 
             Strings are interpreted as window titles for their
             associated figure.

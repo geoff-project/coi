@@ -783,7 +783,7 @@ stays in control, it can take care of GUI things like resizing, zooming, etc.
 for us.
 
 And just like that, our optimization problem is ready to be embedded into a GUI
-application. Here is a very simple one, in just 50 lines of code:
+application. Here is a very simple one, in just 53 lines of code:
 
 ```python
 import jpype
@@ -794,6 +794,7 @@ from matplotlib.backends.backend_qt5agg import (
 )
 from pyjapc import PyJapc
 from coi_example import AwakeElectronBeamSteering
+from cenrml.coi.mpl_utils import iter_matplotlib_figures
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:
@@ -801,8 +802,10 @@ class MainWindow(QtWidgets.QMainWindow):
         japc = PyJapc("", noSet=True, incaAcceleratorName="AWAKE")
         self.problem = AwakeElectronBeamSteering(japc)
         self.x_0 = self.problem.get_initial_params()
-        [figure] = self.problem.render("matplotlib_figures")
-        self.canvas = FigureCanvas(figure)
+        figures = self.problem.render("matplotlib_figures")
+        # We assume just a single figure.
+        for _, figure in iter_matplotlib_figures(figures):
+          self.canvas = FigureCanvas(figure)
         reset = QtWidgets.QPushButton("Reset", clicked=self.on_reset)
         step = QtWidgets.QPushButton("Step", clicked=self.on_step)
         widget = QtWidgets.QWidget()

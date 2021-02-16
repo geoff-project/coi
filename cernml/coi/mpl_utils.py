@@ -8,7 +8,11 @@ from matplotlib.figure import Figure
 
 MaybeTitledFigure = t.Union[Figure, t.Tuple[str, Figure]]
 """Helper annotation for :py:class:`MatplotlibFigures`."""
-MatplotlibFigures = t.Union[t.Iterable[MaybeTitledFigure], t.Mapping[str, Figure]]
+MatplotlibFigures = t.Union[
+    Figure,
+    t.Iterable[MaybeTitledFigure],
+    t.Mapping[str, Figure],
+]
 """Type of the return value of render mode ``"matplotlib_figures``."""
 
 
@@ -40,6 +44,9 @@ def iter_matplotlib_figures(
         ...     for t, f in iter_matplotlib_figures(figures):
         ...         print(f"{t!r}: {f!r}")
         ...
+        >>> # A single figure:
+        >>> print_matplotlib_figures(Figure())
+        '': Figure()
         >>> # Lists of figures:
         >>> print_matplotlib_figures([Figure(), Figure()])
         '': Figure()
@@ -61,13 +68,22 @@ def iter_matplotlib_figures(
     """
     if hasattr(figures, "items"):
         yield from iter(t.cast(t.Mapping[str, Figure], figures).items())
-    else:
-        for item in figures:
-            # Check if `item` is iterable. If yes, attempt to unpack.
-            # This is faster than catching `TypeError` by a factor of
-            # eight.
-            if hasattr(item, "__iter__") or hasattr(item, "__getitem__"):
-                title, figure = t.cast(t.Tuple[str, Figure], item)
-            else:
-                title, figure = "", item
-            yield title, figure
+        return
+    try:
+        iterator = iter(figures)
+    except TypeError:
+        # Not iterable, assume a single figure.
+        yield "", t.cast(Figure, figures)
+        return
+    for item in iterator:
+        # Unpack `item` if it is iterable. We avoid catching `TypeError`
+        # because we are inside a loop and it would be eight times
+        # slower. Make a special exception for strings (which are
+        # iterable), since they would produce a confusing error message.
+        if isinstance(item, str):
+            raise TypeError(f"not a figure: {item!r}")
+        if hasattr(item, "__iter__") or hasattr(item, "__getitem__"):
+            title, figure = t.cast(t.Tuple[str, Figure], item)
+        else:
+            title, figure = "", item
+        yield title, figure
