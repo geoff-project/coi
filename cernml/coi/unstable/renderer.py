@@ -73,7 +73,9 @@ class SimpleRenderer(Renderer):
 
     @classmethod
     def from_generator(
-        cls: t.Type[Self], func: t.Callable[[Figure], Generator]
+        cls: t.Type[Self],
+        func: t.Callable[[Figure], Generator],
+        title: t.Optional[str] = None,
     ) -> Self:
         """Create a simple renderer from a generator.
 
@@ -120,7 +122,7 @@ class SimpleRenderer(Renderer):
             else:
                 iterator.send(figure)
 
-        return cls(callback)
+        return cls(callback, title=title)
 
 
 T = t.TypeVar("T")  # pylint: disable=invalid-name
