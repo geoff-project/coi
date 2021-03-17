@@ -41,6 +41,15 @@ class Renderer:
 class SimpleRenderer(Renderer):
     """Renderer that manages a single figure.
 
+    Args:
+        update: A callback that fills the renderer's figure. Called like
+            ``update(figure)``. The return value is ignored.
+        title: If passed, a figure title that is used in the return
+            value of ``renderer.update("matplotlib_figures")``. Unused
+            in other render modes. In particular, this does not add a
+            title to the figure's contents. For this, consider using
+            :py:meth:`Figure.suptitle()` instead.
+
     This renderer should be preferred, as it is the simplest to use. It
     manages a single figure and passes it to a callback every time
     :py:meth:`update()` is called.
