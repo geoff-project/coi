@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Provides the function `check()` to validate a `Problem`."""
 
 from ._env import check_env

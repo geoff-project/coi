@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Checker for the `Problem` ABC."""
 
 import collections.abc

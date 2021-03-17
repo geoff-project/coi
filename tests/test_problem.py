@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Test that `Problem` does not require direct inheritance."""
 # pylint: disable = missing-class-docstring, missing-function-docstring
 

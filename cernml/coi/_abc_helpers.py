@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Provides check_methods(), a helper function for ABCs."""
 
 from typing import Any

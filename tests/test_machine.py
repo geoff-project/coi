@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Test that `Machine` warns against using TitleCase names."""
 # pylint: disable = missing-class-docstring, missing-function-docstring
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """An environment interface that supports RL and numerical optimization."""
 
 # pylint: disable = abstract-method, too-few-public-methods

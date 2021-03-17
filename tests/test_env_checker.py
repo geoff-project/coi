@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Test the check() function."""
 
 # pylint: disable = missing-class-docstring, missing-function-docstring

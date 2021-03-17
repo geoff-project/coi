@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Checker for the `SingleOptimizable` ABC."""
 
 import typing as t

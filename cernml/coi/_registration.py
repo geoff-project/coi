@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """The registry used by CERNML-COI."""
 
 from typing import Any, Callable, Mapping, Optional, Union

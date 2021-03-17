@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """An environment interface that splits calculations into reusable parts."""
 
 # pylint: disable = abstract-method, too-few-public-methods

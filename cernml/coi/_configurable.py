@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Provide `Configurable`, an interface for GUI compatibility."""
 
 from abc import ABCMeta, abstractmethod

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Utilities for working with the Matplotlib."""
 
 import typing as t

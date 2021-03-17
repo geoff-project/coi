@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Test the inheritance chain of the package."""
 
 # pylint: disable = missing-class-docstring, missing-function-docstring

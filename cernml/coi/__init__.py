@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Common Optimization Interfaces for optimizers and RL agents.
 
 The most primitive interface provided by this package is the

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """An enum of all the possible machines an environment can pertain to."""
 
 import functools

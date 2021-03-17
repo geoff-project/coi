@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Generic assertions and checks used by multiple checkers."""
 
 import numbers

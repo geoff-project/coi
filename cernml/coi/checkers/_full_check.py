@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """Provide the main entry point check()."""
 
 import logging

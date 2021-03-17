@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """Provide `Problem`, the most fundamental API of this package."""
 
 from abc import ABCMeta
