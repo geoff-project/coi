@@ -25,7 +25,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
     objective_range = (0.0, np.sqrt(8.0))
     metadata = {
         "render.modes": ["ansi", "human", "matplotlib_figures"],
-        "cern.machine": Machine.NoMachine,
+        "cern.machine": Machine.NO_MACHINE,
     }
 
     def __init__(self) -> None:

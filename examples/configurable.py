@@ -47,7 +47,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
     # Domain declarations.
     metadata = {
         "render.modes": ["ansi", "human", "matplotlib_figures"],
-        "cern.machine": coi.Machine.NoMachine,
+        "cern.machine": coi.Machine.NO_MACHINE,
     }
 
     # The radius at which an episode is ended. We employ "reward dangling",

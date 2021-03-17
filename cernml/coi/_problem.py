@@ -65,7 +65,7 @@ class Problem(metaclass=ABCMeta):
     metadata: ClassVar[Mapping[str, Any]] = MappingProxyType(
         {
             "render.modes": [],
-            "cern.machine": Machine.NoMachine,
+            "cern.machine": Machine.NO_MACHINE,
         }
     )
 

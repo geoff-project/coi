@@ -377,7 +377,7 @@ class AwakeElectronBeamSteering(coi.SingleOptimizable):
 
     metadata = {
         "render.modes": [],
-        "cern.machine": coi.Machine.Awake,
+        "cern.machine": coi.Machine.AWAKE,
         "cern.japc": True,
     }
 
@@ -599,7 +599,7 @@ We start out by modifying a few lines of code we've already written:
       metadata = {
 -         "render.modes": [],
 +         "render.modes": ["human"],
-          "cern.machine": coi.Machine.Awake,
+          "cern.machine": coi.Machine.AWAKE,
           "cern.japc": True,
       }
 ```
@@ -719,7 +719,7 @@ the previous code:
       metadata = {
 -         "render.modes": ["human"],
 +         "render.modes": ["human", "matplotlib_figures"],
-          "cern.machine": coi.Machine.Awake,
+          "cern.machine": coi.Machine.AWAKE,
           "cern.japc": True,
       }
 ```

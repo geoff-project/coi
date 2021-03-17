@@ -86,7 +86,7 @@ class Parabola(coi.SingleOptimizable, gym.Env):
     optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
     metadata = {
         "render.modes": [],
-        "cern.machine": coi.Machine.NoMachine,
+        "cern.machine": coi.Machine.NO_MACHINE,
     }
 
     def __init__(self):

@@ -30,7 +30,7 @@ class Parabola(coi.OptEnv):
     objective_range = (0.0, 8.0)
     metadata = {
         "render.modes": ["ansi", "human", "matplotlib_figures"],
-        "cern.machine": coi.Machine.NoMachine,
+        "cern.machine": coi.Machine.NO_MACHINE,
     }
 
     # The radius at which an episode is ended. We employ "reward dangling",
