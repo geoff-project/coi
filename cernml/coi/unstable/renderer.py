@@ -66,9 +66,10 @@ class SimpleRenderer(Renderer):
         if mode == "human":
             # In human mode, we must manually update our figure to
             # ensure that the results of `self._update` become visible.
+            self.figure.show(warn=False)
             # Use draw_idle() to actually postpone drawing until the
-            # next GUI pause. In matplotlib_figures mode, we return our
-            # figure to the caller, so they are free to call draw()
+            # next GUI pause. In `matplotlib_figures` mode, we return
+            # our figure to the caller, so they are free to call draw()
             # themselves.
             self.figure.canvas.draw_idle()
             return None
