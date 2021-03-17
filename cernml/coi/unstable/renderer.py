@@ -48,6 +48,35 @@ class SimpleRenderer(Renderer):
     If you need to do non-trivial set up for your figure, consider using
     :py:meth:`from_generator()`. For an even more concise wrapper, see
     the :py:class:`render_generator` descriptor.
+
+    Example::
+
+        >>> from typing import Iterator
+        >>> from cernml import coi
+        >>> from cernml.coi.mpl_utils import Figure
+        >>> class SomePoints(coi.Problem):
+        ...     metadata = {"render.modes": ["human", "matplotlib_figures"]}
+        ...     def __init__(self):
+        ...         self.data = np.random.uniform(size=10)
+        ...         self.renderer = SimpleRenderer.from_generator(self.iter_updates)
+        ...
+        ...     def render(mode):
+        ...         if mode in self.metadata["render.modes"]:
+        ...             return self.renderer.update(mode)
+        ...         return super().render(mode)
+        ...
+        ...     def iter_updates(self, fig: Figure) -> Iterator[None]:
+        ...         # Initialization, executed on the first call to
+        ...         # ``render()``.
+        ...         axes = fig.subplots()
+        ...         [points] = axes.plot(self.data, "o")
+        ...         while True:
+        ...             # Suspension point. Here, control returns to
+        ...             # ``render()``. On the second call to
+        ...             # ``render()``, execution continues here.
+        ...             yield
+        ...             # Update the plot and yield again.
+        ...             points.set_ydata(self.data)
     """
 
     Self = t.TypeVar("Self", bound="SimpleRenderer")
@@ -90,35 +119,6 @@ class SimpleRenderer(Renderer):
         A generator is a function that contains ``yield`` instead of
         ``return``. You can use this to make state management in your
         callback easier. See the class docstring for an example.
-
-        Example::
-
-            >>> from typing import Iterator
-            >>> from cernml import coi
-            >>> from cernml.coi.mpl_utils import Figure
-            >>> class SomePoints(coi.Problem):
-            ...     metadata = {"render.modes": ["human", "matplotlib_figures"]}
-            ...     def __init__(self):
-            ...         self.data = np.random.uniform(size=10)
-            ...         self.renderer = SimpleRenderer.from_generator(self.iter_updates)
-            ...
-            ...     def render(mode):
-            ...         if mode in self.metadata["render.modes"]:
-            ...             return self.renderer.update(mode)
-            ...         return super().render(mode)
-            ...
-            ...     def iter_updates(self, fig: Figure) -> Iterator[None]:
-            ...         # Initialization, executed on the first call to
-            ...         # ``render()``.
-            ...         axes = fig.subplots()
-            ...         [points] = axes.plot(self.data, "o")
-            ...         while True:
-            ...             # Suspension point. Here, control returns to
-            ...             # ``render()``. On the second call to
-            ...             # ``render()``, execution continues here.
-            ...             yield
-            ...             # Update the plot and yield again.
-            ...             points.set_ydata(self.data)
         """
         iterator = None
 
