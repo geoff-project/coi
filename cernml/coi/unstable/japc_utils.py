@@ -257,6 +257,9 @@ class _BaseStream(metaclass=abc.ABCMeta):
             event = self._queue[-1]
         return _unwrap_event(event)
 
+    # Tricky: We write the docstring on this internal method and
+    # dynamically copy it onto the public method `wait_next()`
+    # in the subclasses.
     def _wait_next(self, timeout: t.Optional[float]) -> t.Optional[_Item]:
         """Wait for the next value received by the stream.
 
