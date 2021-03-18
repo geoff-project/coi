@@ -310,7 +310,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
                     )
                 ]
             self._queue.append(event)
-            self.condition.notify_all()
+            self.condition.notify()
 
     def _on_exception(
         self, _names: _OneOrList[str], _desc: str, exc: Exception
