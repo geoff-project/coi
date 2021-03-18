@@ -67,6 +67,22 @@
     :show-inheritance:
 ```
 
+## Cancellation
+
+```eval_rst
+.. autoclass:: cernml.coi.CancellationTokenSource
+    :members:
+    :show-inheritance:
+
+.. autoclass:: cernml.coi.CancellationToken
+    :members:
+    :show-inheritance:
+
+.. autoexception:: cernml.coi.CancelledError
+    :show-inheritance:
+```
+
+
 ## Separable Environments
 
 ```eval_rst

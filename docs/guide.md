@@ -84,6 +84,9 @@ The following keys are defined and understood by this package:
   with;
 - `"cern.japc"`: a boolean flag indicating whether the problem's constructor
   expects an argument named `japc` of type `pyjapc.PyJapc`;
+- `"cern.cancellable"`: A boolean flag indicating whether the problem's
+  constructor expects an argument named `cancellation_token` of type
+  [`CancellationToken`][] (see [Cancellation](#cancellation)).
 
 See the [API docs][`metadata`] for a full spec.
 
@@ -340,6 +343,188 @@ This makes your environment known to "the world" and an environment management
 application that imports your package knows how to find and interact with your
 environment.
 
+## Synchronization and Cancellation
+
+A typical use case for COI problems is optimization of parameters of various
+CERN accelerators. Doing so naturally requires communication with these
+machines. This communication may take take a long time – especially when the
+data we're interested in is *cycle-bound* (is published in regular intervals of
+several seconds). Handling this in a clean fashion requires **synchronization**
+between our optimization logic and the subscription handler that receives data
+from the machine.
+
+In addition, machines may exhibit sporadic transient failures. In this case, we
+want to discard the defective data and wait for the next sample to arrive. At
+the same time, if a failure turns out to be non-transient (it requires human
+intervention), we don't want this logic to get stuck in an infinite loop. In
+other words, users of our COI problems must be able to **cancel** them.
+
+Tricky problems indeed! While this package cannot claim to solve them in all
+possible cases, it provides a few tools to get reasonable behavior with few
+lines of code in the most common cases.
+
+### Synchronization
+
+To solve the problem of synchronization, the COI provide the concept of
+*parameter streams*. A stream is a combination of a PyJapc subscription
+handler, a data queue, and synchronization logic between the two. It allows you
+to subscribe to a JAPC parameter and wait for the next value to arrive:
+
+```python
+from pyjapc import PyJapc
+from cernml.coi.unstable.japc_utils import subscribe_stream
+
+japc = PyJapc("LHC.USER.ALL", noSet=True)
+the_field = subscribe_stream(japc, "device/property#field")
+# Blocks execution until the next value is there.
+value, header = the_field.wait_next()
+```
+
+They allow you to get the next value without manually maintaining a queue and
+sleeping for what you think is a reasonable time between cycles. This example
+sets a JAPC parameter and then waits until the next cycle after the operation:
+
+```python
+from datetime import datetime, timezone
+japc.setParam(...)
+now = datetime.now(timezone.utc)
+for value, header in iter(the_field.wait_next, None):
+    if header.cycle_stamp > now:
+        break
+make_use(value)
+```
+
+See the [API
+reference](api.html#cernml.coi.unstable.japc_utils.subscribe_stream) for all
+details.
+
+```eval_rst
+.. warning::
+    Parameter streams are considered *unstable* and may change arbitrarily
+    between minor releases. The more users experiment with them, and the more
+    feedback we gather, the more likely they are to get stabilized soon.
+```
+
+### Cancellation
+
+In order to cancel long-running data acquisition tasks, the COI have adopted
+the concept of [cancellation tokens][C-Sharp Cancellation Tokens] from C#. A
+cancellation token is a small object that is handed to your [`Problem`][]
+subclass on which you may check whether the user has requested a cancellation
+of your operation. If this is the case, you have the ability to cleanly shut
+down operations – usually by raising an exception.
+
+To use this feature, your problem must first declare that its support it by
+setting the `cern.cancellable` [metadata](#metadata). When it does so, a host
+application will pass a [`CancellationToken`][] to the constructor. On this
+token, the problem should check whether cancellation has been requested
+whenever it enters a loop that may run for a long time.
+
+This sounds complicated, but luckily, [parameter streams](#synchronization)
+already support cancellation tokens:
+
+```python
+from cernml.coi
+from cernml.coi.unstable.japc_utils import subscribe_stream
+
+class MyProblem(coi.SingleOptimizable):
+    metadata = {
+        "cern.japc": True,
+        "cern.cancellable": True,
+        ...,
+    }
+
+    def __init__(self, japc, cancellation_token):
+        self.japc = japc
+        # Pass in the token. The stream will hold onto it and monitor it
+        # whenever you you call `.wait_next()`.
+        self.bpm_readings = subscribe_stream(
+            japc, "...", token=cancellation_token
+        )
+
+    def get_initial_params(self):
+        ...
+
+    def compute_single_objective(self, params):
+        self.japc.setParam("...", param)
+        # This may block for a long time, depending on how fast the data
+        # arrives. However, if the user sends a cancellation request via
+        # the token, `wait_next()` will automatically unblock and raise
+        # an exception.
+        value, header = self.bpm_readings.wait_next()
+        return value
+```
+
+If you have your own data acquisition logic, you can use the token yourself by
+regularly calling [`raise_if_cancellation_requested()`][] on it:
+
+```python
+from time import sleep
+
+class MyProblem(coi.SingleOptimizable):
+
+    def compute_single_objective(self, params):
+        self.japc.setParam(...)
+        value = None
+        while True:
+            self.token.raise_if_cancellation_requested()
+            sleep(0.5)  # Or any operation that takes a long time …
+            value = ...
+            if is_value_good(value):
+                return value
+
+    ...
+```
+
+If you write a host application yourself, you will usually want to create a
+[`CancellationTokenSource`][] and pass its token to the optimization problem if
+it is cancellable:
+
+```python
+from threading import Thread
+from cernml import coi
+
+class MyApp:
+
+    def on_start(self):
+        self.source = coi.CancellationTokenSource()
+        env_name = self.env_name
+        agent = self.agent
+        token = self.source.token
+        self.worker = Thread(target=run, args=(env_name, agent, token))
+        self.worker.start()
+
+    def on_stop(self):
+        self.source.cancel()
+        self.worker.join()
+
+    ...
+
+def run(env_name, agent, token):
+    kwargs = {}
+    metadata = coi.spec(env_name).metadata
+    if metadata.get("cern.cancellable", False):
+        kwargs["cancellation_token"] = token
+    env = coi.make(env_name, **kwargs)
+    try:
+        while True:
+            # Also check the token ourselves, so that the `Problem`
+            # only has to check it when it enters a loop.
+            token.raise_if_cancellation_requested()
+            obs = env.reset()
+            done = False
+            state = None
+            while not done:
+                # Ditto.
+                token.raise_if_cancellation_requested()
+                action, state = agent.predict(obs, state)
+                obs, _reward, done, _info = env.step(action)
+    except coi.CancelledError:
+        pass
+    finally:
+        env.close()  # Never forget this!
+```
+
 ## GoalEnv
 
 ```eval_rst
@@ -471,6 +656,11 @@ combine each of the separable interfaces with [`SingleOptimizable`][]. They are
 
 [`Space`]: api.html#gym.spaces.Space
 [`Box`]: api.html#gym.spaces.Box
+
+[C-Sharp Cancellation Tokens]: https://docs.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads
+[`CancellationTokenSource`]: api.html#cernml.coi.CancellationTokenSource
+[`CancellationToken`]: api.html#cernml.coi.CancellationToken
+[`raise_if_cancellation_requested()`]: api.html#cernml.coi.CancellationToken.raise_if_cancellation_requested
 
 [`SeparableEnv`]: api.html#cernml.coi.SeparableEnv
 [`SeparableEnv.step()`]: api.html#cernml.coi.SeparableEnv.step

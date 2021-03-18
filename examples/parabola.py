@@ -29,8 +29,21 @@ class Parabola(coi.OptEnv):
     reward_range = (-8.0, 0.0)
     objective_range = (0.0, 8.0)
     metadata = {
+        # All `mode` arguments to `self.render()` that we support.
         "render.modes": ["ansi", "human", "matplotlib_figures"],
+        # The example is independent of all CERN accelerators.
         "cern.machine": coi.Machine.NO_MACHINE,
+        # No need for communication with CERN accelerators.
+        "cern.japc": False,
+        # Cancellation is important if you communicate with an
+        # accelerator. There might be a bug in the machine and your
+        # environment is waiting for data that will never arrive. In
+        # such situations, it is good when the user gets a chance to
+        # cleanly shut down your environment. Cancellation tokens solve
+        # this problem.
+        # That being said, we don't communicate with an accelerator, so
+        # we don't need this feature here.
+        "cern.cancellable": False,
     }
 
     # The radius at which an episode is ended. We employ "reward dangling",

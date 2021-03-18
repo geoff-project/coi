@@ -6,12 +6,14 @@ import datetime
 import functools
 import logging
 import threading
-import types
 import typing as t
 from collections import deque
 
 if t.TYPE_CHECKING:
-    from pyjapc import PyJapc  # pylint: disable=import-error, unused-import
+    # pylint: disable=import-error, unused-import
+    from pyjapc import PyJapc
+
+    from cernml.coi import CancellationToken, CancelledError
 
 LOG = logging.getLogger(__name__)
 
@@ -126,7 +128,13 @@ class _BaseStream(metaclass=abc.ABCMeta):
     """A synchronized PyJapc subscription handle.
 
     Do not instantiate this class yourself. Use
-    :py:func:`subscribe_stream` instead to get one of its subclasses.
+    :py:func:`subscribe_stream` instead.
+
+    This class contains the common logic of :py:class:`ParamStream` and
+    :py:class:`ParamGroupStream`. The subclasses only contain thin
+    wrapper methods that perform some type casting. The whole reason for
+    this setup is to communicate via types whether a stream may return
+    an object or a list of objects.
     """
 
     Self = t.TypeVar("Self", bound="_BaseStream")
@@ -136,6 +144,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
         japc: "PyJapc",
         name: t.Union[str, t.Iterable[str]],
         *,
+        token: t.Optional["CancellationToken"],
         maxlen: t.Optional[int],
         **kwargs: t.Any,
     ) -> None:
@@ -147,9 +156,11 @@ class _BaseStream(metaclass=abc.ABCMeta):
             **kwargs,
         )
         self._queue: t.Deque[_Event] = deque(maxlen=maxlen)
-        # Threading: We _need_ this condition to use an `RLock`, which
-        # happens to be the default.
-        self.condition = threading.Condition()
+        # If we get a token, we reuse its condition variable. This is
+        # the only reasonable way to wait for _either_ a cancellation
+        # _or_ a new JAPC event.
+        self._token = token
+        self._condition = token.wait_handle if token else threading.Condition()
 
     def __repr__(self) -> str:
         name = self._handle.getParameter().getName()
@@ -159,12 +170,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
         self.start_monitoring()
         return self
 
-    def __exit__(
-        self,
-        exc_type: t.Type[Exception],
-        exc_value: Exception,
-        exc_tb: types.TracebackType,
-    ) -> None:
+    def __exit__(self, *args: t.Any) -> None:
         self.stop_monitoring()
 
     @property
@@ -182,7 +188,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
 
     def clear(self) -> None:
         """Empty the queue."""
-        with self.condition:
+        with self._condition:
             self._queue.clear()
 
     @contextlib.contextmanager
@@ -220,13 +226,13 @@ class _BaseStream(metaclass=abc.ABCMeta):
             lost. However, you *may* call :py:meth:`wait_next()`, as it
             releases the lock while blocking.
         """
-        with self.condition:
+        with self._condition:
             yield
 
     @property
     def ready(self) -> bool:
         """True if there is an event in the queue."""
-        with self.condition:
+        with self._condition:
             return bool(self._queue)
 
     @property
@@ -239,7 +245,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
             JavaException: if an exception occurred on the Java side
                 while receiving this value.
         """
-        with self.condition:
+        with self._condition:
             event = self._queue[0]
         return _unwrap_event(event)
 
@@ -253,7 +259,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
             JavaException: if an exception occurred on the Java side
                 while receiving this value.
         """
-        with self.condition:
+        with self._condition:
             event = self._queue[-1]
         return _unwrap_event(event)
 
@@ -278,18 +284,29 @@ class _BaseStream(metaclass=abc.ABCMeta):
             a new value has arrived.
 
         Raises:
+            CancelledError: if a :py:class:`CancellationToken` has been
+                passed to :py:func:`subscribe_stream()` and the token
+                has been cancelled.
             JavaException: if an exception occurred on the Java side
                 while receiving this value.
             StreamError: if the queue is empty, the subscription is not
                 active and no timeout has been specified; this serves to
                 prevent a deadlock in the application.
         """
-        with self.condition:
-            if not self._queue:
-                # Prevent deadlock.
-                if not self.monitoring and timeout is not None:
-                    raise StreamError("queue is empty, wait_next() would deadlock")
-                success = self.condition.wait(timeout)
+        # Prevent deadlock.
+        if not self._queue and not self.monitoring and timeout is None:
+            raise StreamError("queue is empty, wait_next() would deadlock")
+        with self._condition:
+            if self._token:
+                self._token.raise_if_cancellation_requested()
+            while not self._queue:
+                # Threading: This wait may return for three reasons: 1.
+                # a new item has arrived, 2. our cancellation token has
+                # been cancelled, 3. the timeout has expired. We must
+                # check all three.
+                success = self._condition.wait(timeout)
+                if self._token:
+                    self._token.raise_if_cancellation_requested()
                 if not success:
                     return None
             event = self._queue.popleft()
@@ -301,7 +318,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
         values: _OneOrList[object],
         headers: _OneOrList[dict],
     ) -> None:
-        with self.condition:
+        with self._condition:
             event: _Event
             if isinstance(names, str):
                 event = (t.cast(object, values), Header(t.cast(dict, headers)))
@@ -313,14 +330,23 @@ class _BaseStream(metaclass=abc.ABCMeta):
                     )
                 ]
             self._queue.append(event)
-            self.condition.notify()
+            # Threading: Notify all will wake up all threads waiting for
+            # new data. They will race for `self._condition` and only
+            # one will acquire it and successfully pop off the queue.
+            # The others fail and go back to sleep.
+            # Threading: We cannot use `notify()` because we share our
+            # condition variable with `self._token`. A thread that waits
+            # only on the token might be woken up and none of the
+            # threads waiting on the queue would be the wiser.
+            self._condition.notify_all()
 
     def _on_exception(
         self, _names: _OneOrList[str], _desc: str, exc: Exception
     ) -> None:
-        with self.condition:
+        with self._condition:
             self._queue.append(JavaException(exc))
-            self.condition.notify_all()
+            # Threading: See comment in `_on_value()`.
+            self._condition.notify_all()
 
 
 class ParamStream(_BaseStream):
@@ -335,10 +361,11 @@ class ParamStream(_BaseStream):
         japc: "PyJapc",
         name: str,
         *,
+        token: t.Optional["CancellationToken"],
         maxlen: t.Optional[int],
         **kwargs: t.Any,
     ) -> None:
-        super().__init__(japc, name, maxlen=maxlen, **kwargs)
+        super().__init__(japc, name, token=token, maxlen=maxlen, **kwargs)
 
     @property
     def oldest(self) -> t.Tuple[object, Header]:
@@ -385,10 +412,11 @@ class ParamGroupStream(_BaseStream):
         japc: "PyJapc",
         name: t.Iterable[str],
         *,
+        token: t.Optional["CancellationToken"],
         maxlen: t.Optional[int],
         **kwargs: t.Any,
     ) -> None:
-        super().__init__(japc, name, maxlen=maxlen, **kwargs)
+        super().__init__(japc, name, token=token, maxlen=maxlen, **kwargs)
 
     @property
     def oldest(self) -> t.List[t.Tuple[object, Header]]:
@@ -435,6 +463,7 @@ def subscribe_stream(
     japc: "PyJapc",
     name_or_names: str,
     *,
+    token: t.Optional["CancellationToken"] = ...,
     maxlen: t.Optional[int] = ...,
     convert_to_python: bool = ...,
     selector: t.Optional[str] = ...,
@@ -453,6 +482,7 @@ def subscribe_stream(
     japc: "PyJapc",
     name_or_names: t.List[str],
     *,
+    token: t.Optional["CancellationToken"] = ...,
     maxlen: t.Optional[int] = ...,
     convert_to_python: bool = ...,
     selector: t.Optional[str] = ...,
@@ -465,6 +495,7 @@ def subscribe_stream(
     japc: "PyJapc",
     name_or_names: t.Union[str, t.List[str]],
     *,
+    token: t.Optional["CancellationToken"] = None,
     maxlen: t.Optional[int] = 1,
     convert_to_python: bool = True,
     selector: t.Optional[str] = None,
@@ -484,6 +515,9 @@ def subscribe_stream(
             to subscribe to a parameter group.
 
     Keyword args:
+        token: If passed, the stream will hold onto this token and
+            watch it. In this case, :py:meth:`wait_next()` can get
+            cancelled through the token.
         maxlen: The maximum length of the stream's internal queue. The
             default is ``1``, i.e. only the most recent value is
             retained. If None, there is no limit and the queue might
@@ -512,5 +546,9 @@ def subscribe_stream(
     if data_filter is not None:
         subscribe_kwargs["dataFilterOverride"] = data_filter
     if isinstance(name_or_names, str):
-        return ParamStream(japc, name_or_names, maxlen=maxlen, **subscribe_kwargs)
-    return ParamGroupStream(japc, name_or_names, maxlen=maxlen, **subscribe_kwargs)
+        return ParamStream(
+            japc, name_or_names, token=token, maxlen=maxlen, **subscribe_kwargs
+        )
+    return ParamGroupStream(
+        japc, name_or_names, token=token, maxlen=maxlen, **subscribe_kwargs
+    )

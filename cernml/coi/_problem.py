@@ -58,6 +58,14 @@ class Problem(metaclass=ABCMeta):
                 create your own :py:class:`pyjapc.PyJapc` instance.
                 Among other things, this ensures that the correct timing
                 selector is set.
+            ``"cern.cancellable"``
+                A boolean flag indicating whether the problem's
+                constructor expects an argument named
+                ``cancellation_token`` of type
+                :py:class:`CancellationToken`. Enable it if your class
+                ever enters any long-running loops that the user may
+                want to interrupt. A classic example is the acquisition
+                and validation of cycle-bound data.
 
             Additionally, all keys that start with ``"cern."`` are
             reserved for future use.

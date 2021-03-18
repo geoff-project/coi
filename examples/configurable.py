@@ -14,7 +14,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtGui import QDoubleValidator, QIntValidator
+from PyQt5.QtGui import QCloseEvent, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -46,8 +46,14 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
 
     # Domain declarations.
     metadata = {
+        # All `mode` arguments to `self.render()` that we support.
         "render.modes": ["ansi", "human", "matplotlib_figures"],
+        # The example is independent of all CERN accelerators.
         "cern.machine": coi.Machine.NO_MACHINE,
+        # No need for communication with CERN accelerators.
+        "cern.japc": False,
+        # We implement cancellation for demonstration purposes.
+        "cern.cancellable": True,
     }
 
     # The radius at which an episode is ended. We employ "reward dangling",
@@ -59,11 +65,14 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
 
     def __init__(
         self,
+        cancellation_token: coi.CancellationToken,
+        *,
         norm: int = 2,
         dangling: bool = True,
         box_width: float = 2.0,
         dim: int = 5,
     ):
+        self.token = cancellation_token
         self.norm = norm
         self.dangling = dangling
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(dim,))
@@ -101,10 +110,20 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.objective_range = (0.0, max_distance)
 
     def reset(self) -> np.ndarray:
+        # This is not good usage. In practice, you should only accept
+        # and use cancellation tokens if your environment contains a
+        # loop that waits for data. This is only for demonstration
+        # purposes.
+        self.token.raise_if_cancellation_requested()
         self.pos = self.optimization_space.sample()
         return self.pos.copy()
 
     def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
+        # This is not good usage. In practice, you should only accept
+        # and use cancellation tokens if your environment contains a
+        # loop that waits for data. This is only for demonstration
+        # purposes.
+        self.token.raise_if_cancellation_requested()
         next_pos = self.pos + action
         self.pos = np.clip(
             next_pos,
@@ -123,6 +142,11 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         return self.reset()
 
     def compute_single_objective(self, params: np.ndarray) -> float:
+        # This is not good usage. In practice, you should only accept
+        # and use cancellation tokens if your environment contains a
+        # loop that waits for data. This is only for demonstration
+        # purposes.
+        self.token.raise_if_cancellation_requested()
         self.pos = np.clip(
             params,
             self.observation_space.low,
@@ -203,14 +227,17 @@ class OptimizerThread(QThread):
             self.step.emit()
             return loss
 
-        res: scipy.optimize.OptimizeResult = scipy.optimize.minimize(
-            func,
-            x0=self.env.get_initial_params(),
-            method="COBYLA",
-            constraints=[scipy.optimize.NonlinearConstraint(constraint, 0.0, 1.0)],
-        )
-        if res.success:
-            func(res.x)
+        try:
+            res: scipy.optimize.OptimizeResult = scipy.optimize.minimize(
+                func,
+                x0=self.env.get_initial_params(),
+                method="COBYLA",
+                constraints=[scipy.optimize.NonlinearConstraint(constraint, 0.0, 1.0)],
+            )
+            if res.success:
+                func(res.x)
+        except coi.CancelledError:
+            print("Operation cancelled by user")
 
 
 class ConfigureDialog(QDialog):
@@ -335,7 +362,11 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
 
-        self.env = coi.make("ConfParabola-v0")
+        self.cancellation_token_source = coi.CancellationTokenSource()
+        self.env = coi.make(
+            "ConfParabola-v0",
+            cancellation_token=self.cancellation_token_source.token,
+        )
         self.worker = OptimizerThread(self.env)
         self.worker.step.connect(self.on_opt_step)
         self.worker.finished.connect(self.on_opt_finished)
@@ -357,6 +388,12 @@ class MainWindow(QMainWindow):
         buttons_layout.addWidget(self.launch)
         buttons_layout.addWidget(self.configure_env)
         self.addToolBar(NavigationToolbar(self.canvas, parent=self))
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        # pylint: disable = invalid-name, missing-function-docstring
+        self.cancellation_token_source.cancel()
+        self.worker.wait()
+        event.accept()
 
     def on_configure(self) -> None:
         """Open the dialog to configure the environment."""
@@ -389,4 +426,4 @@ def main(argv: t.List[str]) -> int:
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    sys.exit(main(sys.argv))

@@ -1,6 +1,7 @@
 """Checker for the `Problem` ABC."""
 
 import collections.abc
+import inspect
 import io
 import typing as t
 import warnings
@@ -29,12 +30,14 @@ def check_problem(
     assert_no_undeclared_render(problem, warn=warn, headless=headless)
     assert_execute_render(problem, headless=headless)
     if warn:
+        warn_japc(problem)
+        warn_cancellable(problem)
         warn_render_modes(problem)
 
 
-def assert_machine(env: Problem) -> None:
+def assert_machine(problem: Problem) -> None:
     """Check that the environment defines the machine it pertains to."""
-    machine = env.metadata.get("cern.machine")
+    machine = problem.metadata.get("cern.machine")
     assert machine is not None, "missing key cern.machine in the environment metadata"
     assert isinstance(machine, Machine), "declared cern.machine is not a Machine enum"
 
@@ -176,6 +179,49 @@ def warn_render_modes(problem: Problem) -> None:
             "`matplotlib.figure.Figure()` objects, but not display "
             "in any way. This will be handled by the GUI instead."
         )
+
+
+def warn_japc(problem: Problem) -> None:
+    """Check that the environment declares JAPC usage."""
+    japc = problem.metadata.get("cern.japc")
+    if japc is None:
+        warnings.warn(
+            "missing key cern.japc in the environment metadata; "
+            "assuming the default value (False)"
+        )
+        return
+    if japc not in (True, False):
+        warnings.warn("declared cern.japc should be a bool")
+        return
+    if japc:
+        init_signature = inspect.signature(type(problem).__init__)
+        if "japc" not in init_signature.parameters:
+            warnings.warn(
+                "environments that declare cern.japc=True should "
+                'accept a keyword argument "japc" in __init__()'
+            )
+
+
+def warn_cancellable(problem: Problem) -> None:
+    """Check that the environment declares its cancellation policy."""
+    cancellable = problem.metadata.get("cern.cancellable")
+    if cancellable is None:
+        warnings.warn(
+            "missing key cern.cancellable in the environment "
+            "metadata; assuming the default value (False)"
+        )
+        return
+    if cancellable not in (True, False):
+        warnings.warn("declared cern.cancellable should be a bool")
+        return
+    if cancellable:
+        init_signature = inspect.signature(type(problem.unwrapped).__init__)
+        if "cancellation_token" not in init_signature.parameters:
+            warnings.warn(
+                "environments that declare cern.cancellable=True "
+                "should accept a keyword argument "
+                '"cancellation_token" in __init__()'
+            )
 
 
 def _get_blocked_modes(*, headless: bool = True) -> t.Sequence[str]:

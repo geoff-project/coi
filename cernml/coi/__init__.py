@@ -31,6 +31,7 @@ package docs`_.
 .. _our package docs: https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi
 """
 
+from ._cancellation import CancellationToken, CancellationTokenSource, CancelledError
 from ._configurable import BadConfig, Config, Configurable, DuplicateConfig
 from ._machine import Machine
 from ._optenv import Constraint, OptEnv, OptGoalEnv, SingleOptimizable

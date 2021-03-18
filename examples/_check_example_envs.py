@@ -13,5 +13,8 @@ if not coi.registry.all():
 
 for spec in coi.registry.all():
     print("Checking", spec.id, "…")
-    env = coi.make(spec.id)
+    kwargs = {}
+    if spec.entry_point.metadata.get("cern.cancellable", False):
+        kwargs["cancellation_token"] = coi.CancellationToken()
+    env = coi.make(spec.id, **kwargs)
     coi.check(env, headless=True, warn=True)
