@@ -83,7 +83,7 @@ The following keys are defined and understood by this package:
 - `"cern.machine"`: the accelerator that an optimization problem is associated
   with;
 - `"cern.japc"`: a boolean flag indicating whether the problem's constructor
-  expects an argument named `japc` of type `pyjapc.PyJapc`.
+  expects an argument named `japc` of type `pyjapc.PyJapc`;
 
 See the [API docs][`metadata`] for a full spec.
 

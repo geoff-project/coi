@@ -53,7 +53,11 @@ class Problem(metaclass=ABCMeta):
             ``"cern.japc"``
                 A boolean flag indicating whether the problem's
                 constructor expects an argument named ``japc`` of type
-                :py:class:`pyjapc.PyJapc`.
+                :py:class:`pyjapc.PyJapc`. Enable it if your class
+                performs any machine communication via JAPC. Do not
+                create your own :py:class:`pyjapc.PyJapc` instance.
+                Among other things, this ensures that the correct timing
+                selector is set.
 
             Additionally, all keys that start with ``"cern."`` are
             reserved for future use.
