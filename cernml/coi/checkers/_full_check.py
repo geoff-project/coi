@@ -51,8 +51,13 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     if isinstance(unwrapped_env, gym.Env):
         LOG.debug("Checking Env interface of %s", env)
         check_env(t.cast(gym.Env, env), warn=warn)
+    # Future compatibility: In importlib-metadata 3.6 (or Python 3.10),
+    # the `entry_points()` function received a major upgrade. We will
+    # eventually want to switch to that.
+    entry_points: t.Iterable[importlib_metadata.EntryPoint] = t.cast(
+        dict, importlib_metadata.entry_points()
+    ).get("cernml.coi.checkers", ())
     # Run plug-in checkers.
-    entry_points = importlib_metadata.entry_points().get("cernml.coi.checkers", ())
     for entry_point in entry_points:
         LOG.debug("Loading checker plugin %s", entry_point.name)
         check_extra = entry_point.load()
