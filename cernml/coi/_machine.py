@@ -79,7 +79,7 @@ class Machine(Enum, metaclass=EnforceAllUpperCaseEnumNames):
     LINAC_3 = "Linac3"
     LINAC_4 = "Linac4"
     LEIR = "LEIR"
-    PS = "PS"
+    PS = "PS"  # pylint: disable=invalid-name
     PSB = "PSB"
     SPS = "SPS"
     AWAKE = "AWAKE"
