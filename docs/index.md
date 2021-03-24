@@ -14,6 +14,7 @@ This repository can be found online on CERN's [Gitlab][].
 
 ## Contents
 
-- [User Guide](guide.md)
 - [Tutorial](tutorial.md)
+- [User Guide](guide.md)
 - [API Reference](api.md)
+- [Changelog](changelog.md)

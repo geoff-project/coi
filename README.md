@@ -145,6 +145,11 @@ change in any given release.
 
 [SemVer]: https://semver.org/
 
+Changelog
+---------
+
+[See here](docs/changelog.md).
+
 Documentation
 -------------
 
