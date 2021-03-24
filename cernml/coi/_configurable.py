@@ -1,4 +1,4 @@
-"""Provide `Configurable`, an interface for GUI compatibility."""
+"""Provide :class:`Configurable`, an interface for GUI compatibility."""
 
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
@@ -30,14 +30,13 @@ class BadConfig(Exception):
 class Config:
     """Declaration of configurable parameters.
 
-    This is the expected return type of
-    :py:meth:`Configurable.get_config()`. It is used by environments to
-    *declare* their configurable parameters, including each parameter's
-    validity invariants. This makes it possible for users of the
-    environment to automatically generate an interface that prevents
-    invalid values as early as possible.
+    This is the return type of :meth:`Configurable.get_config()`. It is
+    used by environments to *declare* their configurable parameters,
+    including each parameter's validity invariants. This makes it
+    possible for users of the environment to automatically generate an
+    interface that prevents invalid values as early as possible.
 
-    For more information, see :py:class:`Configurable`.
+    For more information, see :class:`Configurable`.
 
     Usage:
 
@@ -61,7 +60,7 @@ class Config:
         """A single configurable field.
 
         Don't instantiate this class yourself. Use
-        :py:meth:`Config.add()` instead.
+        :meth:`Config.add()` instead.
         """
 
         dest: str
@@ -83,7 +82,7 @@ class Config:
                 The validated and converted value.
 
             Raises:
-                :py:exc:`BadConfig`: if the value could not be
+                :exc:`BadConfig`: if the value could not be
                     validated.
             """
             try:
@@ -128,7 +127,7 @@ class Config:
         Args:
             dest: The name of the configurable parameter being declared.
                 This is the name under which the value will be available
-                in :py:meth:`Configurable.apply_config()`.
+                in :meth:`~Configurable.apply_config()`.
             value: The value to initialize this parameter with.
                 Typically, this is the current setting for this field.
             label: The display name of the parameter. This will be
@@ -182,7 +181,7 @@ class Config:
 
         Args:
             name: The name of the configurable field. This is the same
-                as the ``dest`` parameter of :py:meth:`add()`.
+                as the ``dest`` parameter of :meth:`add()`.
             text_repr: The string input to validate.
 
         Returns:
@@ -226,11 +225,11 @@ class Config:
 class Configurable(metaclass=ABCMeta):
     """Interface for problems that are configurable.
 
-    Some :py:class:`Problem` classes have several parameters that
-    determine certain details of how they are solved. A classic
-    configurable parameter of environments is the *reward objective*,
-    i.e. the minimum reward for a step upon which an episode is
-    considered solved.
+    Some :class:`Problem` classes have several parameters that determine
+    certain details of how they are solved. A classic configurable
+    parameter of environments is the *reward objective*, i.e. the
+    minimum reward for a step upon which an episode is considered
+    solved.
 
     While these parameters can be set through the initializer, this has
     the problem that it is difficult to annotate them with limits,
@@ -241,9 +240,9 @@ class Configurable(metaclass=ABCMeta):
     and what each parameter's invariants are. Its usage is extremely
     trivial:
 
-    1. :py:meth:`get_config()` returns a declaration of configurable
+    1. :meth:`get_config()` returns a declaration of configurable
        parameters;
-    2. :py:meth:`apply_config()` takes a collection of configurations
+    2. :meth:`apply_config()` takes a collection of configurations
        and applies them to the problem. At any point, it may raise an
        exception to signal that an invariant has been violated.
 
@@ -290,8 +289,8 @@ class Configurable(metaclass=ABCMeta):
         """Configure this object using the given values.
 
         The ``values`` have already been validated using the information
-        given in :py:meth:`get_config()`, but this method may apply
-        further checks.
+        given in :meth:`get_config()`, but this method may apply further
+        checks.
 
         This method should be *transactional*, i.e. in the case of
         failure, an effort should be made that none of the values are
@@ -299,9 +298,9 @@ class Configurable(metaclass=ABCMeta):
 
         Args:
             values: A namespace object. It has one attribute for each
-                field declared in :py:meth:`get_config()`. The attribute
+                field declared in :meth:`get_config()`. The attribute
                 name is exactly the ``dest`` parameter of
-                :py:meth:`Config.add()`.
+                :meth:`Config.add()`.
 
         Raises:
             Exception: If any additional validation checks fail.

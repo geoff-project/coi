@@ -4,12 +4,12 @@ from typing import Any
 
 
 def check_methods(C: type, *methods: str) -> Any:
-    """Check whether the class `C` provides all given methods.
+    """Check whether the class ``C`` provides all given methods.
 
-    Methods are searched in `C` and all its bases, but not in instances
-    of `C`. Only the name is checked, not the signature.
+    Methods are searched in ``C`` and all its bases, but not in
+    instances of ``C``. Only the name is checked, not the signature.
 
-    If the method is found, but explicitly set to `None`, the method is
+    If the method is found, but explicitly set to None, the method is
     considered unimplemented, even if a superclass provides it.
 
     Args:
@@ -17,8 +17,8 @@ def check_methods(C: type, *methods: str) -> Any:
         methods: The names of methods to be searched for.
 
     Returns:
-        True if `C` implements all given methods, otherwise
-        `NotImplemented`.
+        True if ``C`` implements all given methods, otherwise
+        :obj:`NotImplemented`.
     """
     # pylint: disable = invalid-name
     mro = C.__mro__

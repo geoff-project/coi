@@ -100,9 +100,10 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
         num_dims = np.ndim(result)
         assert num_dims == 3, f"render('rgb_array') array should be 3D, not {num_dims}D"
         num_colors = np.shape(result)[-1]
-        assert (
-            num_colors == 3
-        ), f"render('rgb_array') array should have shape (x, y, 3), not (x, y, {num_colors})"
+        assert num_colors == 3, (
+            f"render('rgb_array') array should have shape (x, y, 3), "
+            f"not (x, y, {num_colors})"
+        )
 
     def _assert_human(result: t.Any) -> None:
         assert result is None, f"render('rgb_array') should return None, not {result!r}"

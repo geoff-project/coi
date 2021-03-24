@@ -1,4 +1,4 @@
-"""Provide :py:class:`CancellationToken`."""
+"""Provide :class:`CancellationToken`."""
 
 import threading
 import typing as t
@@ -8,13 +8,13 @@ import weakref
 class CancelledError(Exception):
     """The current task has been requested to be cancelled.
 
-    Note that it inherits from :py:class:`Exception`, so it can be
-    caught by an overly broad ``except`` clause.
+    Note that it inherits from :class:`Exception`, so it can be caught
+    by an overly broad ``except`` clause.
     """
 
 
 class CancellationTokenSource:
-    """Owner of a single :py:class:`CancellationToken`.
+    """Owner of a single :class:`CancellationToken`.
 
     Cancellation tokens provide a means to interrupt a problem that is
     calculating the next value of the loss function or reward. This is
@@ -22,14 +22,13 @@ class CancellationTokenSource:
     long time, e.g. because it requires communication with an external
     machine.
 
-    The usual way to use them is that whenever a :py:class:`Problem`
-    enters a long-running calculation, it should periodically check the
-    token for a cancellation request. If such a request has arrived, the
+    The usual way to use them is that whenever a :class:`Problem` enters
+    a long-running calculation, it should periodically check the token
+    for a cancellation request. If such a request has arrived, the
     problem has a chance to gracefully abort its calculation.
 
-    Calling
-    :py:meth:`~CancellationToken.raise_if_cancellation_requested()` is
-    the most convenient way to handle cancellation in a long-running
+    Calling :meth:`~CancellationToken.raise_if_cancellation_requested()`
+    is the most convenient way to handle cancellation in a long-running
     loop::
 
         >>> import time
@@ -39,14 +38,14 @@ class CancellationTokenSource:
         ...         time.sleep(1)  # Long-running operation.
 
     For more fine-grained control, you may also check
-    :py:attr:`~CancellationToken.cancellation_requested` regularly::
+    :attr:`~CancellationToken.cancellation_requested` regularly::
 
         >>> def loop(token: CancellationToken) -> None:
         ...     while not token.cancellation_requested:
         ...         time.sleep(1)  # Long-running operation.
 
     From outside, the usual pattern is to create a source, pass its
-    token to a *receiver*, and call :py:meth:`cancel()` (or not)::
+    token to a *receiver*, and call :meth:`cancel()` (or not)::
 
         >>> import threading
         >>> source = CancellationTokenSource()
@@ -69,7 +68,7 @@ class CancellationTokenSource:
 
     For debugging purposes, you can also create cancellation tokens that
     are always cancelled or can never be cancelled. See
-    :py:class:`CancellationToken` for more information.
+    :class:`CancellationToken` for more information.
     """
 
     # Developer note: In C#, which directly inspires this class, the
@@ -99,14 +98,14 @@ class CancellationTokenSource:
     def token(self) -> "CancellationToken":
         """The token associated with source.
 
-        Pass this token to a :py:class:`Problem` to be able to
-        communicate a cancellation to it.
+        Pass this token to a :class:`Problem` to be able to communicate
+        a cancellation to it.
         """
         return self._token
 
     @property
     def cancellation_requested(self) -> bool:
-        """True if :py:meth:`cancel()` has been called."""
+        """True if :meth:`cancel()` has been called."""
         return self._token._cancellation_requested
 
     def cancel(self) -> None:
@@ -138,8 +137,8 @@ class CancellationToken:
             cancelled. If True, create a token that is already
             cancelled.
 
-    Use :py:class:`CancellationTokenSource` to create a normal,
-    cancellable token::
+    Use :class:`CancellationTokenSource` to create a normal, cancellable
+    token::
 
         >>> source = CancellationTokenSource()
         >>> c = source.token
@@ -188,7 +187,7 @@ class CancellationToken:
 
         This lazily creates the condition variable. You may use it to
         wait for cancellation. To avoid deadlocks, you should check
-        :py:attr:`cancellation_requested` while the condition variable
+        :attr:`cancellation_requested` while the condition variable
         is locked:
 
             >>> import threading
@@ -224,8 +223,8 @@ class CancellationToken:
         """Raise an exception if a cancellation request has arrived.
 
         Raises:
-            CancelledError: If :py:attr:`cancellation_requested` is
-                True. Note that it inherits from :py:class:`Exception`,
+            CancelledError: If :attr:`cancellation_requested` is
+                True. Note that it inherits from :class:`Exception`,
                 so it can be caught by an overly broad ``except``
                 clause.
         """

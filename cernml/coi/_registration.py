@@ -44,7 +44,7 @@ def register(
         max_episode_steps: The maximum number of steps after which an
             episode is forcefully ended. If this parameter is not None,
             the return value of ``entry_point`` is wrapped in a
-            :py:class:`gym.wrappers.TimeLimit` upon instantiation.
+            :class:`gym.wrappers.TimeLimit` upon instantiation.
 
         kwargs: Any further arguments that should be passed to
             ``entry_point``. This should contain all required arguments
@@ -54,8 +54,8 @@ def register(
         After instantiating a registered problem, the registry spec of
         an object will be added to it as ``obj.unwrapped.spec``. That
         means whatever object is returned by ``entry_point`` *must* have
-        an attribute ``unwrapped`` that points to itself or its core
-        attribute. (like :py:attr:`Problem.unwrapped`)
+        an attribute :attr:`~Problem.unwrapped` that points to itself or
+        any wrapped problem.
     """
     # pylint: disable = invalid-name, redefined-builtin
     registry.register(
@@ -90,7 +90,7 @@ def spec(id: str) -> EnvSpec:
         id: The name under which the environment has been registered.
 
     Returns:
-        A :py:class:`gym.envs.registration.EnvSpec` object that contains
+        A :class:`gym.envs.registration.EnvSpec` object that contains
         the arguments with which the problem has been registered.
 
     Raises:

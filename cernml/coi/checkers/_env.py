@@ -29,9 +29,9 @@ def assert_observation_space(env: gym.Env) -> None:
     """Check that the observation space is as expected.
 
     The space must generally be a box. The exception are multi-goal
-    environments, which are also allowed to have dict spaces. In this case, the
-    dict must have specific keys and the `observation` sub-space must be a box
-    in turn.
+    environments, which are also allowed to have dict spaces. In this
+    case, the dict must have specific keys and the `observation`
+    sub-space must be a box in turn.
     """
     space = env.observation_space
     if isinstance(space, gym.spaces.Dict):

@@ -63,14 +63,15 @@ class EnforceAllUpperCaseEnumNames(EnumMeta):
 class Machine(Enum, metaclass=EnforceAllUpperCaseEnumNames):
     """Enum of the various accelerators at CERN.
 
-    This enum should be used by environments in their `metadata` dictionary to
-    declare which accelerator they pertain to. This can be used to filter a
-    collection of environments for only those that are interesting to a certain
-    group of operators.
+    This enum should be used by environments in their
+    :attr:`~Problem.metadata` dictionary to declare which accelerator
+    they pertain to. This can be used to filter a collection of
+    environments for only those that are interesting to a certain group
+    of operators.
 
-    This list is intentionally left incomplete. If you wish to use this API at
-    a machine that is not listed in this enum, please contact the developers to
-    have it included.
+    This list is intentionally left incomplete. If you wish to use this
+    API at a machine that is not listed in this enum, please contact the
+    developers to have it included.
     """
 
     NO_MACHINE = "no machine"

@@ -1,4 +1,4 @@
-"""Provide :py:class:`ParamStream`."""
+"""Provide :class:`ParamStream`."""
 
 import abc
 import contextlib
@@ -74,7 +74,7 @@ def _unwrap_event(event: _Event) -> _Item:
 
 @contextlib.contextmanager
 def subscriptions(japc: "PyJapc") -> "PyJapc":
-    """Return a context manager for :py:class:`PyJapc`.
+    """Return a context manager for :class:`PyJapc`.
 
     The returned context manager simply starts all subscriptions when
     entering its context and stops all subscriptions when leaving it. It
@@ -127,14 +127,14 @@ def monitoring(handle: T) -> t.Iterator[T]:
 class _BaseStream(metaclass=abc.ABCMeta):
     """A synchronized PyJapc subscription handle.
 
-    Do not instantiate this class yourself. Use
-    :py:func:`subscribe_stream` instead.
+    Do not instantiate this class yourself. Use :func:`subscribe_stream`
+    instead.
 
-    This class contains the common logic of :py:class:`ParamStream` and
-    :py:class:`ParamGroupStream`. The subclasses only contain thin
-    wrapper methods that perform some type casting. The whole reason for
-    this setup is to communicate via types whether a stream may return
-    an object or a list of objects.
+    This class contains the common logic of :class:`ParamStream` and
+    :class:`ParamGroupStream`. The subclasses only contain thin wrapper
+    methods that perform some type casting. The whole reason for this
+    setup is to communicate via types whether a stream may return an
+    object or a list of objects.
     """
 
     Self = t.TypeVar("Self", bound="_BaseStream")
@@ -223,7 +223,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
             You should ensure that no operation will block (i.e. sleep,
             wait, perform I/O) while the stream is locked. Otherwise,
             you risk blocking the subscription handler and data may be
-            lost. However, you *may* call :py:meth:`wait_next()`, as it
+            lost. However, you *may* call :meth:`wait_next()`, as it
             releases the lock while blocking.
         """
         with self._condition:
@@ -284,9 +284,9 @@ class _BaseStream(metaclass=abc.ABCMeta):
             a new value has arrived.
 
         Raises:
-            CancelledError: if a :py:class:`CancellationToken` has been
-                passed to :py:func:`subscribe_stream()` and the token
-                has been cancelled.
+            CancelledError: if a :class:`CancellationToken` has been
+                passed to :func:`subscribe_stream()` and the token has
+                been cancelled.
             JavaException: if an exception occurred on the Java side
                 while receiving this value.
             StreamError: if the queue is empty, the subscription is not
@@ -352,8 +352,8 @@ class _BaseStream(metaclass=abc.ABCMeta):
 class ParamStream(_BaseStream):
     """A synchronized handle to a one-parameter PyJapc subscription.
 
-    Do not instantiate this class yourself. Use
-    :py:func:`subscribe_stream` instead.
+    Typically you use :func:`subscribe_stream` to instantiate this
+    class.
     """
 
     def __init__(
@@ -403,8 +403,8 @@ class ParamStream(_BaseStream):
 class ParamGroupStream(_BaseStream):
     """A synchronized handle to a multi-parameter PyJapc subscription.
 
-    Do not instantiate this class yourself. Use
-    :py:func:`subscribe_stream` instead.
+    Typically you use :func:`subscribe_stream` to instantiate this
+    class.
     """
 
     def __init__(
@@ -509,14 +509,14 @@ def subscribe_stream(
     stream also maintains a queue to ensure that no values are lost.
 
     Args:
-        japc: The :py:class:`PyJapc` object on which to subscribe.
+        japc: The :class:`PyJapc` object on which to subscribe.
         name_or_names: The parameter(s) to which to subscribe. Pass a
             single string to subscribe to a parameter, a list of strings
             to subscribe to a parameter group.
 
     Keyword args:
         token: If passed, the stream will hold onto this token and
-            watch it. In this case, :py:meth:`wait_next()` can get
+            watch it. In this case, :meth:`wait_next()` can get
             cancelled through the token.
         maxlen: The maximum length of the stream's internal queue. The
             default is ``1``, i.e. only the most recent value is
@@ -531,13 +531,13 @@ def subscribe_stream(
             data filter.
 
     Returns:
-        A :py:class:`ParamStream` for a single parameter and a
-        :py:class:`ParamGroupStream` for a parameter group.
+        A :class:`ParamStream` for a single parameter and a
+        :class:`ParamGroupStream` for a parameter group.
 
     Note:
         The synchronization happens purely on a threading level. No
         timestamps are inspected or acted upon. If you need to ensure
-        certain timing behavior, you must inspect the :py:class:`Header`
+        certain timing behavior, you must inspect the :class:`Header`
         returned by the stream.
     """
     subscribe_kwargs: t.Dict[str, t.Any] = {"noPyConversion": not convert_to_python}

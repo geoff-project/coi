@@ -17,14 +17,15 @@ Constraint = Union[scipy.optimize.LinearConstraint, scipy.optimize.NonlinearCons
 class SingleOptimizable(Problem, metaclass=ABCMeta):
     """Interface for single-objective numerical optimization.
 
-    Fundamentally, an environment (described by :py:class:`gym.Env`)
+    Fundamentally, an environment (described by :class:`gym.Env`)
     contains a hidden *state* on which *actions* can be performed. Each
     action causes a *transition* from one state to another. Each
     transition produces an *observation* and a *reward*.
 
     In contrast, an *optimizable* problem has certain *parameters* that
-    can be *set* to transition *into* a certain state. Each transition
-    is associated with a *loss* that shall be minimized.
+    can be *set* to transition *into* a certain state. Each state (not
+    the transition!) is associated with a *loss* that shall be
+    minimized.
 
     The difference between actions and parameters is:
 
@@ -42,19 +43,18 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
     be state variables that cannot be influenced by the optimizer.
 
     Attributes:
-        optimization_space: A :py:class:`gym.spaces.Space` instance that
+        optimization_space: A :class:`~gym.spaces.Space` instance that
             describes the phase space of parameters. This may be the
-            same or different from the :py:attr:`gym.Env.action_space`.
-        objective_range: Specifies the range in which the return value of
-            :py:meth:`compute_single_objective()` will lie. The default
-            is to allow any float value, but subclasses may restrict
-            this e.g. for normalization purposes.
+            same or different from the :attr:`~gym.Env.action_space`.
+        objective_range: Specifies the range in which the return value
+            of :meth:`compute_single_objective()` will lie. The default
+            is to allow any finite float value, but subclasses may
+            restrict this e.g. for normalization purposes.
         constraints: The constraints that apply to this optimization
             problem. For now, each constraint must be either a
-            :py:class:`scipy.optimize.LinearConstraint` or a
-            :py:meth:`scipy.optimize.NonlinearConstraint`. In the
-            future, this might be relaxed to allow more optimization
-            algorithms.
+            :class:`scipy.optimize.LinearConstraint` or a
+            :meth:`scipy.optimize.NonlinearConstraint`. In the future,
+            this might be relaxed to allow more optimization algorithms.
     """
 
     optimization_space: gym.spaces.Space = None
@@ -69,7 +69,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         i.e. ``opt.get_initial_params() in opt.optimization_space``
         should be True.
 
-        This method is similar to :py:meth:`gym.Env.reset()` but is
+        This method is similar to :meth:`~gym.Env.reset()` but is
         allowed to always return the same value; or to skip certain
         calculations, in the case of problems that are expensive to
         evalaute.
@@ -80,20 +80,19 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
     def compute_single_objective(self, params: numpy.ndarray) -> float:
         """Perform an optimization step.
 
-        This function is similar to :py:meth:`gym.Env.step()`, but it
+        This function is similar to :meth:`~gym.Env.step()`, but it
         accepts parameters instead of an action. See the class docstring
         for the difference.
 
         This function may modify the environment, but it should
-        fundamentally be stateless: Calling
-        ``compute_single_objective()`` twice with the same parameters
-        should return the same loss, excepting any stochastic noise.
+        fundamentally be stateless: Calling it twice with the same
+        parameters should return the same loss, excepting any stochastic
+        noise.
 
         Args:
             params: The parameters for which the loss shall be
-                calculated. This should be within
-                :py:attr:`optimization_space`, but it must at least have
-                the same structure.
+                calculated. This should be within, but must at least
+                have the same structure, as :attr:`optimization_space`.
 
         Returns:
             The loss associated with these parameters. Numerical
@@ -105,9 +104,9 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
 class OptEnv(gym.Env, SingleOptimizable):
     """An optimizable environment.
 
-    This is an intersection of :py:class:`gym.Env` and
-    :py:class:`SingleOptimizable`. Any class that inherits from both,
-    also inherits from this class.
+    This is an intersection of :class:`~gym.Env` and
+    :class:`SingleOptimizable`. Any class that inherits from both, also
+    inherits from this class.
     """
 
     @classmethod
@@ -121,9 +120,9 @@ class OptEnv(gym.Env, SingleOptimizable):
 class OptGoalEnv(gym.GoalEnv, SingleOptimizable):
     """An optimizable multi-goal environment.
 
-    This is an intersection of :py:class:`gym.GoalEnv` and
-    :py:class:`SingleOptimizable`. Any class that inherits from both,
-    also inherits from this class.
+    This is an intersection of :class:`~gym.GoalEnv` and
+    :class:`SingleOptimizable`. Any class that inherits from both, also
+    inherits from this class.
     """
 
     @classmethod

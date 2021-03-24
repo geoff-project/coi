@@ -11,7 +11,7 @@ class Renderer:
     """Interface for types that facilitate Matplotlib rendering.
 
     This is an abstract base class. You should use a concrete
-    implementation, e.g. :py:class:`SimpleRenderer`.
+    implementation, e.g. :class:`SimpleRenderer`.
     """
 
     @staticmethod
@@ -48,15 +48,15 @@ class SimpleRenderer(Renderer):
             value of ``renderer.update("matplotlib_figures")``. Unused
             in other render modes. In particular, this does not add a
             title to the figure's contents. For this, consider using
-            :py:meth:`Figure.suptitle()` instead.
+            :meth:`Figure.suptitle()` instead.
 
     This renderer should be preferred, as it is the simplest to use. It
     manages a single figure and passes it to a callback every time
-    :py:meth:`update()` is called.
+    :meth:`update()` is called.
 
     If you need to do non-trivial set up for your figure, consider using
-    :py:meth:`from_generator()`. For an even more concise wrapper, see
-    the :py:class:`render_generator` descriptor.
+    :meth:`from_generator()`. For an even more concise wrapper, see
+    the :class:`render_generator` descriptor.
 
     Example::
 
@@ -148,15 +148,14 @@ T = t.TypeVar("T")  # pylint: disable=invalid-name
 class render_generator(t.Generic[T]):
     """Decorator wrapper for `SimpleRenderer`.
 
-    This is a convenience wrapper around
-    :py:meth:`SimpleRenderer.from_generator()`. It automatically manages
-    a :py:class:`SimpleRenderer` for you. Calling the decorated method
-    will call ``renderer.update()`` instead. This keeps your ``render()``
-    implementation short and avoids duplicate code in your plotting
-    logic.
+    This is a wrapper around :meth:`SimpleRenderer.from_generator()`. It
+    automatically manages a :class:`SimpleRenderer` for you. Calling the
+    decorated method will call ``renderer.update()`` instead. This keeps
+    your ``render()`` implementation short and avoids duplicate code in
+    your plotting logic.
 
-    For a less magical interface, see the :py:class:`SimpleRenderer`
-    class itself.
+    For a less magical interface, see the :class:`SimpleRenderer` class
+    itself.
 
     Example::
 

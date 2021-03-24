@@ -5,13 +5,13 @@ import typing as t
 from matplotlib.figure import Figure
 
 MaybeTitledFigure = t.Union[Figure, t.Tuple[str, Figure]]
-"""Helper annotation for :py:class:`MatplotlibFigures`."""
+"""Helper annotation for :class:`MatplotlibFigures`."""
 MatplotlibFigures = t.Union[
     Figure,
     t.Iterable[MaybeTitledFigure],
     t.Mapping[str, Figure],
 ]
-"""Type of the return value of render mode ``"matplotlib_figures``."""
+"""Type of the return value of render mode ``"matplotlib_figures"``."""
 
 
 def iter_matplotlib_figures(
@@ -20,12 +20,12 @@ def iter_matplotlib_figures(
     """Handle result of render mode ``"matplotlib_figures"``.
 
     Problem authors are given a lot of freedom in what they return from
-    :py:meth:`cernml.coi.Problem.render()`. This method unifies all
+    :meth:`~cernml.coi.Problem.render()`. This method unifies all
     possible return types and produces one consistent iterator.
 
     Args:
         figures: The result of calling
-            :py:meth:`cernml.coi.Problem.render()` in the mode
+            :meth:`~cernml.coi.Problem.render()` in the mode
             ``"matplotlib_figures"``.
 
     Yields:

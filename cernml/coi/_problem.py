@@ -11,9 +11,9 @@ from ._machine import Machine
 class Problem(metaclass=ABCMeta):
     """Abstract base class of all problems.
 
-    You should not derive from this class. Derive from one of the actual
-    interface classes like :py:class:`gym.Env` or
-    :py:class:`SingleOptimizable`. This class exists for two purposes:
+    You should not derive from this class. Instead, derive from one of
+    its subclasses like :class:`~gym.Env` or :class:`SingleOptimizable`.
+    This class exists for two purposes:
 
     - define which parts of the interfaces are common to all of them;
     - provide an easy way to test whether an interface is compatible
@@ -23,12 +23,10 @@ class Problem(metaclass=ABCMeta):
     inherit from it may be considered a subclass. To be considered a
     subclass, a class must merely:
 
-    - provide a method :py:meth:`render()`,
-    - provide a method :py:meth:`close()`,
-    - provide a property :py:attr:`unwrapped`,
-    - provide a class attribute :py:attr:`metadata` that is a
-      mapping with at least the keys `"render.modes"` and
-      `"cern.machines"`.
+    - provide a method :meth:`render()`,
+    - provide a method :meth:`close()`,
+    - provide a property :attr:`unwrapped`,
+    - provide a dict :attr:`metadata` as a class attribute.
 
     Attributes:
         metadata: Capabilities and behavior of this problem.
@@ -45,27 +43,25 @@ class Problem(metaclass=ABCMeta):
             ``"render.modes"``
                 The render modes that the optimization problem
                 understands. Standard render modes are documented under
-                :py:meth:`render()`.
+                :meth:`render()`.
             ``"cern.machine"``
                 The accelerator that an optimization problem is
                 associated with. This must be a value of type
-                :py:class:`Machine`.
+                :class:`Machine`.
             ``"cern.japc"``
-                A boolean flag indicating whether the problem's
-                constructor expects an argument named ``japc`` of type
-                :py:class:`pyjapc.PyJapc`. Enable it if your class
-                performs any machine communication via JAPC. Do not
-                create your own :py:class:`pyjapc.PyJapc` instance.
-                Among other things, this ensures that the correct timing
-                selector is set.
+                A boolean flag indicating that the problem's constructor
+                expects an argument named ``japc`` of type
+                :class:`pyjapc.PyJapc`. Enable it if your class performs
+                any machine communication via JAPC. Do not create your
+                own :class:`pyjapc.PyJapc` instance. Among other things,
+                this ensures that the correct timing selector is set.
             ``"cern.cancellable"``
-                A boolean flag indicating whether the problem's
-                constructor expects an argument named
-                ``cancellation_token`` of type
-                :py:class:`CancellationToken`. Enable it if your class
-                ever enters any long-running loops that the user may
-                want to interrupt. A classic example is the acquisition
-                and validation of cycle-bound data.
+                A boolean flag indicating that the problem's constructor
+                expects an argument named ``cancellation_token`` of type
+                :class:`CancellationToken`. Enable it if your class ever
+                enters any long-running loops that the user may want to
+                interrupt. A classic example is the acquisition and
+                validation of cycle-bound data.
 
             Additionally, all keys that start with ``"cern."`` are
             reserved for future use.
@@ -91,8 +87,8 @@ class Problem(metaclass=ABCMeta):
         After this method has been called, no further methods may be
         called on the problem, with the following exceptions:
 
-        - :py:attr:`unwrapped` must continue to behave as expected;
-        - calling :py:meth:`close()` again should do nothing.
+        - :attr:`unwrapped` must continue to behave as expected;
+        - calling :meth:`close()` again should do nothing.
         """
 
     @property
@@ -103,6 +99,8 @@ class Problem(metaclass=ABCMeta):
         is a wrapper around another problem (which might, in turn, also
         be a wrapper), it should return that problem recursively.
 
+        This exists to support the :class:`gym.Wrapper` design pattern.
+
         Example:
 
             >>> class Concrete(Problem):
@@ -112,6 +110,7 @@ class Problem(metaclass=ABCMeta):
             ...         self._wrapped = wrapped
             ...     @property
             ...     def unwrapped(self):
+            ...         # Note the recursion.
             ...         return self._wrapped.unwrapped
             >>> inner = Concrete()
             >>> outer = Wrapper(inner)
@@ -130,8 +129,8 @@ class Problem(metaclass=ABCMeta):
                 ``self.metadata["render.modes"]``.
 
         The set of supported modes varies. Some problems do not support
-        rendering at all. The following modes are understood by this
-        package:
+        rendering at all. The following modes have a standardized
+        meaning:
 
         ``"human"``
             Render to the current display or terminal and return
@@ -143,11 +142,11 @@ class Problem(metaclass=ABCMeta):
             representing RGB values for an *x*-by-*y* pixel image,
             suitable for turning into a video.
         ``"ansi"``
-            Return a ``str`` or ``io.StringIO`` containing a
+            Return a :class:`str` or :class:`io.StringIO` containing a
             terminal-style text representation. The text can include
             newlines and ANSI escape sequences (e.g. for colors).
         ``"matplotlib_figures"``
-            Render to one or more :py:class:`matplotlib.figure.Figure`
+            Render to one or more :class:`matplotlib.figure.Figure`
             objects. This should return all figures whose contents have
             changed. The following return types are allowed:
 
@@ -178,9 +177,9 @@ class Problem(metaclass=ABCMeta):
 
         Note:
             Make sure to declare all modes that you support in the
-            ``"render.modes"`` key of your :py:attr:`metadata`. It's
-            recommended to call ``super()`` in implementations to use
-            the functionality of this method.
+            ``"render.modes"`` key of your :attr:`metadata`. It's
+            recommended to call :func:`super()` in implementations to
+            use the functionality of this method.
         """
         # pylint: disable = no-self-use, unused-argument
         # Hack: Make PyLint realize that this method is not abstract. We
