@@ -539,6 +539,20 @@ def subscribe_stream(
         timestamps are inspected or acted upon. If you need to ensure
         certain timing behavior, you must inspect the :class:`Header`
         returned by the stream.
+
+    The returned parameter streams are context managers. Entering their
+    context starts monitoring their handle, exiting stops it. They are
+    reusable, but not re-entrant. This means the *same* stream may be
+    used in subsequent ``with`` blocks, but not in nested ones.
+
+        >>> def run_analysis(japc: "PyJapc"):
+        ...     stream = subscribe_stream(japc, "device/property#field")
+        ...     with stream:
+        ...         values_and_headers = [
+        ...             stream.wait_next() for _ in range(10)
+        ...         ]
+        ...     values, headers = zip(*values_and_headers)
+        ...     ...
     """
     subscribe_kwargs: t.Dict[str, t.Any] = {"noPyConversion": not convert_to_python}
     if selector is not None:

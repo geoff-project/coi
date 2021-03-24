@@ -164,6 +164,18 @@ class CancellationToken:
         >>> c = CancellationToken(True)
         >>> c.can_be_cancelled, c.cancellation_requested
         (True, True)
+
+    Note:
+        Once cancelled, a token can never become "uncancelled" again.
+        This prevents `ABA problems`_. If you want to restart a
+        cancelled optimization, the most portable solution is to create
+        a new :class:`Problem` instance with a fresh token.
+
+        If you only deal with a concrete :class:`Problem` subclass, it
+        may also be feasible to pass a new token to it after
+        instantiation.
+
+        .. _ABA problems: https://en.wikipedia.org/wiki/ABA_problem
     """
 
     __slots__ = ("_cancellation_requested", "_wait_handle", "_source")

@@ -21,6 +21,8 @@ def check_methods(C: type, *methods: str) -> Any:
         :obj:`NotImplemented`.
     """
     # pylint: disable = invalid-name
+    # Original implementation:
+    # https://github.com/python/cpython/blob/v3.7.0/Lib/_collections_abc.py#L72
     mro = C.__mro__
     for method in methods:
         for B in mro:
