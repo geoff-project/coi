@@ -73,6 +73,8 @@ class Problem(metaclass=ABCMeta):
         {
             "render.modes": [],
             "cern.machine": Machine.NO_MACHINE,
+            "cern.japc": False,
+            "cern.cancellable": False,
         }
     )
 
