@@ -174,6 +174,31 @@ class _BaseStream(metaclass=abc.ABCMeta):
         self.stop_monitoring()
 
     @property
+    def token(self) -> t.Optional["CancellationToken"]:
+        """The stream's cancellation token, if any.
+
+        While the stream is inactive (``self.monitoring is False``), the
+        token may be replaced. This may be useful to restart the stream
+        after a cancellation.
+
+        Raises:
+            StreamError: If attempting to set the token while the stream
+                is monitoring its parameter. This is to prevent
+                hard-to-track-down deadlocks in which the stream waits
+                on a stale token.
+        """
+        return self._token
+
+    @token.setter
+    def token(self, token: t.Optional["CancellationToken"]) -> None:
+        if self.monitoring:
+            raise StreamError("cannot change cancellation token while monitoring")
+        # See comment in __init__(). We need to keep token and condition
+        # variable in sync to not miss any events.
+        self._token = token
+        self._condition = token.wait_handle if token else threading.Condition()
+
+    @property
     def monitoring(self) -> bool:
         """True if this stream is receiving values, False otherwise."""
         return self._handle.isMonitoring()
