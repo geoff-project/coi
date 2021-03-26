@@ -436,6 +436,7 @@ class MyProblem(coi.SingleOptimizable):
 
     def __init__(self, japc, cancellation_token):
         self.japc = japc
+        self.token = cancellation_token
         # Pass in the token. The stream will hold onto it and monitor it
         # whenever you you call `.wait_next()`.
         self.bpm_readings = subscribe_stream(
@@ -447,14 +448,24 @@ class MyProblem(coi.SingleOptimizable):
 
     def compute_single_objective(self, params):
         self.japc.setParam("...", param)
-        # This may block for a long time, depending on how fast the data
-        # arrives and whether the data is valid. However, if the user
-        # sends a cancellation request via the token, `wait_next()` will
-        # automatically unblock and raise an exception.
-        while True:
-            value, header = self.bpm_readings.wait_next()
-            if self.is_data_good(value):
-                return self.compute_loss(value)
+        try:
+            # This may block for a long time, depending on how fast the
+            # data arrives and whether the data is valid. However, if
+            # the user sends a cancellation request via the token,
+            # `wait_next()` will unblock and raise an exception.
+            while True:
+                value, header = self.bpm_readings.wait_next()
+                if self.is_data_good(value):
+                    return self.compute_loss(value)
+        except coi.cancellation.CancelledError:
+            # Our environment has the nice property that even after a
+            # cancellation, it will still work. Our caller could call
+            # `compute_single_objective()` again and everything would
+            # behave the same. We let the outside world know that this
+            # is the case by marking the cancellation as "completed".
+            self.token.complete_cancellation()
+            raise
+        return value
 ```
 
 If you have your own data acquisition logic, you can use the token yourself by
@@ -488,9 +499,10 @@ from cernml import coi
 from cernml.coi.unstable import cancellation
 
 class MyApp:
+    def __init__(self):
+        self.source = cancellation.TokenSource()
 
     def on_start(self):
-        self.source = cancellation.TokenSource()
         env_name = self.env_name
         agent = self.agent
         token = self.source.token
@@ -500,6 +512,8 @@ class MyApp:
     def on_stop(self):
         self.source.cancel()
         self.worker.join()
+        assert self.source.can_reset_cancellation
+        self.reset_cancellation()
 
     ...
 
@@ -523,7 +537,9 @@ def run(env_name, agent, token):
                 action, state = agent.predict(obs, state)
                 obs, _reward, done, _info = env.step(action)
     except cancellation.CancelledError:
-        pass
+        # Because the env gets closed at the end of this thread, we
+        # can _definitely_ reuse the cancellation token source.
+        token.complete_cancellation()
     finally:
         env.close()  # Never forget this!
 ```

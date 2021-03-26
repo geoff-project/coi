@@ -62,7 +62,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.observation_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.optimization_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.pos = np.zeros((dim,))
-        max_distance = self._distance(self.optimization_space.high)
+        max_distance = np.linalg.norm(self.optimization_space.high, ord=self.norm)
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
         self.figure: t.Optional[Figure] = None
@@ -88,7 +88,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(dim,))
         self.optimization_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.pos = np.zeros((dim,))
-        max_distance = self._distance(self.optimization_space.high)
+        max_distance = np.linalg.norm(self.optimization_space.high, ord=self.norm)
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
 
@@ -102,18 +102,21 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         return self.pos.copy()
 
     def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
-        # This is not good usage. In practice, you should only accept
-        # and use cancellation tokens if your environment contains a
-        # loop that waits for data. This is only for demonstration
-        # purposes.
-        self.token.raise_if_cancellation_requested()
+        old_pos = self.pos
         next_pos = self.pos + action
         self.pos = np.clip(
             next_pos,
             self.observation_space.low,
             self.observation_space.high,
         )
-        reward = -self._distance()
+        try:
+            # Because cancellation is cooperative, we know this is the
+            # only place where we can get cancelled.
+            reward = -self._fetch_distance_slow()
+        except cancellation.CancelledError:
+            self.pos = old_pos
+            self.token.complete_cancellation()
+            raise
         success = reward > self.objective
         done = success or next_pos not in self.observation_space
         info = dict(success=success, objective=self.objective)
@@ -125,17 +128,20 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         return self.reset()
 
     def compute_single_objective(self, params: np.ndarray) -> float:
-        # This is not good usage. In practice, you should only accept
-        # and use cancellation tokens if your environment contains a
-        # loop that waits for data. This is only for demonstration
-        # purposes.
-        self.token.raise_if_cancellation_requested()
+        old_pos = self.pos
         self.pos = np.clip(
             params,
             self.observation_space.low,
             self.observation_space.high,
         )
-        return self._distance()
+        try:
+            # Because cancellation is cooperative, we know this is the
+            # only place where we can get cancelled.
+            return self._fetch_distance_slow()
+        except cancellation.CancelledError:
+            self.pos = old_pos
+            self.token.complete_cancellation()
+            raise
 
     def render(self, mode: str = "human") -> t.Any:
         if mode == "human":
@@ -176,7 +182,21 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
             *self.optimization_space.seed(seed),
         ]
 
-    def _distance(self, pos: t.Optional[np.ndarray] = None) -> float:
+    def _fetch_distance_slow(self, pos: t.Optional[np.ndarray] = None) -> float:
+        """Get distance from the goal in a slow manner.
+
+        This simulates interaction with the machine. We sleep for a
+        while, then return the distance between the current position and
+        the coordinate-space origin.
+
+        Raises:
+            cernml.cancellation.CancelledError: if a cancellation
+                arrives while this method sleeps.
+        """
+        handle = self.token.wait_handle
+        with handle:
+            if handle.wait_for(lambda: self.token.cancellation_requested, timeout=0.3):
+                raise cancellation.CancelledError()
         return np.linalg.norm(pos if pos is not None else self.pos, ord=self.norm)
 
 
@@ -206,7 +226,6 @@ class OptimizerThread(QtCore.QThread):
 
         def func(params: np.ndarray) -> float:
             loss = self.env.compute_single_objective(params)
-            QtCore.QThread.msleep(100)  # Simulate machine latency.
             self.step.emit()
             return loss
 
@@ -254,7 +273,7 @@ class ConfigureDialog(QtWidgets.QDialog):
             label = QtWidgets.QLabel(field.label)
             widget = self._make_field_widget(field)
             params_layout.addRow(label, widget)
-        controls = QtWidgets.QDialogButtonBox(
+        controls = QtWidgets.QDialogButtonBox(  # type: ignore
             QtWidgets.QDialogButtonBox.Ok
             | QtWidgets.QDialogButtonBox.Apply
             | QtWidgets.QDialogButtonBox.Cancel
@@ -284,6 +303,7 @@ class ConfigureDialog(QtWidgets.QDialog):
     def _make_field_widget(self, field: coi.Config.Field) -> QtWidgets.QWidget:
         """Given a field, pick the best widget to configure it."""
         # pylint: disable = too-many-return-statements
+        widget: QtWidgets.QWidget
         if field.choices is not None:
             widget = QtWidgets.QComboBox()
             widget.addItems(str(choice) for choice in field.choices)
@@ -327,7 +347,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         self,
         field: coi.Config.Field,
         get: t.Optional[t.Callable[[], str]] = None,
-    ) -> QtWidgets.QWidget:
+    ) -> t.Callable:
         """Return a callback that can be used to update a field's value."""
 
         def _setter(value: t.Any = None) -> None:
@@ -362,6 +382,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.canvas = FigureCanvas(figure)
         self.launch = QtWidgets.QPushButton("Launch")
         self.launch.clicked.connect(self.on_launch)
+        self.cancel = QtWidgets.QPushButton("Cancel")
+        self.cancel.clicked.connect(self.on_cancel)
+        self.cancel.setEnabled(False)
         self.configure_env = QtWidgets.QPushButton("Configure…")
         self.configure_env.clicked.connect(self.on_configure)
 
@@ -372,11 +395,15 @@ class MainWindow(QtWidgets.QMainWindow):
         main_layout.addWidget(self.canvas)
         main_layout.addLayout(buttons_layout)
         buttons_layout.addWidget(self.launch)
+        buttons_layout.addWidget(self.cancel)
         buttons_layout.addWidget(self.configure_env)
         self.addToolBar(NavigationToolbar(self.canvas, parent=self))
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         # pylint: disable = invalid-name, missing-function-docstring
+        self.launch.setEnabled(False)
+        self.cancel.setEnabled(False)
+        self.configure_env.setEnabled(False)
         self.cancellation_token_source.cancel()
         self.worker.wait()
         event.accept()
@@ -389,8 +416,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_launch(self) -> None:
         """Disable the GUI and start optimization."""
         self.launch.setEnabled(False)
+        self.cancel.setEnabled(True)
         self.configure_env.setEnabled(False)
         self.worker.start()
+
+    def on_cancel(self) -> None:
+        """Send a cancellation request."""
+        self.cancellation_token_source.cancel()
+        # Disable the button. `on_opt_finished()` will eventually
+        # re-enable the other buttons.
+        self.cancel.setEnabled(False)
 
     def on_opt_step(self) -> None:
         """Update the plots."""
@@ -399,7 +434,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def on_opt_finished(self) -> None:
         """Re-enable the GUI."""
-        self.launch.setEnabled(True)
+        # Reset the cancellation, if it is possible. Only re-enable the
+        # launch button if we could reset the cancellation (or no
+        # cancellation ever occurred.)
+        if self.cancellation_token_source.can_reset_cancellation:
+            self.cancellation_token_source.reset_cancellation()
+        if not self.cancellation_token_source.cancellation_requested:
+            self.launch.setEnabled(True)
+        self.cancel.setEnabled(False)
         self.configure_env.setEnabled(True)
 
 

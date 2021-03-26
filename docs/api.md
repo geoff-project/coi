@@ -143,7 +143,6 @@ The following functions and types are only available if the
 ```eval_rst
 .. automodule:: cernml.coi.unstable.cancellation
     :members:
-    :show-inheritance:
 
     .. warning::
         This module is considered *unstable* and may change arbitrarily
