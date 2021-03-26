@@ -13,7 +13,7 @@ if t.TYPE_CHECKING:
     # pylint: disable=import-error, unused-import
     from pyjapc import PyJapc
 
-    from cernml.coi import CancellationToken, CancelledError
+    from . import cancellation
 
 LOG = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
         japc: "PyJapc",
         name: t.Union[str, t.Iterable[str]],
         *,
-        token: t.Optional["CancellationToken"],
+        token: t.Optional["cancellation.Token"],
         maxlen: t.Optional[int],
         **kwargs: t.Any,
     ) -> None:
@@ -174,7 +174,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
         self.stop_monitoring()
 
     @property
-    def token(self) -> t.Optional["CancellationToken"]:
+    def token(self) -> t.Optional["cancellation.Token"]:
         """The stream's cancellation token, if any.
 
         While the stream is inactive (``self.monitoring is False``), the
@@ -190,7 +190,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
         return self._token
 
     @token.setter
-    def token(self, token: t.Optional["CancellationToken"]) -> None:
+    def token(self, token: t.Optional["cancellation.Token"]) -> None:
         if self.monitoring:
             raise StreamError("cannot change cancellation token while monitoring")
         # See comment in __init__(). We need to keep token and condition
@@ -310,7 +310,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
             a new value has arrived.
 
         Raises:
-            CancelledError: if a :class:`CancellationToken` has been
+            CancelledError: if a :class:`cancellation.Token` has been
                 passed to :func:`subscribe_stream()` and the token has
                 been cancelled.
             JavaException: if an exception occurred on the Java side
@@ -387,7 +387,7 @@ class ParamStream(_BaseStream):
         japc: "PyJapc",
         name: str,
         *,
-        token: t.Optional["CancellationToken"],
+        token: t.Optional["cancellation.Token"],
         maxlen: t.Optional[int],
         **kwargs: t.Any,
     ) -> None:
@@ -438,7 +438,7 @@ class ParamGroupStream(_BaseStream):
         japc: "PyJapc",
         name: t.Iterable[str],
         *,
-        token: t.Optional["CancellationToken"],
+        token: t.Optional["cancellation.Token"],
         maxlen: t.Optional[int],
         **kwargs: t.Any,
     ) -> None:
@@ -489,7 +489,7 @@ def subscribe_stream(
     japc: "PyJapc",
     name_or_names: str,
     *,
-    token: t.Optional["CancellationToken"] = ...,
+    token: t.Optional["cancellation.Token"] = ...,
     maxlen: t.Optional[int] = ...,
     convert_to_python: bool = ...,
     selector: t.Optional[str] = ...,
@@ -508,7 +508,7 @@ def subscribe_stream(
     japc: "PyJapc",
     name_or_names: t.List[str],
     *,
-    token: t.Optional["CancellationToken"] = ...,
+    token: t.Optional["cancellation.Token"] = ...,
     maxlen: t.Optional[int] = ...,
     convert_to_python: bool = ...,
     selector: t.Optional[str] = ...,
@@ -521,7 +521,7 @@ def subscribe_stream(
     japc: "PyJapc",
     name_or_names: t.Union[str, t.List[str]],
     *,
-    token: t.Optional["CancellationToken"] = None,
+    token: t.Optional["cancellation.Token"] = None,
     maxlen: t.Optional[int] = 1,
     convert_to_python: bool = True,
     selector: t.Optional[str] = None,

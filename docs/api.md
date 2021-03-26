@@ -67,22 +67,6 @@
     :show-inheritance:
 ```
 
-## Cancellation
-
-```eval_rst
-.. autoclass:: cernml.coi.CancellationTokenSource
-    :members:
-    :show-inheritance:
-
-.. autoclass:: cernml.coi.CancellationToken
-    :members:
-    :show-inheritance:
-
-.. autoexception:: cernml.coi.CancelledError
-    :show-inheritance:
-```
-
-
 ## Separable Environments
 
 ```eval_rst
@@ -151,6 +135,18 @@ The following functions and types are only available if the
 
     .. warning::
         This decorator is considered *unstable* and may change arbitrarily
+        between minor releases.
+```
+
+## Cancellation
+
+```eval_rst
+.. automodule:: cernml.coi.unstable.cancellation
+    :members:
+    :show-inheritance:
+
+    .. warning::
+        This module is considered *unstable* and may change arbitrarily
         between minor releases.
 ```
 

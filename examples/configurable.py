@@ -16,6 +16,7 @@ from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from cernml import coi
+from cernml.coi.unstable import cancellation
 
 
 class ConfParabola(coi.OptEnv, coi.Configurable):
@@ -47,7 +48,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
 
     def __init__(
         self,
-        cancellation_token: coi.CancellationToken,
+        cancellation_token: cancellation.Token,
         *,
         norm: int = 2,
         dangling: bool = True,
@@ -219,7 +220,7 @@ class OptimizerThread(QtCore.QThread):
             )
             if res.success:
                 func(res.x)
-        except coi.CancelledError:
+        except cancellation.CancelledError:
             print("Operation cancelled by user")
 
 
@@ -347,7 +348,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
 
-        self.cancellation_token_source = coi.CancellationTokenSource()
+        self.cancellation_token_source = cancellation.TokenSource()
         self.env = coi.make(
             "ConfParabola-v0",
             cancellation_token=self.cancellation_token_source.token,

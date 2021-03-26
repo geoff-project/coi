@@ -12,8 +12,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from cernml import coi
-from cernml.coi.unstable import japc_utils
+from cernml.coi.unstable import cancellation, japc_utils
 
 
 def test_monitoring() -> None:
@@ -221,20 +220,20 @@ def test_exception(japc: Mock) -> None:
 
 
 def test_cancel(japc: Mock) -> None:
-    token = coi.CancellationToken(cancelled=True)
+    token = cancellation.Token(cancelled=True)
     japc.subscribeParam.mock_values = [Mock()]
     stream = japc_utils.subscribe_stream(japc, "", token=token)
-    with pytest.raises(coi.CancelledError):
+    with pytest.raises(cancellation.CancelledError):
         with stream:
             stream.wait_next()
     assert not stream.ready
 
 
 def test_cancel_preempts_ready(japc: Mock) -> None:
-    token = coi.CancellationToken(cancelled=True)
+    token = cancellation.Token(cancelled=True)
     japc.subscribeParam.mock_values = [Mock()]
     stream = japc_utils.subscribe_stream(japc, "", token=token)
-    with pytest.raises(coi.CancelledError):
+    with pytest.raises(cancellation.CancelledError):
         with stream:
             japc.subscribeParam.thread.join()
             stream.wait_next()
@@ -244,7 +243,7 @@ def test_cancel_preempts_ready(japc: Mock) -> None:
 def test_cancel_breaks_deadlock(japc: Mock) -> None:
     sent_values = [Mock() for _ in range(3)]
     japc.subscribeParam.mock_values = sent_values
-    source = coi.CancellationTokenSource()
+    source = cancellation.TokenSource()
 
     def cancel_delayed() -> None:
         japc.subscribeParam.thread.join()
@@ -254,7 +253,7 @@ def test_cancel_breaks_deadlock(japc: Mock) -> None:
 
     stream = japc_utils.subscribe_stream(japc, "", token=source.token)
     canceller = threading.Thread(target=cancel_delayed)
-    with pytest.raises(coi.CancelledError):
+    with pytest.raises(cancellation.CancelledError):
         received_values = []
         with stream:
             canceller.start()

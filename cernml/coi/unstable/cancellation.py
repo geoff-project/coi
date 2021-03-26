@@ -1,5 +1,6 @@
-"""Provide :class:`CancellationToken`."""
+"""Provide cooperative task cancellation."""
 
+import enum
 import threading
 import typing as t
 import weakref
@@ -13,8 +14,8 @@ class CancelledError(Exception):
     """
 
 
-class CancellationTokenSource:
-    """Owner of a single :class:`CancellationToken`.
+class TokenSource:
+    """Owner of a single :class:`Token`.
 
     Cancellation tokens provide a means to interrupt a problem that is
     calculating the next value of the loss function or reward. This is
@@ -27,20 +28,19 @@ class CancellationTokenSource:
     for a cancellation request. If such a request has arrived, the
     problem has a chance to gracefully abort its calculation.
 
-    Calling :meth:`~CancellationToken.raise_if_cancellation_requested()`
-    is the most convenient way to handle cancellation in a long-running
-    loop::
+    Calling :meth:`~Token.raise_if_cancellation_requested()` is the most
+    convenient way to handle cancellation in a long-running loop::
 
         >>> import time
-        >>> def loop(token: CancellationToken) -> None:
+        >>> def loop(token: Token) -> None:
         ...     while True:
         ...         token.raise_if_cancellation_requested()
         ...         time.sleep(1)  # Long-running operation.
 
     For more fine-grained control, you may also check
-    :attr:`~CancellationToken.cancellation_requested` regularly::
+    :attr:`~Token.cancellation_requested` regularly::
 
-        >>> def loop(token: CancellationToken) -> None:
+        >>> def loop(token: Token) -> None:
         ...     while not token.cancellation_requested:
         ...         time.sleep(1)  # Long-running operation.
 
@@ -48,7 +48,7 @@ class CancellationTokenSource:
     token to a *receiver*, and call :meth:`cancel()` (or not)::
 
         >>> import threading
-        >>> source = CancellationTokenSource()
+        >>> source = TokenSource()
         >>> t = threading.Thread(target=loop, args=(source.token,))
         >>> t.start()
         >>> # Do something complex or just wait ...
@@ -59,7 +59,7 @@ class CancellationTokenSource:
     context managers. They offer their token when entering a context and
     automatically cancel it when leaving the context::
 
-        >>> with CancellationTokenSource() as token:
+        >>> with TokenSource() as token:
         ...     t = threading.Thread(target=loop, args=(source.token,))
         ...     t.start()
         ...     # Do something complex or just wait ...
@@ -67,8 +67,8 @@ class CancellationTokenSource:
         >>> t.join()  # No deadlock!
 
     For debugging purposes, you can also create cancellation tokens that
-    are always cancelled or can never be cancelled. See
-    :class:`CancellationToken` for more information.
+    are always cancelled or can never be cancelled. See :class:`Token`
+    for more information.
     """
 
     # Developer note: In C#, which directly inspires this class, the
@@ -91,11 +91,11 @@ class CancellationTokenSource:
     # pylint: disable = protected-access
 
     def __init__(self) -> None:
-        self._token = CancellationToken(False)
+        self._token = Token(False)
         self._token._source = weakref.ref(self)
 
     @property
-    def token(self) -> "CancellationToken":
+    def token(self) -> "Token":
         """The token associated with source.
 
         Pass this token to a :class:`Problem` to be able to communicate
@@ -122,14 +122,14 @@ class CancellationTokenSource:
             with wait_handle:
                 wait_handle.notify_all()
 
-    def __enter__(self) -> "CancellationToken":
+    def __enter__(self) -> "Token":
         return self.token
 
     def __exit__(self, *args: t.Any) -> None:
         self.cancel()
 
 
-class CancellationToken:
+class Token:
     """Channel to cooperatively cancel a problem's calculation.
 
     Args:
@@ -137,10 +137,9 @@ class CancellationToken:
             cancelled. If True, create a token that is already
             cancelled.
 
-    Use :class:`CancellationTokenSource` to create a normal, cancellable
-    token::
+    Use :class:`TokenSource` to create a normal, cancellable token::
 
-        >>> source = CancellationTokenSource()
+        >>> source = TokenSource()
         >>> c = source.token
         >>> c.can_be_cancelled
         True
@@ -158,10 +157,10 @@ class CancellationToken:
 
     Manually created tokens can never change their state::
 
-        >>> c = CancellationToken()
+        >>> c = Token()
         >>> c.can_be_cancelled, c.cancellation_requested
         (False, False)
-        >>> c = CancellationToken(True)
+        >>> c = Token(True)
         >>> c.can_be_cancelled, c.cancellation_requested
         (True, True)
 
@@ -186,7 +185,7 @@ class CancellationToken:
         # Trick: Use a weak reference to the source to avoid keeping it
         # alive. If the weak reference expires and we are still not
         # cancelled, we know we will never be cancelled. We never set
-        # this reference, the CancellationTokenSource does in its
+        # this reference, the TokenSource does in its
         # constructor.
         self._source: t.Optional[weakref.ReferenceType] = None
 
@@ -203,13 +202,13 @@ class CancellationToken:
         is locked:
 
             >>> import threading
-            >>> def loop(token: CancellationToken) -> None:
+            >>> def loop(token: Token) -> None:
             ...     with token.wait_handle as h:
             ...         while not token.cancellation_requested:
             ...             h.wait()
             ...         # You might as well write:
             ...         # h.wait_for(lambda: token.cancellation_requested)
-            >>> source = CancellationTokenSource()
+            >>> source = TokenSource()
             >>> t = threading.Thread(target=loop, args=(source.token,))
             >>> t.start()
             >>> source.cancel()

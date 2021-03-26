@@ -86,7 +86,7 @@ The following keys are defined and understood by this package:
   expects an argument named `japc` of type `pyjapc.PyJapc`;
 - `"cern.cancellable"`: A boolean flag indicating whether the problem's
   constructor expects an argument named `cancellation_token` of type
-  [`CancellationToken`][] (see [Cancellation](#cancellation)).
+  [`cancellation.Token`][] (see [Cancellation](#cancellation)).
 
 See the [API docs][`metadata`] for a full spec.
 
@@ -416,7 +416,7 @@ down operations – usually by raising an exception.
 
 To use this feature, your problem must first declare that its support it by
 setting the `cern.cancellable` [metadata](#metadata). When it does so, a host
-application will pass a [`CancellationToken`][] to the constructor. On this
+application will pass a [`cancellation.Token`][] to the constructor. On this
 token, the problem should check whether cancellation has been requested
 whenever it enters a loop that may run for a long time.
 
@@ -448,11 +448,13 @@ class MyProblem(coi.SingleOptimizable):
     def compute_single_objective(self, params):
         self.japc.setParam("...", param)
         # This may block for a long time, depending on how fast the data
-        # arrives. However, if the user sends a cancellation request via
-        # the token, `wait_next()` will automatically unblock and raise
-        # an exception.
-        value, header = self.bpm_readings.wait_next()
-        return value
+        # arrives and whether the data is valid. However, if the user
+        # sends a cancellation request via the token, `wait_next()` will
+        # automatically unblock and raise an exception.
+        while True:
+            value, header = self.bpm_readings.wait_next()
+            if self.is_data_good(value):
+                return self.compute_loss(value)
 ```
 
 If you have your own data acquisition logic, you can use the token yourself by
@@ -477,17 +479,18 @@ class MyProblem(coi.SingleOptimizable):
 ```
 
 If you write a host application yourself, you will usually want to create a
-[`CancellationTokenSource`][] and pass its token to the optimization problem if
-it is cancellable:
+[`cancellation.TokenSource`][] and pass its token to the optimization problem
+if it is cancellable:
 
 ```python
 from threading import Thread
 from cernml import coi
+from cernml.coi.unstable import cancellation
 
 class MyApp:
 
     def on_start(self):
-        self.source = coi.CancellationTokenSource()
+        self.source = cancellation.TokenSource()
         env_name = self.env_name
         agent = self.agent
         token = self.source.token
@@ -519,7 +522,7 @@ def run(env_name, agent, token):
                 token.raise_if_cancellation_requested()
                 action, state = agent.predict(obs, state)
                 obs, _reward, done, _info = env.step(action)
-    except coi.CancelledError:
+    except cancellation.CancelledError:
         pass
     finally:
         env.close()  # Never forget this!
@@ -658,9 +661,9 @@ combine each of the separable interfaces with [`SingleOptimizable`][]. They are
 [`Box`]: api.html#gym.spaces.Box
 
 [C-Sharp Cancellation Tokens]: https://docs.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads
-[`CancellationTokenSource`]: api.html#cernml.coi.CancellationTokenSource
-[`CancellationToken`]: api.html#cernml.coi.CancellationToken
-[`raise_if_cancellation_requested()`]: api.html#cernml.coi.CancellationToken.raise_if_cancellation_requested
+[`cancellation.TokenSource`]: api.html#cernml.coi.unstable.cancellation.TokenSource
+[`cancellation.Token`]: api.html#cernml.coi.unstable.cancellation.Token
+[`raise_if_cancellation_requested()`]: api.html#cernml.coi.unstable.cancellation.Token.raise_if_cancellation_requested
 
 [`SeparableEnv`]: api.html#cernml.coi.SeparableEnv
 [`SeparableEnv.step()`]: api.html#cernml.coi.SeparableEnv.step
