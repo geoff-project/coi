@@ -13,25 +13,7 @@ from matplotlib.axes import Axes
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-from PyQt5.QtCore import QThread, pyqtSignal
-from PyQt5.QtGui import QCloseEvent, QDoubleValidator, QIntValidator
-from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDialog,
-    QDialogButtonBox,
-    QDoubleSpinBox,
-    QFormLayout,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QPushButton,
-    QSpinBox,
-    QVBoxLayout,
-    QWidget,
-)
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from cernml import coi
 
@@ -200,14 +182,14 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
 coi.register("ConfParabola-v0", entry_point=ConfParabola, max_episode_steps=10)
 
 
-class OptimizerThread(QThread):
+class OptimizerThread(QtCore.QThread):
     """Qt Thread that runs a COBYLA optimization.
 
     Args:
         env: An optimizable problem.
     """
 
-    step = pyqtSignal()
+    step = QtCore.pyqtSignal()
 
     def __init__(self, env: coi.SingleOptimizable) -> None:
         super().__init__()
@@ -223,7 +205,7 @@ class OptimizerThread(QThread):
 
         def func(params: np.ndarray) -> float:
             loss = self.env.compute_single_objective(params)
-            QThread.msleep(100)  # Simulate machine latency.
+            QtCore.QThread.msleep(100)  # Simulate machine latency.
             self.step.emit()
             return loss
 
@@ -241,7 +223,7 @@ class OptimizerThread(QThread):
             print("Operation cancelled by user")
 
 
-class ConfigureDialog(QDialog):
+class ConfigureDialog(QtWidgets.QDialog):
     """Qt dialog that allows configuring an environment.
 
     Args:
@@ -250,7 +232,7 @@ class ConfigureDialog(QDialog):
     """
 
     def __init__(
-        self, target: coi.Configurable, parent: t.Optional[QWidget] = None
+        self, target: coi.Configurable, parent: t.Optional[QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
         spec = getattr(target, "spec", None)
@@ -261,22 +243,24 @@ class ConfigureDialog(QDialog):
         self.current_values = {
             field.dest: field.value for field in self.config.fields()
         }
-        main_layout = QVBoxLayout()
+        main_layout = QtWidgets.QVBoxLayout()
         self.setLayout(main_layout)
-        params = QWidget()
+        params = QtWidgets.QWidget()
         main_layout.addWidget(params)
-        params_layout = QFormLayout()
+        params_layout = QtWidgets.QFormLayout()
         params.setLayout(params_layout)
         for field in self.config.fields():
-            label = QLabel(field.label)
+            label = QtWidgets.QLabel(field.label)
             widget = self._make_field_widget(field)
             params_layout.addRow(label, widget)
-        controls = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Apply | QDialogButtonBox.Cancel
+        controls = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok
+            | QtWidgets.QDialogButtonBox.Apply
+            | QtWidgets.QDialogButtonBox.Cancel
         )
-        controls.button(QDialogButtonBox.Ok).clicked.connect(self.on_ok_clicked)
-        controls.button(QDialogButtonBox.Apply).clicked.connect(self.on_apply_clicked)
-        controls.button(QDialogButtonBox.Cancel).clicked.connect(self.on_cancel_clicked)
+        controls.button(controls.Ok).clicked.connect(self.on_ok_clicked)
+        controls.button(controls.Apply).clicked.connect(self.on_apply_clicked)
+        controls.button(controls.Cancel).clicked.connect(self.on_cancel_clicked)
         main_layout.addWidget(controls)
 
     def on_ok_clicked(self) -> None:
@@ -296,11 +280,11 @@ class ConfigureDialog(QDialog):
         """Discard any changes and close the window."""
         self.reject()
 
-    def _make_field_widget(self, field: coi.Config.Field) -> QWidget:
+    def _make_field_widget(self, field: coi.Config.Field) -> QtWidgets.QWidget:
         """Given a field, pick the best widget to configure it."""
         # pylint: disable = too-many-return-statements
         if field.choices is not None:
-            widget = QComboBox()
+            widget = QtWidgets.QComboBox()
             widget.addItems(str(choice) for choice in field.choices)
             widget.setCurrentText(str(field.value))
             widget.currentTextChanged.connect(self._make_setter(field))
@@ -308,9 +292,9 @@ class ConfigureDialog(QDialog):
         if field.range is not None:
             low, high = field.range
             if isinstance(field.value, (int, np.integer)):
-                widget = QSpinBox()
+                widget = QtWidgets.QSpinBox()
             elif isinstance(field.value, (float, np.floating)):
-                widget = QDoubleSpinBox()
+                widget = QtWidgets.QDoubleSpinBox()
             else:
                 raise KeyError(type(field.value))
             widget.setValue(field.value)
@@ -318,31 +302,31 @@ class ConfigureDialog(QDialog):
             widget.valueChanged.connect(self._make_setter(field))
             return widget
         if isinstance(field.value, (bool, np.bool_)):
-            widget = QCheckBox()
+            widget = QtWidgets.QCheckBox()
             widget.setChecked(field.value)
             widget.stateChanged.connect(self._make_setter(field))
             return widget
         if isinstance(field.value, (int, np.integer)):
-            widget = QLineEdit(str(field.value))
-            widget.setValidator(QIntValidator())
+            widget = QtWidgets.QLineEdit(str(field.value))
+            widget.setValidator(QtGui.QIntValidator())
             widget.editingFinished.connect(self._make_setter(field, get=widget.text))
             return widget
         if isinstance(field.value, (float, np.floating)):
-            widget = QLineEdit(str(field.value))
-            widget.setValidator(QDoubleValidator())
+            widget = QtWidgets.QLineEdit(str(field.value))
+            widget.setValidator(QtGui.QDoubleValidator())
             widget.editingFinished.connect(self._make_setter(field, get=widget.text))
             return widget
         if isinstance(field.value, str):
-            widget = QLineEdit(str(field.value))
+            widget = QtWidgets.QLineEdit(str(field.value))
             widget.editingFinished.connect(self._make_setter(field, get=widget.text))
             return widget
-        return QLabel(str(field.value))
+        return QtWidgets.QLabel(str(field.value))
 
     def _make_setter(
         self,
         field: coi.Config.Field,
         get: t.Optional[t.Callable[[], str]] = None,
-    ) -> QWidget:
+    ) -> QtWidgets.QWidget:
         """Return a callback that can be used to update a field's value."""
 
         def _setter(value: t.Any = None) -> None:
@@ -357,7 +341,7 @@ class ConfigureDialog(QDialog):
         return _setter
 
 
-class MainWindow(QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     """Main window of the Qt application."""
 
     def __init__(self) -> None:
@@ -375,22 +359,22 @@ class MainWindow(QMainWindow):
 
         [figure] = self.env.render(mode="matplotlib_figures")
         self.canvas = FigureCanvas(figure)
-        self.launch = QPushButton("Launch")
+        self.launch = QtWidgets.QPushButton("Launch")
         self.launch.clicked.connect(self.on_launch)
-        self.configure_env = QPushButton("Configure…")
+        self.configure_env = QtWidgets.QPushButton("Configure…")
         self.configure_env.clicked.connect(self.on_configure)
 
-        window = QWidget()
+        window = QtWidgets.QWidget()
         self.setCentralWidget(window)
-        main_layout = QVBoxLayout(window)
-        buttons_layout = QHBoxLayout()
+        main_layout = QtWidgets.QVBoxLayout(window)
+        buttons_layout = QtWidgets.QHBoxLayout()
         main_layout.addWidget(self.canvas)
         main_layout.addLayout(buttons_layout)
         buttons_layout.addWidget(self.launch)
         buttons_layout.addWidget(self.configure_env)
         self.addToolBar(NavigationToolbar(self.canvas, parent=self))
 
-    def closeEvent(self, event: QCloseEvent) -> None:
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         # pylint: disable = invalid-name, missing-function-docstring
         self.cancellation_token_source.cancel()
         self.worker.wait()
@@ -420,7 +404,7 @@ class MainWindow(QMainWindow):
 
 def main(argv: t.List[str]) -> int:
     """Main function. You should pass in `sys.argv`."""
-    app = QApplication(argv)
+    app = QtWidgets.QApplication(argv)
     window = MainWindow()
     window.show()
     return app.exec_()
