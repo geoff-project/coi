@@ -233,6 +233,7 @@ class OptimizerThread(QThread):
                 x0=self.env.get_initial_params(),
                 method="COBYLA",
                 constraints=[scipy.optimize.NonlinearConstraint(constraint, 0.0, 1.0)],
+                tol=0.01,
             )
             if res.success:
                 func(res.x)
