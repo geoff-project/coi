@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.7.0
+
+- BREAKING: Remove [Cancellation tokens](guide.html#synchronization). The
+  stable API did not accommodate all required use cases and could not be fixed
+  in a backwards-compatible manner.
+- ADD: Re-add [Cancellation tokens](guide.html#synchronization) as an unstable
+  module. The new API supports cancellation completion and resets.
+
 ## v0.6.2
 
 - ADD: Rename all variants of [`Machine`](api.html#cernml.coi.Machine) to `SCREAMING_SNAKE_CASE`. The `PascalCase` names remain available, but issue a deprecation warning.
