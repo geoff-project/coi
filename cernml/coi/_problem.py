@@ -67,9 +67,12 @@ class Problem(metaclass=ABCMeta):
             reserved for future use.
     """
 
+    # PyLint requires SCREAMING_SNAKE_CASE for class variables. Since
+    # the name has been chosen by Gym, not by us, we cannot change it.
+    metadata: ClassVar[Mapping[str, Any]]  # pylint: disable = invalid-name
     # Subclasses should make `metadata` just a regular dict. This is a
     # mapping proxy to prevent accidental mutation through inheritance.
-    metadata: ClassVar[Mapping[str, Any]] = MappingProxyType(
+    metadata = MappingProxyType(
         {
             "render.modes": [],
             "cern.machine": Machine.NO_MACHINE,
