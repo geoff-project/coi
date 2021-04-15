@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.7.1
+
+- ADD: Enum member [`Machine.ISOLDE`](api.html#cernml.coi.Machine.ISOLDE).
+
 ## v0.7.0
 
 - BREAKING: Remove [Cancellation tokens](guide.html#synchronization). The
