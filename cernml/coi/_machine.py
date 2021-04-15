@@ -84,3 +84,4 @@ class Machine(Enum, metaclass=EnforceAllUpperCaseEnumNames):
     SPS = "SPS"
     AWAKE = "AWAKE"
     LHC = "LHC"
+    ISOLDE = "ISOLDE"
