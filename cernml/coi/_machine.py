@@ -72,6 +72,38 @@ class Machine(Enum, metaclass=EnforceAllUpperCaseEnumNames):
     This list is intentionally left incomplete. If you wish to use this
     API at a machine that is not listed in this enum, please contact the
     developers to have it included.
+
+    In the same vein, if you match a :class:`Machine` against a list of
+    enum members, you should be prepared that new machines may be added
+    in the future.
+
+        >>> # Bad:
+        >>> def get_proper_value_for(machine):
+        ...     return {
+        ...         Machine.LINAC_2: 1.0,
+        ...         Machine.LINAC_3: 4.0,
+        ...         Machine.LINAC_4: 3.0,
+        ...     }[machine]
+        >>> get_proper_value_for(Machine.LINAC_4)
+        3.0
+        >>> # Oops! ISOLDE was added in cernml-coi v0.7.1.
+        >>> get_proper_value_for(Machine.ISOLDE)
+        Traceback (most recent call last):
+        ...
+        KeyError: <Machine.ISOLDE: 'ISOLDE'>
+        >>> # Better:
+        >>> def get_proper_value_for(machine):
+        ...     some_reasonable_default = 0.0
+        ...     return {
+        ...         Machine.LINAC_2: 1.0,
+        ...         Machine.LINAC_3: 4.0,
+        ...         Machine.LINAC_4: 3.0,
+        ...     }.get(machine, some_reasonable_default)
+        >>> get_proper_value_for(Machine.ISOLDE)
+        0.0
+
+    Of course, if there is _no_ reasonable default for an unknown
+    machine, raising an exception may still be your best bet.
     """
 
     NO_MACHINE = "no machine"
