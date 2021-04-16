@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## v0.7.2
 
+- ADD: [`next_if_ready()`](api.html#cernml.coi.unstable.japc_utils.ParamStream.next_if_ready) no longer checks stream's the cancellation token.
 - ADD: [`parameter_name`](api.html#cernml.coi.unstable.japc_utils.ParamStream.parameter_name) and [`parameter_names`](api.html#cernml.coi.unstable.japc_utils.ParamGroupStream.parameter_names).
 - FIX: `repr()` of [`ParamGroupStream`](api.html#cernml.coi.unstable.japc_utils.ParamGroupStream) called wrong Java API.
 

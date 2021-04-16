@@ -316,7 +316,7 @@ class _BaseStream(metaclass=abc.ABCMeta):
                 prevent a deadlock in the application.
         """
         # Prevent deadlock.
-        if not self._queue and not self.monitoring and timeout is None:
+        if not self.monitoring and timeout is None and not self._queue:
             raise StreamError("queue is empty, wait_next() would deadlock")
         with self._condition:
             if self._token:
@@ -333,6 +333,27 @@ class _BaseStream(metaclass=abc.ABCMeta):
                     return None
             event = self._queue.popleft()
         return _unwrap_event(event)
+
+    # Tricky: We write the docstring on this internal method and
+    # dynamically copy it onto the public method `next_if_ready()`
+    # in the subclasses.
+    def _next_if_ready(self) -> t.Optional[_Item]:
+        """Return the next value or None if the queue is empty.
+
+        This is similar to ``wait_next(timeout=0.0)``, but skips
+        checking the token for a cancellation request. Most importantly,
+        this function still acquires a lock on the queue to check its
+        contents.
+
+        Raises:
+            JavaException: if an exception occurred on the Java side
+                while receiving this value.
+        """
+        with self._condition:
+            if self._queue:
+                event = self._queue.popleft()
+                return _unwrap_event(event)
+        return None
 
     def _on_value(
         self,
@@ -428,14 +449,10 @@ class ParamStream(_BaseStream):
         # pylint: disable = missing-function-docstring
         return t.cast(t.Tuple[object, Header], super()._wait_next(timeout))
 
+    @functools.wraps(_BaseStream._next_if_ready, assigned=["__doc__"], updated=[])
     def next_if_ready(self) -> t.Optional[t.Tuple[object, Header]]:
-        """Return the next value or None if the queue is empty.
-
-        This is a synonym for ``wait_next(timeout=0.0)``. It makes no
-        clear that no waiting will happen, except to acquire the
-        stream's lock.
-        """
-        return self.wait_next(0.0)
+        # pylint: disable = missing-function-docstring
+        return t.cast(t.Tuple[object, Header], super()._next_if_ready())
 
 
 class ParamGroupStream(_BaseStream):
@@ -495,21 +512,10 @@ class ParamGroupStream(_BaseStream):
         # pylint: disable = missing-function-docstring
         return t.cast(t.List[t.Tuple[object, Header]], super()._wait_next(timeout))
 
+    @functools.wraps(_BaseStream._next_if_ready, assigned=["__doc__"], updated=[])
     def next_if_ready(self) -> t.Optional[t.List[t.Tuple[object, Header]]]:
-        """Return the next value or None if the queue is empty.
-
-        This is a synonym for ``wait_next(timeout=0.0)``. It makes no
-        clear that no waiting will happen, except to acquire the
-        stream's lock.
-
-        Returns:
-            The oldest value in the queue or None, if the queue is empty.
-
-        Raises:
-            JavaException: if an exception occurred on the Java side
-                while receiving this value.
-        """
-        return self.wait_next(0.0)
+        # pylint: disable = missing-function-docstring
+        return t.cast(t.List[t.Tuple[object, Header]], super()._next_if_ready())
 
 
 @t.overload
