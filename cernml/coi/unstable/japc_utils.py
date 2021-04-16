@@ -162,10 +162,6 @@ class _BaseStream(metaclass=abc.ABCMeta):
         self._token = token
         self._condition = token.wait_handle if token else threading.Condition()
 
-    def __repr__(self) -> str:
-        name = self._handle.getParameter().getName()
-        return f"<{type(self).__name__}({name!r})>"
-
     def __enter__(self: Self) -> Self:
         self.start_monitoring()
         return self
@@ -393,6 +389,22 @@ class ParamStream(_BaseStream):
     ) -> None:
         super().__init__(japc, name, token=token, maxlen=maxlen, **kwargs)
 
+    def __str__(self) -> str:
+        return f"<{type(self).__name__}({self.parameter_name!r})>"
+
+    def __repr__(self) -> str:
+        return "<{typename}(<PyJapc>, {name!r}, {token!r}, {maxlen!r})>".format(
+            typename=type(self).__name__,
+            name=self.parameter_name,
+            token=self.token,
+            maxlen=self._queue.maxlen,
+        )
+
+    @property
+    def parameter_name(self) -> str:
+        """The name of the stream's underlying parameter."""
+        return self._handle.getParameter().getName()
+
     @property
     def oldest(self) -> t.Tuple[object, Header]:
         return t.cast(t.Tuple[object, Header], super().oldest)
@@ -443,6 +455,22 @@ class ParamGroupStream(_BaseStream):
         **kwargs: t.Any,
     ) -> None:
         super().__init__(japc, name, token=token, maxlen=maxlen, **kwargs)
+
+    def __str__(self) -> str:
+        return f"<{type(self).__name__} of {len(self.parameter_names)} parameters>"
+
+    def __repr__(self) -> str:
+        return "<{typename}(<PyJapc>, {names!r}, {token!r}, {maxlen!r})>".format(
+            typename=type(self).__name__,
+            names=self.parameter_names,
+            token=self.token,
+            maxlen=self._queue.maxlen,
+        )
+
+    @property
+    def parameter_names(self) -> t.List[str]:
+        """A list with the names of all the stream's underlying parameters."""
+        return list(self._handle.getParameterGroup().getNames())
 
     @property
     def oldest(self) -> t.List[t.Tuple[object, Header]]:

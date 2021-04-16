@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- ADD: [`parameter_name`](api.html#cernml.coi.unstable.japc_utils.ParamStream.parameter_name) and [`parameter_names`](api.html#cernml.coi.unstable.japc_utils.ParamGroupStream.parameter_names).
+- FIX: `repr()` of [`ParamGroupStream`](api.html#cernml.coi.unstable.japc_utils.ParamGroupStream) called wrong Java API.
+
 ## v0.7.1
 
 - ADD: Enum member [`Machine.ISOLDE`](api.html#cernml.coi.Machine.ISOLDE).
