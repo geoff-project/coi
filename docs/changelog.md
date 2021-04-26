@@ -1,5 +1,14 @@
 # Changelog
 
+This package uses a variant of [Semantic Versioning](https://semver.org/) that
+makes additional promises during the initial development (major version 0):
+whenever breaking changes to the public API are published, the first non-zero
+version number will increase. This means that code that uses COI version 0.6.0
+will continue to work with version 0.6.1, but may break with version 0.7.0.
+
+The exception to this are the contents of `cernml.coi.unstable`, which may
+change in any given release.
+
 ## v0.7.2
 
 - ADD: [`next_if_ready()`](api.html#cernml.coi.unstable.japc_utils.ParamStream.next_if_ready) no longer checks stream's the cancellation token.
@@ -36,7 +45,7 @@
 
 ## v0.6.0
 
-- BREAKING: Instate [a variant of semantic versioning](https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi#stability).
+- BREAKING: Instate [a variant of semantic versioning](#changelog).
 - BREAKING: Move the Matplotlib utilities into [`mpl_utils`](api.md#matplotlib-utilities).
 - ADD: Unstable module {class}`renderer<cernml.coi.unstable.renderer.Renderer>`.
 - ADD: Unstable module [`japc_utils`](api.md#pyjapc-utilities).
