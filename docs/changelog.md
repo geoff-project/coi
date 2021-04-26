@@ -12,10 +12,10 @@
 
 ## v0.7.0
 
-- BREAKING: Remove [Cancellation tokens](guide.md#synchronization). The
+- BREAKING: Remove [Cancellation tokens](guide.md#cancellation). The
   stable API did not accommodate all required use cases and could not be fixed
   in a backwards-compatible manner.
-- ADD: Re-add [Cancellation tokens](guide.md#synchronization) as an unstable
+- ADD: Re-add [Cancellation tokens](guide.md#cancellation) as an unstable
   module. The new API supports cancellation completion and resets.
 
 ## v0.6.2
