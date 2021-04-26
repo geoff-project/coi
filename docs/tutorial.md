@@ -341,7 +341,7 @@ def _extract_bpm_reading(bpm_reading: dict) -> float:
 With this, we have all the primitive operations in place to start implementing
 the optimization-problem interface. We kick this off by editing our class
 definition: Instead of being its own independent class, it now subclasses the
-[`SingleOptimizable`](api.html#cernml.coi.SingleOptimizable) interface:
+{class}`~cernml.coi.SingleOptimizable` interface:
 
 ```diff
   # coi_example/env.py
@@ -367,8 +367,8 @@ and the following ones are **optional** (i.e. we'll get to them later):
 Let's start with the boring one, the metadata: Every optimization problem must
 declare a minimal amount of information about itself so that the host
 application that runs it knows how to handle it. We insert the
-[`metadata`][cernml.coi.Problem.metadata] class attribute at the top of the
-class, for maximum visibility:
+{attr}`~cernml.coi.Problem.metadata` class attribute at the top of the class,
+for maximum visibility:
 
 ```python
 # coi_example/env.py
@@ -387,14 +387,14 @@ class AwakeElectronBeamSteering(coi.SingleOptimizable):
 Metadata is basically a free-form dictionary. You're free to put in your own
 information if you think you need to. However, some keys are standardized and
 have conventional meaning. The full list is given
-[elsewhere][cernml.coi.Problem.metadata], but the important parts are:
+[elsewhere](cernml.coi.Problem.metadata), but the important parts are:
 
 - `render.modes`: This must be present and it must be a collection of strings.
   We'll get to the details [further down](#custom-rendering-output), but this
   declares the ways in which a user can visualize your problem. Because this
   list is empty right now, it means our problem can't be visualized at all.
   (We'll change this later.)
-- `cern.machine`: This declares the [CERN accelerator][cernml.coi.Machine] that
+- `cern.machine`: This declares the [CERN accelerator](cernml.coi.Machine) that
   your problem belongs to. If this is set to None or is missing, we assume that
   this problem isn't related to any accelerator at all.
 - `cern.japc`: If this is present and True, it means that our problem requires
@@ -403,7 +403,7 @@ have conventional meaning. The full list is given
 
 ### Optimization Space
 
-The [optimization space][cernml.coi.SingleOptimizable.optimization_space] is a
+The {attr}`~cernml.coi.SingleOptimizable.optimization_space` is a
 definition of how many parameters we are optimizing (the degrees of freedom)
 and what their valid domains are. We define it in our `__init__()` method,
 which now looks like this:
@@ -426,8 +426,8 @@ These restrictions may be lifted in the future.
 
 Every optimization procedure needs an initial point from where to start
 optimization. The method
-[`get_initial_params()`][cernml.coi.SingleOptimizable.get_initial_params]
-provides this point to the host application.
+{meth}`~cernml.coi.SingleOptimizable.get_initial_params` provides this point to
+the host application.
 
 While we are free to supply any initial point that we want (even a random
 one!), we decide to measure the corrector values at instantiation and return
@@ -467,7 +467,7 @@ Finally, it's time to write the core of the class: The cost function that an
 optimizer will have to minimize. Note that the interface always assumes a
 minimizer. If you have, for whatever reason, a maximizing optimizer you will
 have to write a small adapter function that negates the result of
-[`compute_single_objective()`][cernml.coi.SingleOptimizable.compute_single_objective].
+{meth}`~cernml.coi.SingleOptimizable.compute_single_objective`.
 
 With all the work we've already done, writing this method is straight-forward.
 Again, we stay mindful of the fact that `params` is normalized to the range
@@ -486,7 +486,7 @@ from −1 to 1:
 
 Once all this is done, we already can use this class in an interactive session.
 However, to use it inside a host application, we must make one more step. We
-need to [*register*][cernml.coi.register] it so that the host application can
+need to [*register*](cernml.coi.register) it so that the host application can
 find it without having to scour our entire package.
 
 Registration is done with a single line at the global scope:
@@ -554,18 +554,19 @@ written.
 
 Nonetheless, the COI provide way to implement fully flexible and customized
 plotting facilities for your optimization problem. This is provided through the
-`render()` method, which has been taken over from the [OpenAI Gym][Gym]
-interface for reinforcement learning.
+{meth}`~cernml.coi.Problem.render` method, which has been taken over from the
+[OpenAI Gym][Gym] interface for reinforcement learning.
 
 ### The mechanics
 
-The way it works is that every time the [`render()`][cernml.coi.Problem.render] method is called on a
-problem, it should visualize its current state in some way. (In our case, the
-current state is the latest readings from the BPMs.) The way in which this
-should happen is the *render mode*, which is passed to the method as a string.
+The way it works is that every time the {meth}`~cernml.coi.Problem.render`
+method is called on a problem, it should visualize its current state in some
+way. (In our case, the current state is the latest readings from the BPMs.) The
+way in which this should happen is the *render mode*, which is passed to the
+method as a string.
 
 A few render modes have already been predefined by [Gym][] and the COI package.
-You can find the full list in the [API docs][cernml.coi.Problem.render].
+You can find the full list in the [API docs](cernml.coi.Problem.render).
 The ones that interest us are:
 
 - `"human"`: The default render mode. The problem should present itself on the
@@ -577,8 +578,8 @@ Like for many other parts of the COI, implementing rendering involves two
 steps:
 
 1. Declare the supported render modes in the `render.modes`
-   [metadata][cernml.coi.Problem.metadata].
-2. Override the [`Problem.render()`][cernml.coi.Problem.render] method.
+   {attr}`~cernml.coi.Problem.metadata`.
+2. Override the {meth}`Problem.render()<cernml.coi.Problem.render>` method.
 
 ### Implementing `render("human")`
 
@@ -626,8 +627,7 @@ We start out by modifying a few lines of code we've already written:
 
 In short, we import a few things that we will need; declare that we implement
 the human rendering mode; and we keep the latest BPM readings around. The last
-point is important to speed up the [`render()`][cernml.coi.Problem.render]
-call.
+point is important to speed up the {meth}`~cernml.coi.Problem.render` call.
 
 With this out of the way, we can start implementing the method.
 
@@ -649,7 +649,7 @@ With this out of the way, we can start implementing the method.
         axes.set_ylabel("Beam position (mm)")
 ```
 
-The implementation of [`render()`][cernml.coi.Problem.render] follows a
+The implementation of {meth}`~cernml.coi.Problem.render` follows a
 characteristic pattern: A series of `if mode == ...` statements (though it's
 only one here), followed by a call to `super().render()`. Each `if` handles one
 of the defined render modes, and if the render mode is unknown, we delegate to
@@ -688,9 +688,9 @@ closes the window. If we called it inside a GUI, the entire application would
 freeze indefinitely!
 
 Hence, we need another render mode, one that leaves the caller of
-[`render()`][cernml.coi.Problem.render] in full control. At the same time, we
-don't want to give up the convenience of the Matplotlib API. This is exactly
-what `"matplotlib_figures"` is for.
+{meth}`~cernml.coi.Problem.render` in full control. At the same time, we don't
+want to give up the convenience of the Matplotlib API. This is exactly what
+`"matplotlib_figures"` is for.
 
 **An important detail**: The Pyplot API is so convenient because it manages a
 lot of global state for us. When embedding our class into a GUI app, the app
@@ -741,8 +741,8 @@ We also import the `Figure` class itself. The reason is, as mentioned, that we
 cannot use `pyplot` to create our figure. Finally, we update our metadata to
 reflect the newly supported render mode.
 
-With these changes in place, our new [`render()`][cernml.coi.Problem.render]
-method looks as follows:
+With these changes in place, our new {meth}`~cernml.coi.Problem.render` method
+looks as follows:
 
 ```python
 # coi_example/env.py (cont.)
@@ -777,10 +777,9 @@ first case.
 
 In both cases, we end up returning a list of all figures that we have created.
 (We could create more than one if we wanted!) Now the GUI can call our
-[`render()`][cernml.coi.Problem.render] method, get access to our figure, and
-put it into some sort of GUI widget for display purposes. And because the GUI
-stays in control, it can take care of GUI things like resizing, zooming, etc.
-for us.
+{meth}`~cernml.coi.Problem.render` method, get access to our figure, and put it
+into some sort of GUI widget for display purposes. And because the GUI stays in
+control, it can take care of GUI things like resizing, zooming, etc. for us.
 
 And just like that, our optimization problem is ready to be embedded into a GUI
 application. Here is a very simple one, in just 53 lines of code:
@@ -845,10 +844,3 @@ if __name__ == "__main__":
 
 [GeOFF]: https://gitlab.cern.ch/vkain/acc-app-optimisation
 [Gym]: https://github.com/openai/gym/
-[cernml.coi.Machine]: api.html#cernml.coi.Machine
-[cernml.coi.Problem.metadata]: api.html#cernml.coi.Problem.metadata
-[cernml.coi.Problem.render]: api.html#cernml.coi.Problem.render
-[cernml.coi.SingleOptimizable.optimization_space]: api.html#cernml.coi.SingleOptimizable.optimization_space
-[cernml.coi.SingleOptimizable.get_initial_params]: api.html#cernml.coi.SingleOptimizable.get_initial_params
-[cernml.coi.SingleOptimizable.compute_single_objective]: api.html#cernml.coi.SingleOptimizable.compute_single_objective
-[cernml.coi.register]: api.html#cernml.coi.register

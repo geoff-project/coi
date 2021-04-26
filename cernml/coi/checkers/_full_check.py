@@ -29,13 +29,12 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     Raises:
         AssertionError: if any check fails.
 
-    This method provides a plugin interface via the `entry point`_
+    This method provides a plugin interface via the `entry point
+    <https://setuptools.readthedocs.io/en/latest/userguide/entry_point.html#advertising-behavior>`_
     ``"cernml.coi.checkers"``. This means that other packages may
     provide additional checkers. Upon each call, this method will load
     all plugins and call them with the signature ``checker(problem,
     warn=warn, headless=headless)``.
-
-    .. _`entry point`: https://setuptools.readthedocs.io/en/latest/userguide/entry_point.html#advertising-behavior
     """
     unwrapped_env = getattr(env, "unwrapped", None)
     assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'

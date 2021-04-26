@@ -216,11 +216,12 @@ class _BaseStream(metaclass=abc.ABCMeta):
     def locked(self) -> t.Iterator[None]:
         """Return a context manager that locks this stream.
 
-        Locking the stream may prevent `TOC/TOU`_ errors. While the
-        stream is locked, no new items can be enqueued by the
-        subscription handler. You should lock the stream only for short
-        periods of time; blocking the subscription handler for too long
-        risks that data gets lost.
+        Locking the stream may prevent `TOC/TOU
+        <https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use>`_
+        errors. While the stream is locked, no new items can be enqueued
+        by the subscription handler. You should lock the stream only for
+        short periods of time; blocking the subscription handler for too
+        long risks that data gets lost.
 
         However, you *may* call :meth:`wait_next()` while the stream is
         locked. It automatically releases the lock while waiting.
@@ -228,8 +229,6 @@ class _BaseStream(metaclass=abc.ABCMeta):
         The returned context manager is neither reentrant nor reusable
         nor meaningful. Call this method again to get new or nested
         locks.
-
-        .. _TOC/TOU: https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use
 
         Example:
 

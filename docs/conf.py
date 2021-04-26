@@ -15,9 +15,6 @@ import datetime
 import pathlib
 import sys
 
-import sphinx.application
-from recommonmark.transform import AutoStructify
-
 ROOTDIR = pathlib.Path(__file__).absolute().parent.parent
 
 # TODO: Remove this, build docs from what we installed. This guarantees
@@ -50,7 +47,7 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "recommonmark",
+    "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.graphviz",
     "sphinx.ext.napoleon",
@@ -87,21 +84,10 @@ napoleon_type_aliases = {
 
 graphviz_output_format = "svg"
 
-# -- Options for Recommonmark ------------------------------------------------
+# -- Options for Myst-Parser -------------------------------------------------
 
-
-def setup(app: sphinx.application.Sphinx) -> None:
-    """Configure Recommonmark."""
-    app.add_config_value(
-        "recommonmark_config",
-        {
-            "auto_toc_tree_section": "Contents",
-            "enable_eval_rst": True,
-        },
-        True,
-    )
-    app.add_transform(AutoStructify)
-
+myst_enable_extensions = ["deflist"]
+myst_heading_anchors = 3
 
 # -- Options for HTML output -------------------------------------------------
 

@@ -14,7 +14,11 @@ This repository can be found online on CERN's [Gitlab][].
 
 ## Contents
 
-- [Tutorial](tutorial.md)
-- [User Guide](guide.md)
-- [API Reference](api.md)
-- [Changelog](changelog.md)
+```{toctree}
+:maxdepth: 2
+
+tutorial
+guide
+api
+changelog
+```

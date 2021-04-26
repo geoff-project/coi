@@ -2,7 +2,7 @@
 
 ## Common Optimization Interfaces
 
-```eval_rst
+```{eval-rst}
 .. autoclass:: cernml.coi.Machine
     :members:
     :undoc-members:
@@ -27,7 +27,7 @@
 
 ## Spaces
 
-```eval_rst
+```{eval-rst}
 .. autoclass:: gym.spaces.Space
     :members:
     :undoc-members:
@@ -41,7 +41,7 @@
 
 ## Configuration of Problems
 
-```eval_rst
+```{eval-rst}
 .. autoclass:: cernml.coi.Configurable
     :members:
     :show-inheritance:
@@ -53,7 +53,7 @@
 
 ## Problem Registry
 
-```eval_rst
+```{eval-rst}
 .. autofunction:: cernml.coi.register
 
 .. autofunction:: cernml.coi.make
@@ -69,7 +69,7 @@
 
 ## Separable Environments
 
-```eval_rst
+```{eval-rst}
 .. autoclass:: cernml.coi.SeparableEnv
     :members:
     :show-inheritance:
@@ -97,7 +97,7 @@
 
 ## Problem checkers
 
-```eval_rst
+```{eval-rst}
 .. autofunction:: cernml.coi.check
 
 .. autofunction:: cernml.coi.checkers.check_problem
@@ -112,7 +112,7 @@
 The following functions and types are only available if the
 [Matplotlib](https://matplotlib.org/) is importable.
 
-```eval_rst
+```{eval-rst}
 .. autofunction:: cernml.coi.mpl_utils.iter_matplotlib_figures
 
 .. autoclass:: cernml.coi.unstable.renderer.Renderer
@@ -140,7 +140,7 @@ The following functions and types are only available if the
 
 ## Cancellation
 
-```eval_rst
+```{eval-rst}
 .. automodule:: cernml.coi.unstable.cancellation
     :members:
 
@@ -154,7 +154,7 @@ The following functions and types are only available if the
 The following functions and types are only available if
 [PyJapc](https://gitlab.cern.ch/scripting-tools/pyjapc) is importable.
 
-```eval_rst
+```{eval-rst}
 .. autofunction:: cernml.coi.unstable.japc_utils.monitoring
 
     .. warning::
