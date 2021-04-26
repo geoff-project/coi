@@ -50,7 +50,7 @@
 
 - FIX: Typo in {attr}`~cernml.coi.Problem.metadata` key `"cern.machine"`.
 - FIX: Mark {attr}`~cernml.coi.Problem.metadata` as a class variable.
-- FIX: Make base {attr}`~cernml.coi.Problem.metadata` a mappingproxy to prevent accidental mutation.
+- FIX: Make base {attr}`~cernml.coi.Problem.metadata` a `mappingproxy` to prevent accidental mutation.
 
 ## v0.4.6
 
