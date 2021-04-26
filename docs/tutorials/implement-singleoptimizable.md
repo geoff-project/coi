@@ -542,7 +542,7 @@ see our class. Clicking on it should at least instantiate it without errors.
 Unfortunately, we won't be able to run it, as this would require access to
 AWAKE itself. If we were able to, this class would already be usable.
 
-![Screenshot of the generic optimization GUI with the beam-steering optimization problem loaded](./tutorial-geoff-blank.png)
+![Screenshot of the generic optimization GUI with the beam-steering optimization problem loaded](./geoff-blank.png)
 
 ## Custom Rendering Output
 
@@ -677,7 +677,7 @@ Unfortunately, unless AWAKE itself is operational, this will likely only
 produce a flat line. Nonetheless, it shows that our method does what it is
 supposed to do.
 
-![Screenshot of the graphic produced by render()](./tutorial-render-human.png)
+![Screenshot of the graphic produced by render()](./render-human.png)
 
 ### Implementing `render("matplotlib_figures")`
 
@@ -840,7 +840,7 @@ if __name__ == "__main__":
     main()
 ```
 
-![Screenshot of the minimal GUI app](./tutorial-render-mpl.png)
+![Screenshot of the minimal GUI app](./render-mpl.png)
 
 [GeOFF]: https://gitlab.cern.ch/vkain/acc-app-optimisation
 [Gym]: https://github.com/openai/gym/

@@ -12,12 +12,12 @@ This repository can be found online on CERN's [Gitlab][].
 
 [Gitlab]: https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi/
 
-## Contents
-
 ```{toctree}
-:maxdepth: 2
+---
+maxdepth: 2
+---
 
-tutorial
+tutorials/index
 guide
 api
 changelog
