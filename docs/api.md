@@ -37,6 +37,11 @@
     :members:
     :undoc-members:
     :show-inheritance:
+
+.. autoclass:: gym.spaces.Dict
+    :members:
+    :undoc-members:
+    :show-inheritance:
 ```
 
 ## Configuration of Problems

@@ -341,10 +341,10 @@ restrictions on environments:
 
 - The {class}`observation_space<gym.Env>`, {class}`action_space<gym.Env>` and
   {attr}`~cernml.coi.SingleOptimizable.optimization_space` must all be
-  {class}`~gym.spaces.Box`es. The only exception is if the environment is a
-  {class}`~gym.GoalEnv`: in that case, {class}`observation_space<gym.Env>`
-  must be `gym.spaces.Dict` (with exactly the three expected keys) and the
-  `"observation"` sub-space must be a {class}`~gym.spaces.Box`.
+  {class}`gym.spaces.Box`es. The only exception is if the environment is a
+  {class}`~gym.GoalEnv`: in that case, {class}`observation_space<gym.Env>` must
+  be {class}`gym.spaces.Dict` (with exactly the three expected keys) and the
+  `"observation"` sub-space must be a {class}`gym.spaces.Box`.
 - The {class}`action_space<gym.Env>` and the
   {attr}`~cernml.coi.SingleOptimizable.optimization_space`  must have the same
   shape; They must only differ in their bounds. The bounds of the action space
