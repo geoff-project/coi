@@ -1,2 +1,2 @@
 #!/usr/bin/env sh
-sphinx-build docs/ docs/html "$@"
+sphinx-build docs/ -q docs/html "$@"
