@@ -797,10 +797,10 @@ Some solutions that are not recommended:
    to the `setup()` call. This breaks as soon as your package imports any of
    its dependencies (e.g. Numpy) because Pip hasn't had a chance to install
    your dependencies yet.
-2. Specify `version = attr: my_pacakge.__version__` in setup.cfg: On setuptools
+2. Specify `version = attr: my_package.__version__` in setup.cfg: On setuptools
    before version 46.4, this does the same as the first option – and so has the
    same problems.
-3. Specify `version = attr: my_pacakge.__version__` in setup.cfg *and* require
+3. Specify `version = attr: my_package.__version__` in setup.cfg *and* require
    `setuptools>=46.4` in pyproject.toml: New versions of setuptools textually
    analyze your package to find `__version__` without running your code. If
    this fails, however, setuptools will fall back to importing your package and
@@ -811,8 +811,114 @@ Further reading:
   version](https://packaging.python.org/guides/single-sourcing-package-version/)
 - [Zest.releaser](https://zestreleaser.readthedocs.io/en/latest/)
 
+## Extra Credit: Automatic Code Formatting
+
+Although a lot of programmers have needlessly strong opinions on it, good code
+formatting has two undeniable advantages:
+- it makes it easier to spot typos and related bugs;
+- it makes it easier for other people to read your code – if they're familiar
+  with the formatting style.
+
+At the same time, it requires effort to pick, follow and enforce a particular
+style guide. Ideally, code formatting would be consistent, automatic and
+require as little human input as possible.
+
+[Black](https://github.com/psf/black) qualifies for all of these:
+- It is an automatic formatter. That means you don't have to follow its style
+  yourself. You run it over your code base and it edits your files in place to
+  be uniformly formatted.
+- [Most IDEs support
+  it](https://black.readthedocs.io/en/stable/editor_integration.html). This
+  means you can run it automatically on every file save or Git commit. With
+  this, you can stop thinking about formatting (almost) entirely.
+- It is almost unconfigurable This obviates pointless style discussions, as
+  they are known in the C++ world.
+
+On top of it, you may also want to run [ISort](https://pycqa.github.io/isort/)
+to sort your import statements for you. To make ISort compatible with Black,
+add these lines to your configuration:
+
+```python
+# pyproject.toml
+[tool.isort]
+profile = "black"
+```
+
+Further reading:
+- [The *Black* code
+  style](https://github.com/psf/black/blob/master/docs/the_black_code_style.md)
+
 ## Extra Credit: Linting
 
-- black, isort
-- pylint, mypy
-- add to CI
+As an interpreted and dynamically typed language, Python cannot rely on a
+type-checking compiler to verify that your code does what you expect it to do.
+Instead, Python developers must rely on *linters*, i.e. static-analysis tools,
+to find bugs and anti-patterns.
+
+The simplest choice for beginners [Pylint](https://pylint.readthedocs.io/). It
+is a general-purpose linter that catches style and complexity issues as well as
+outright bugs. In contrast to Black, Pylint is extremely configurable and
+encourages users to enable or disable lints as necessary. Here is an example
+configuration:
+
+```python
+# pyproject.toml
+[tool.pylint.FORMAT]
+max-line-length=88  # Compatibility with Black.
+ignore-long-lines = '<?https?://\S+>?$'  # Ignore long URLs.
+
+[tool.pylint.REPORTS]
+# Don't show a summary, just print the errors, one per line.
+reports = false
+score = false
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    'bad-continuation',
+]
+```
+
+Sometimes, Pylint gives you a warning that you find generally useful, but
+shouldn't apply to an individual piece of code. In this case you can add a
+comment like this to suppress the warning:
+
+```python
+# pylint: disable = unused-import
+```
+
+These comments respect scoping. If you put them within a function, they apply
+to only that function. If you put them at the end of a line, they only apply to
+that line.
+
+You can prevent bugs from silently sneaking into your code by running Pylint in
+your [CI/CD pipeline](#continuous-integration) every time you push code to
+Gitlab:
+
+```yaml
+# .gitlab-ci.yml
+test_lint:
+  extends: .acc_py_base
+  stage: test
+  before_script:
+    # Pin the version number and only update it manually. This avoids
+    # spontaneous failure.
+    - python -m pip install pylint==2.8.2 black==21.5b0 isort==5.8.0
+    - python -m pip install -e .
+  script:
+    # Run each linter, but don't abort on error. Only abort at the end
+    # if any linter failed. This way, you get all warnings at once.
+    - pylint ${project_name} || pylint_exit=$?
+    - black --check . || black_exit=$?
+    - isort --check . || isort_exit=$?
+    - if [[ pylint_exit+black_exit+isort_exit -gt 0 ]]; then false; fi
+```
+
+If you write Python code that is used by other people, you might also want to
+add [type annotations](https://www.python.org/dev/peps/pep-0483/) and use a
+type checker like
+[Mypy](https://mypy.readthedocs.io/en/latest/getting_started.html) or
+[Pyright](https://github.com/microsoft/pyright/blob/master/docs/getting-started.md).
+
+Further reading:
+- [Python static code analysis
+  tools](https://pawamoy.github.io/posts/python-static-code-analysis-tools/)
