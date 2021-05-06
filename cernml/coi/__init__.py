@@ -4,10 +4,9 @@ The most primitive interface provided by this package is the
 :class:`Problem`, and it isn't very interesting on its own. More
 important are two interfaces that extend :class:`Problem`:
 
-- :class:`gym.Env`, as provided by `OpenAI Gym`_;
+- :class:`gym.Env`, as provided by `OpenAI Gym
+  <https://github.com/openai/gym/>`_;
 - :class:`SingleOptimizable`, provided by this package.
-
-.. _OpenAI Gym: https://github.com/openai/gym/
 
 The former is implemented by classes that describe reinforcement
 learning (RL) problems; the latter by classes that describe
@@ -23,12 +22,11 @@ definition.
 
 For reasons of portability, this API does not support the full range of
 :class:`~gym.Env` classes, but rather puts several restrictions on them.
-This is inspired by `Stable Baselines' Env Checker`_, but comes with
-additional requirements. For more information, please refer to `our
-package docs`_.
-
-.. _Stable Baselines' Env Checker: https://stable-baselines3.readthedocs.io/en/master/common/env_checker.html
-.. _our package docs: https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi
+This is inspired by `Stable Baselines' Env Checker
+<https://stable-baselines3.readthedocs.io/en/master/common/env_checker.html>`_,
+but comes with additional requirements. For more information, please
+refer to `our package docs
+<https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi>`_.
 """
 
 from ._configurable import BadConfig, Config, Configurable, DuplicateConfig

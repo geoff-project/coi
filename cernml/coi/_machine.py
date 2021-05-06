@@ -1,4 +1,4 @@
-"""An enum of all the possible machines an environment can pertain to."""
+"""An enum of all the possible CERN accelerating machines."""
 
 import functools
 import string

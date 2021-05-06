@@ -376,10 +376,13 @@ class Token:
             ...         while not token.cancellation_requested:
             ...             token.wait_handle.wait()
             >>> source = TokenSource()
-            >>> thread = threading.Thread(target=loop, args=(source.token,))
+            >>> thread = threading.Thread(
+            ...     target=loop,
+            ...     args=(source.token,),
+            ... )
             >>> thread.start()
             >>> source.cancel()
-            >>> # Doesn'thread deadlock, thread got notified by `cancel()`.
+            >>> # Doesn't deadlock, thread got notified by `cancel()`.
             >>> thread.join()
         """
         if not self._wait_handle:

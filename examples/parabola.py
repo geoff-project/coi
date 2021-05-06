@@ -46,10 +46,11 @@ class Parabola(coi.OptEnv):
         "cern.cancellable": False,
     }
 
-    # The radius at which an episode is ended. We employ "reward dangling",
-    # i.e. we start with a very wide radius and restrict it with each
-    # successful episode, up to a certain limit. This improves training speed,
-    # as the agent gathers more positive feedback early in the training.
+    # The radius at which an episode is ended. We employ "reward
+    # dangling", i.e. we start with a very wide radius and restrict it
+    # with each successful episode, up to a certain limit. This improves
+    # training speed, as the agent gathers more positive feedback early
+    # in the training.
     objective = -0.05
     max_objective = -0.003
 
@@ -62,8 +63,8 @@ class Parabola(coi.OptEnv):
         """Turn the environment's training mode on or off.
 
         If the training mode is on, reward dangling is active and each
-        successful end of episode makes the objective stricter. If training
-        mode is off, the objective remains constant.
+        successful end of episode makes the objective stricter. If
+        training mode is off, the objective remains constant.
         """
         self._train = train
 
@@ -129,7 +130,7 @@ coi.register("Parabola-v0", entry_point=Parabola, max_episode_steps=10)
 
 
 def run_episode(agent: BaseAlgorithm, env: coi.OptEnv) -> bool:
-    """Run one episode of the given environment and return the success flag."""
+    """Run one episode of ``env`` and return the success flag."""
     obs = env.reset()
     done = False
     while not done:

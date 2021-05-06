@@ -64,10 +64,14 @@ class SimpleRenderer(Renderer):
         >>> from cernml import coi
         >>> from cernml.coi.mpl_utils import Figure
         >>> class SomePoints(coi.Problem):
-        ...     metadata = {"render.modes": ["human", "matplotlib_figures"]}
+        ...     metadata = {
+        ...         "render.modes": ["human", "matplotlib_figures"],
+        ...     }
         ...     def __init__(self):
         ...         self.data = np.random.uniform(size=10)
-        ...         self.renderer = SimpleRenderer.from_generator(self.iter_updates)
+        ...         self.renderer = SimpleRenderer.from_generator(
+        ...             self.iter_updates
+        ...         )
         ...
         ...     def render(mode):
         ...         if mode in self.metadata["render.modes"]:
@@ -161,15 +165,18 @@ class render_generator(t.Generic[T]):
 
         >>> from cernml import coi
         >>> class SomePoints(coi.Problem):
-        ...     metadata = {"render.modes": ["human", "matplotlib_figures"]}
+        ...     metadata = {
+        ...         "render.modes": ["human", "matplotlib_figures"],
+        ...     }
         ...
         ...     def __init__(self):
         ...         self.data = np.random.uniform(size=10)
         ...
         ...     def render(mode):
         ...         if mode in self.metadata["render.modes"]:
-        ...             # Manages a `SimpleRenderer` in the background and
-        ...             # actually calls `renderer.update(mode)` on it.
+        ...             # Manages a `SimpleRenderer` in the background
+        ...             # and actually calls `renderer.update(mode)`
+        ...             # on it.
         ...             return self.update_figure(mode)
         ...         return super().render(mode)
         ...
@@ -195,8 +202,10 @@ class render_generator(t.Generic[T]):
         self.renderer: t.Optional[SimpleRenderer] = None
 
     def _make_renderer(self, instance: T) -> SimpleRenderer:
-        bound_method = lambda fig: self.func(instance, fig)
-        return SimpleRenderer.from_generator(bound_method)
+        def iter_func_call(fig: Figure) -> SimpleRenderer.Generator:
+            return self.func(instance, fig)
+
+        return SimpleRenderer.from_generator(iter_func_call)
 
     def __set_name__(self, owner: t.Type[T], name: str) -> None:
         if self.attrname is None:

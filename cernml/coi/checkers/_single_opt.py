@@ -20,7 +20,7 @@ def check_single_optimizable(opt: SingleOptimizable, warn: bool = True) -> None:
 
 
 def assert_optimization_space(env: SingleOptimizable) -> None:
-    """Check that action and optimization space are boxes of the same shape."""
+    """Check that the spaces are boxes of the same shape."""
     opt_space = env.optimization_space
     assert is_box(opt_space), f"optimization space {opt_space} must be a gym.spaces.Box"
     if isinstance(env, gym.Env):
@@ -43,7 +43,7 @@ def assert_constraints(constraints: t.List[Constraint]) -> None:
 
 
 def assert_opt_returned_values(opt: SingleOptimizable) -> None:
-    """Check that the `SingleOptimizable` methods return the right values."""
+    """Check the return types of `SingleOptimizable` methods."""
     params = opt.get_initial_params()
     assert params in opt.optimization_space, "parameters outside of space"
     assert isinstance(params, np.ndarray), "parameters must be NumPy array"

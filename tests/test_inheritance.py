@@ -126,8 +126,8 @@ def test_sepoptenv() -> None:
 
 
 def test_sepgoalenv() -> None:
-    # SeparableGoalEnv is not a SeparableEnv. Their compute_reward() methods
-    # are semantically different.
+    # SeparableGoalEnv is not a SeparableEnv. Their compute_reward()
+    # methods are semantically different.
     _assert_env_subclass(
         ConcreteSeparableGoalEnv,
         [gym.Env, gym.GoalEnv, coi.SeparableGoalEnv],
@@ -135,8 +135,8 @@ def test_sepgoalenv() -> None:
 
 
 def test_sepoptgoalenv() -> None:
-    # SeparableOptGoalEnv is not a SeparableEnv. Their compute_reward() methods
-    # are semantically different.
+    # SeparableOptGoalEnv is not a SeparableEnv. Their compute_reward()
+    # methods are semantically different.
     _assert_env_subclass(
         ConcreteSeparableOptGoalEnv,
         [

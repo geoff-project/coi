@@ -52,7 +52,7 @@ def assert_observation_space(env: gym.Env) -> None:
 
 
 def assert_action_space(env: gym.Env) -> None:
-    """Check that the given space has symmetric and normalized limits."""
+    """Check that the action space has symmetric/normalized limits."""
     space = env.action_space
     assert is_box(space), f"action space {space} must be a gym.spaces.Box"
     assert np.all(
@@ -62,7 +62,7 @@ def assert_action_space(env: gym.Env) -> None:
 
 
 def assert_env_returned_values(env: gym.Env) -> None:
-    """Check that `env.rest()` and `env.step()` return the right values."""
+    """Check the return types of `env.rest()` and `env.step()`."""
 
     def _check_obs(obs: np.ndarray) -> None:
         assert (

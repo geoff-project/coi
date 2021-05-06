@@ -232,8 +232,10 @@ class _BaseStream(metaclass=abc.ABCMeta):
 
         Example:
 
-            >>> def take_newest(stream: ParamStream) -> t.Tuple[object, Header]:
-            ...     '''Return the latest value, discarding all others.'''
+            >>> def take_newest(
+            ...     stream: ParamStream
+            ... ) -> t.Tuple[object, Header]:
+            ...     '''Return the latest value, discard all others.'''
             ...     with stream.locked():
             ...         if stream.ready:
             ...             value = stream.newest
@@ -485,7 +487,7 @@ class ParamGroupStream(_BaseStream):
 
     @property
     def parameter_names(self) -> t.List[str]:
-        """A list with the names of all the stream's underlying parameters."""
+        """A list with the names of all underlying parameters."""
         return list(self._handle.getParameterGroup().getNames())
 
     @property

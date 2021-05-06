@@ -92,7 +92,7 @@ class Config:
                     if not low <= value <= high:
                         raise ValueError(f"{value} not in range [{low}, {high}]")
                 if self.choices is not None:
-                    if not value in self.choices:
+                    if value not in self.choices:
                         raise ValueError(f"{value} not in {self.choices!r}")
             except Exception as exc:
                 raise BadConfig(

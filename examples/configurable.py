@@ -39,10 +39,11 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         "cern.cancellable": True,
     }
 
-    # The radius at which an episode is ended. We employ "reward dangling",
-    # i.e. we start with a very wide radius and restrict it with each
-    # successful episode, up to a certain limit. This improves training speed,
-    # as the agent gathers more positive feedback early in the training.
+    # The radius at which an episode is ended. We employ "reward
+    # dangling", i.e. we start with a very wide radius and restrict it
+    # with each successful episode, up to a certain limit. This improves
+    # training speed, as the agent gathers more positive feedback early
+    # in the training.
     objective = -0.05
     max_objective = -0.003
 
@@ -348,7 +349,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         field: coi.Config.Field,
         get: t.Optional[t.Callable[[], str]] = None,
     ) -> t.Callable:
-        """Return a callback that can be used to update a field's value."""
+        """Return a callback to update a field's value."""
 
         def _setter(value: t.Any = None) -> None:
             if get is not None:

@@ -1,7 +1,7 @@
 """Configuration file for the Sphinx documentation builder.
 
-This file only contains a selection of the most common options. For a full
-list see the documentation:
+This file only contains a selection of the most common options. For a
+full list see the documentation:
 https://www.sphinx-doc.org/en/master/usage/configuration.html
 """
 
@@ -9,18 +9,12 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 # pylint: disable = invalid-name
 # pylint: disable = redefined-builtin
 
-# -- Path setup --------------------------------------------------------------
+# -- Path setup --------------------------------------------------------
 
 import datetime
 import pathlib
-import sys
 
 ROOTDIR = pathlib.Path(__file__).absolute().parent.parent
-
-# TODO: Remove this, build docs from what we installed. This guarantees
-# that setuptools-scm doesn't change the version number due to build
-# artifacts.
-# sys.path.insert(0, str(ROOTDIR))
 
 
 def get_version() -> str:
@@ -32,7 +26,7 @@ def get_version() -> str:
     return cernml.coi.__version__
 
 
-# -- Project information -----------------------------------------------------
+# -- Project information -----------------------------------------------
 
 project = "cernml-coi"
 copyright = f"{datetime.datetime.now().year}, BE-OP-SPS, CERN"
@@ -41,7 +35,7 @@ author = "Nico Madysa"
 release = get_version()
 
 
-# -- General configuration ---------------------------------------------------
+# -- General configuration ---------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -65,7 +59,7 @@ exclude_patterns = [
     "_build",
 ]
 
-# -- Options for Autodoc -----------------------------------------------------
+# -- Options for Autodoc -----------------------------------------------
 
 autodoc_member_order = "groupwise"
 autodoc_typehints = "signature"
@@ -80,22 +74,22 @@ napoleon_type_aliases = {
     "Problem": "cernml.coi._problem.Problem",
 }
 
-# -- Options for Graphviz ----------------------------------------------------
+# -- Options for Graphviz ----------------------------------------------
 
 graphviz_output_format = "svg"
 
-# -- Options for Myst-Parser -------------------------------------------------
+# -- Options for Myst-Parser -------------------------------------------
 
 myst_enable_extensions = ["deflist"]
 myst_heading_anchors = 3
 
-# -- Options for HTML output -------------------------------------------------
+# -- Options for HTML output -------------------------------------------
 
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
+# The theme to use for HTML and HTML Help pages.  See the documentation
+# for a list of builtin themes.
 html_theme = "sphinxdoc"
 
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-# html_static_path = ["_static"]
+# Add any paths that contain custom static files (such as style sheets)
+# here, relative to this directory. They are copied after the builtin
+# static files, so a file named "default.css" will overwrite the builtin
+# "default.css". html_static_path = ["_static"]

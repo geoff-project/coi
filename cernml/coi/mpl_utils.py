@@ -55,7 +55,11 @@ def iter_matplotlib_figures(
         '': Figure()
         '': Figure()
         >>> # Lists of title-figure tuples OR figures:
-        >>> print_matplotlib_figures([["Foo", Figure()], ("Bar", Figure()), Figure()])
+        >>> print_matplotlib_figures([
+        ...     ["Foo", Figure()],
+        ...     ("Bar", Figure()),
+        ...     Figure(),
+        ... ])
         'Foo': Figure()
         'Bar': Figure()
         '': Figure()
