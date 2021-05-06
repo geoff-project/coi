@@ -1,4 +1,4 @@
-# COI Tutorial
+# Implementing `SingleOptimizable`
 
 This tutorial will lead you step-by-step through the implementation of an
 example minimization problem. It touches on the usage of the Common
@@ -346,6 +346,70 @@ Unfortunately, we won't be able to run it, as this would require access to
 AWAKE itself. If we were able to, this class would already be usable.
 
 ![Screenshot of the generic optimization GUI with the beam-steering optimization problem loaded](./geoff-blank.png)
+
+## Implementing the Details (Optional)
+
+This section contains details on some portions of the interface that only a
+minority of authors will have to deal with. They are here for completeness'
+sake, but feel free to skip this part.
+
+### Objective Range
+
+Similar to how the {attr}`~cernml.coi.SingleOptimizable.optimization_space`
+declares the range of possible inputs to the cost function,
+{attr}`~cernml.coi.SingleOptimizable.objective_range` declares the range of
+possible outputs. Because most optimizers are reasonably independent of the
+exact scale of the function they optimize, this range is not terribly useful.
+
+It has a default value `(-inf, inf)`, which is always correct. If you want to
+narrow this down, be sure to pick the correct limits: the cost function is not
+allowed to return values outside of this range and {func}`~cernml.coi.check()`
+verifies that this is true.
+
+### Constraints
+
+Some optimization algorithms (such as
+[COBYLA](https://www.doi.org/10.1007/978-94-015-8330-5_4)) have a concept of
+*constraints*, i.e. linear or nonlinear functions whose value must be kept
+within certain bounds during optimization. The API allows specifying such
+{attr}`~cernml.coi.SingleOptimizable.constraints` for your optimization
+problem, if it makes sense. To do this, you have to use
+[LinearConstraint](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.LinearConstraint.html)
+or
+[NonlinearConstraint](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.NonlinearConstraint.html)
+from the Scipy package:
+
+```python
+from cernml import coi
+from scipy.optimize import NonlinearConstraint
+
+class UnrelatedProblem(coi.SingleOptimizable):
+    def __init__(self):
+        self.constraints = [
+            NonlinearConstraint(self._constrain_beam_intensity, 1e10, np.inf),
+        ]
+        ...
+
+    def compute_single_objective(self, params):
+        self._apply_params(params)
+        return self._calculate_loss()
+
+    def _constrain_beam_intensity(self, params):
+        self._apply_params(params)
+        return self._calculate_beam_intensity()
+
+    ...
+```
+
+```{warning}
+Not all optimizers support constraints! When writing your optimization problem,
+you *must* assume and expect that the optimizer will ignore your constraints.
+Do not use constraints to implement safety-critical checks and limits. Use
+{attr}`~cernml.coi.SingleOptimizable.optimization_space` and, in case of
+emergencies, raise an exception inside
+{attr}`~cernml.coi.SingleOptimizable.compute_single_objective()`.
+```
+
 
 ## Custom Rendering Output
 
