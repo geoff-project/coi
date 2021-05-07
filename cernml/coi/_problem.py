@@ -156,8 +156,8 @@ class Problem(metaclass=ABCMeta):
             changed. The following return types are allowed:
 
             - a single ``Figure`` object;
-            - an iterable containing either ``Figure``s or tuples
-              ``(str, Figure)`` or both;
+            - an iterable of ``Figure`` objects or tuples ``(str,
+              Figure)`` or both;
             - a mapping with ``str`` keys and ``Figure`` values.
 
             Strings are interpreted as window titles for their
