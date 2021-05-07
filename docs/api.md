@@ -16,13 +16,130 @@
     :members:
     :show-inheritance:
 
-.. autoclass:: gym.Env
-    :members:
-    :show-inheritance:
+.. class:: gym.Env
 
-.. autoclass:: gym.GoalEnv
-    :members:
-    :show-inheritance:
+    Bases: :class:`cernml.coi.Problem`
+
+    The main OpenAI Gym class. It encapsulates an environment with arbitrary
+    behind-the-scenes dynamics. An environment can be partially or fully
+    observed.
+
+    The main API methods that users of this class need to know are:
+
+    - :meth:`step()`
+    - :meth:`reset()`
+    - :meth:`~cernml.coi.Problem.render()`
+    - :meth:`~cernml.coi.Problem.close()`
+    - :meth:`seed()`
+
+    And set the following attributes:
+
+    .. attribute:: action_space
+
+        The Space object corresponding to valid actions
+
+    .. attribute:: observation_space
+
+        The Space object corresponding to valid observations
+
+    .. attribute:: reward_range
+
+        A tuple corresponding to the min and max possible rewards
+
+    .. note::
+        A default reward range set to `[-inf,+inf]` already exists. Set
+        it if you want a narrower range.
+
+    The methods are accessed publicly as "step", "reset", etc ...
+
+    .. method:: reset() -> numpy.ndarray
+
+        Resets the environment to an initial state and returns an initial
+        observation.
+
+        Note that this function should not reset the environment’s random
+        number generator(s); random variables in the environment’s state should
+        be sampled independently between multiple calls to :meth:`reset()`. In
+        other words, each call of :meth:`reset()` should yield an environment
+        suitable for a new episode, independent of previous episodes.
+
+        :return: The initial observation.
+
+    .. method:: seed(seed=None) -> List[int]
+
+        Sets the seed for this env’s random number generator(s).
+
+        .. note::
+            Some environments use multiple pseudorandom number generators. We
+            want to capture all such seeds used in order to ensure that there
+            aren't accidental correlations between multiple generators.
+
+
+        :return: The list of seeds used in this env's random number generators.
+            The first value in the list should be the "main" seed, or the value
+            which a reproducer should pass to 'seed'. Often, the main seed
+            equals the provided 'seed', but this won't be true if *seed=None*,
+            for example.
+
+    .. method:: step(action: numpy.ndarray) -> Tuple[numpy.ndarray, float, bool, dict]
+
+        Run one timestep of the environment's dynamics.
+
+        When end of
+        episode is reached, you are responsible for calling :meth:`reset()`
+        to reset this environment's state.
+        Accepts an action and returns a tuple (observation, reward, done, info).
+
+        :param action: An action provided by the agent.
+
+        :return: A tuple of four elements:
+
+            :observation:
+                Agent's observation of the current environment.
+            :reward:
+                Amount of reward returned after previous action.
+            :done:
+                Whether the episode has ended, in which case further
+                :meth:`step()` calls will return undefined results.
+            :info:
+                Contains auxiliary diagnostic information (helpful for
+                debugging, and sometimes learning).
+
+.. class:: gym.GoalEnv
+
+    Bases: :class:`gym.Env`
+
+    A goal-based environment. It functions just as any regular OpenAI Gym
+    environment but it imposes a required structure on the
+    :attr:`observation_space`. More concretely, the observation space is
+    required to contain at least three elements, namely *observation*,
+    *desired\_goal*, and *achieved\_goal*. Here, *desired\_goal* specifies the
+    goal that the agent should attempt to achieve. *achieved\_goal* is the goal
+    that it currently achieved instead. The *observation* contains the actual
+    observations of the environment as per usual.
+
+    .. method:: compute_reward(achieved_goal: numpy.ndarray, desired_goal: numpy.ndarray, info: dict) -> float
+
+        Compute the step reward. This externalizes the reward function and
+        makes it dependent on a desired goal and the one that was achieved. If
+        you wish to include additional rewards that are independent of the
+        goal, you can include the necessary values to derive it in *info* and
+        compute it accordingly.
+
+        :param achieved_goal: The goal that was achieved during execution.
+        :param desired_goal: The desired goal that we asked the agent to
+            attempt to achieve.
+        :param info: An info dictionary with additional information.
+
+        :return: The reward that corresponds to the provided achieved goal
+            w.r.t. to the desired goal.
+
+        .. note::
+
+            The following should always hold true::
+
+                ob, reward, done, info = env.step()
+                assert reward == env.compute_reward(ob['achieved_goal'], ob['goal'], info)
 ```
 
 ## Spaces
