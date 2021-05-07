@@ -9,6 +9,13 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 The exception to this are the contents of `cernml.coi.unstable`, which may
 change in any given release.
 
+## v0.7.3
+
+- ADD: Split the COI tutorial into a [tutorial on packaging](tutorials/packaging.md) and a [tutorial on the COI proper](tutorials/implement-singleoptimizable.md).
+- FIX: Improve the documentation of {class}`~gym.Env` and other Gym classes.
+- OTHER: Upgraded docs. Switch markdown parser from Recommonmark to Myst. Change theme from *Read the Docs* to *Sphinxdoc*.
+- OTHER: Changes to the CI pipeline. Version of code checkers are pinned now. Added Pycodestyle to the list of checkers to run.
+
 ## v0.7.2
 
 - ADD: [`next_if_ready()`](api.html#cernml.coi.unstable.japc_utils.ParamStream.next_if_ready) no longer checks stream's the cancellation token.
@@ -21,11 +28,8 @@ change in any given release.
 
 ## v0.7.0
 
-- BREAKING: Remove [Cancellation tokens](guide.md#cancellation). The
-  stable API did not accommodate all required use cases and could not be fixed
-  in a backwards-compatible manner.
-- ADD: Re-add [Cancellation tokens](guide.md#cancellation) as an unstable
-  module. The new API supports cancellation completion and resets.
+- BREAKING: Remove [Cancellation tokens](guide.md#cancellation). The stable API did not accommodate all required use cases and could not be fixed in a backwards-compatible manner.
+- ADD: Re-add [Cancellation tokens](guide.md#cancellation) as an unstable module. The new API supports cancellation completion and resets.
 
 ## v0.6.2
 
