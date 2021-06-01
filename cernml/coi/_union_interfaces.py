@@ -5,8 +5,8 @@ from typing import Any
 
 import gym
 
-from ._optenv import SingleOptimizable
 from ._sepenv import SeparableEnv, SeparableGoalEnv
+from ._single_opt import SingleOptimizable
 
 
 class OptEnv(gym.Env, SingleOptimizable, metaclass=ABCMeta):

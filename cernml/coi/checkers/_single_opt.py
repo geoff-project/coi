@@ -6,7 +6,7 @@ import gym
 import numpy as np
 from scipy.optimize import LinearConstraint, NonlinearConstraint
 
-from .._optenv import Constraint, SingleOptimizable
+from .._single_opt import Constraint, SingleOptimizable
 from ._generic import assert_range, is_box, is_reward
 
 

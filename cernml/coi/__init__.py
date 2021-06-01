@@ -31,10 +31,10 @@ refer to `our package docs
 
 from ._configurable import BadConfig, Config, Configurable, DuplicateConfig
 from ._machine import Machine
-from ._optenv import Constraint, SingleOptimizable
 from ._problem import Problem
 from ._registration import make, register, registry, spec
 from ._sepenv import SeparableEnv, SeparableGoalEnv
+from ._single_opt import Constraint, SingleOptimizable
 from ._union_interfaces import OptEnv, OptGoalEnv, SeparableOptEnv, SeparableOptGoalEnv
 from .checkers import check
 
