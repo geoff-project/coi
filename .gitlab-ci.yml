@@ -22,14 +22,7 @@ test_lint:
   image: ${pyqt_image}
   before_script:
     - python -m pip install -e '.[lint]'
-  script:
-    - pylint ${project_dir} tests/*.py || pl_exit=$?
-    - black --check . || b_exit=$?
-    - isort --check . || is_exit=$?
-    - pycodestyle . || pcs_exit=$?
-    - mypy -p ${project_dir} || mp_pkg_exit=$?
-    - mypy examples/ tests/ || mp2_exit=$?
-    - if [[ pl_exit+b_exit+is_exit+pcs_exit+mp_pkg_exit+mp2_exit -gt 0 ]]; then false; fi
+  script: ${project_root}/run_linters.sh
 
 test_dev:
   extends: .acc_py_dev_test
