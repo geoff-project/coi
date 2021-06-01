@@ -21,7 +21,7 @@ class MultiGoalParabola(SeparableOptGoalEnv):
     )
     optimization_space = gym.spaces.Box(-2, 2, (2,))
     reward_range = (-np.sqrt(16.0), 0.0)
-    objective_range = (0.0, np.sqrt(8.0))
+    objective_range = (0.0, np.sqrt(18.0))
     metadata = {
         "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": Machine.NO_MACHINE,
