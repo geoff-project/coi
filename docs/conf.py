@@ -75,6 +75,42 @@ napoleon_type_aliases = {
     "Problem": "cernml.coi._problem.Problem",
 }
 
+
+def setup(app):  # type: ignore
+    """Sphinx setup hook."""
+
+    def _deduce_public_module_name(name):  # type: ignore
+        if name.startswith("cernml.coi._"):
+            return "cernml.coi"
+        if name == "gym.core":
+            return "gym"
+        if name.startswith("gym.spaces."):
+            return "gym.spaces"
+        return name
+
+    def _hide_configurable_module(obj):  # type: ignore
+        annotations = getattr(obj, "__annotations__", {})
+        if annotations.get("return") == "Config":
+            annotations["return"] = "cernml.coi.Config"
+
+    def _hide_class_module(class_):  # type: ignore
+        old_name = getattr(class_, "__module__", "")
+        if not old_name:
+            return
+        new_name = _deduce_public_module_name(old_name)
+        if new_name != old_name:
+            class_.__module__ = new_name
+
+    def _hide_private_modules(_app, obj, _bound_method):  # type: ignore
+        if isinstance(obj, type):
+            _hide_class_module(obj)
+            for base in getattr(obj, "__bases__", []):
+                _hide_class_module(base)
+        _hide_configurable_module(obj)
+
+    app.connect("autodoc-before-process-signature", _hide_private_modules)
+
+
 # -- Options for Graphviz ----------------------------------------------
 
 graphviz_output_format = "svg"

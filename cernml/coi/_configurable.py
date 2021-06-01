@@ -281,7 +281,7 @@ class Configurable(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def get_config(self) -> Config:
+    def get_config(self) -> "Config":
         """Return a declaration of configurable parameters."""
 
     @abstractmethod
