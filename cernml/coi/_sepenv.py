@@ -50,7 +50,7 @@ class SeparableEnv(gym.Env):
         return obs, reward, done, info
 
     def compute_observation(self, action: np.ndarray, info: InfoDict) -> np.ndarray:
-        """Compute the next observation if ``action`` is taken.
+        """Compute the next observation if *action* is taken.
 
         This should encapsulate all state transitions of the
         environment. This means that after any call to
@@ -69,20 +69,20 @@ class SeparableEnv(gym.Env):
         raise NotImplementedError()
 
     def compute_reward(self, obs: np.ndarray, goal: None, info: InfoDict) -> float:
-        """Compute the next observation if ``action`` is taken.
+        """Compute the next observation if *action* is taken.
 
         This externalizes the reward function. In this regard, it is
         similar to :meth:`gym.GoalEnv.compute_reward()`, but it doesn't
         impose any structure on the observation space.
 
         Note that this function should be free of side-effects or
-        modifications of ``self``. In particular, the user is allowed to
+        modifications of *self*. In particular, the user is allowed to
         do multiple calls to ``env.compute_reward(obs, None, {})`` and
         always expect the same result.
 
         Args:
-            obs: The observation calculated by :meth:`reset()` or
-                :meth:`compute_observation()`.
+            obs: The observation calculated by :meth:`~gym.Env.reset()`
+                or :meth:`compute_observation()`.
             goal: A dummy parameter to stay compatible with the
                 :class:`~gym.GoalEnv` API. This parameter generally is
                 None. If you want a multi-goal environment, consider
@@ -102,7 +102,7 @@ class SeparableEnv(gym.Env):
 
         This externalizes the determination of the end of episode. This
         function should be free of side-effects or modifications of
-        ``self``. In particular, it must be possible to call
+        *self*. In particular, it must be possible to call
         ``env.compute_done(obs, reward, {})`` multiple times and always
         get the same result.
 
@@ -131,7 +131,7 @@ class SeparableGoalEnv(gym.GoalEnv):
     but additionally also splits out the calculation of the observation
     and the end-of-episode flag. This class differs from
     :class:`SeparableEnv` in the meaning of the parameters that are
-    passed to :meth:`compute_reward()`.
+    passed to :meth:`~gym.GoalEnv.compute_reward()`.
 
     The split introduced by this class makes two things possible:
 
@@ -165,7 +165,7 @@ class SeparableGoalEnv(gym.GoalEnv):
         return obs, reward, done, info
 
     def compute_observation(self, action: np.ndarray, info: InfoDict) -> GoalObs:
-        """Compute the next observation if ``action`` is taken.
+        """Compute the next observation if *action* is taken.
 
         This should encapsulate all state transitions of the
         environment. This means that after any call to
@@ -188,7 +188,7 @@ class SeparableGoalEnv(gym.GoalEnv):
 
         This externalizes the determination of the end of episode. This
         function should be free of side-effects or modifications of
-        ``self``. In particular, it must be possible to call
+        *self*. In particular, it must be possible to call
         ``env.compute_done(obs, reward, {})`` multiple times and always
         expect the same result.
 
@@ -196,10 +196,10 @@ class SeparableGoalEnv(gym.GoalEnv):
         consider setting ``info["success"] = True``.
 
         Args:
-            obs: The observation calculated by :meth:`reset()` or
-                :meth:`compute_observation()`.
+            obs: The observation calculated by :meth:`~gym.Env.reset()`
+                or :meth:`compute_observation()`.
             reward: The observation calculated by
-                :meth:`gym.GoalEnv.compute_reward()`.
+                :meth:`~gym.GoalEnv.compute_reward()`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to
                 :meth:`~gym.GoalEnv.compute_reward()` before.

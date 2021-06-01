@@ -89,7 +89,7 @@ The following keys are defined and understood by this package:
 
 `"cern.japc"`
 : a boolean flag indicating whether the problem's constructor expects an
-argument named `japc` of type `pyjapc.PyJapc`;
+argument named *japc* of type {class}`~japc:pyjapc.PyJapc`;
 
 `"cern.cancellable"`
 : A boolean flag indicating whether the problem's constructor expects an
@@ -122,8 +122,8 @@ terminal control codes for color effects.
 : Return a Numpy array representing color image data.
 
 `"matplotlib_figures"`
-: Return a list of Matplotlib `Figure` objects, suitable for embedding into a
-GUI application.
+: Return a list of Matplotlib {class}`~matplotlib.figure.Figure` objects,
+suitable for embedding into a GUI application.
 
 See the {meth}`~cernml.coi.Problem.render` docs for a full spec of each render
 mode.
@@ -158,8 +158,7 @@ arbitrary amount of time may pass between the last call to
 
 ```{note}
 **Note:** If you want to use an optimization problem in your own application or
-script, consider using a [context
-manager](https://docs.python.org/3/library/contextlib.html#contextlib.closing):
+script, consider using the {func}`~std:contextlib.closing()` context manager:
 
     from contextlib import closing
 
@@ -179,7 +178,7 @@ of allowed values. These domains are encapsulated by Gym's concept of a
 {class}`~gym.spaces.Box` for maximum portability. This restriction may be
 lifted in the future.
 
-In addition, box spaces are for now restricted to the bounds \[−1; 1\]. This
+In addition, box spaces are for now restricted to the bounds [−1; +1]. This
 restriction, too, may be lifted in the future.
 
 The interfaces make use of spaces as follows:
@@ -269,27 +268,27 @@ the current observation. This action is then passed to {meth}`~gym.Env.step`,
 which must return a 4-tuple of the following values:
 
 
-`obs`
+*obs*
 : the next observation after the action has been applied;
 
-`reward`
+*reward*
 : the reward for the given action (a reinforcement learner's goal is to
 maximize the expected cumulative reward over an episode);
 
-`done`
+*done*
 : a boolean flag indicating whether the episode has ended;
 
-`info`
+*info*
 : a dict mapping from strings to arbitrary values.
 
 This is done in a loop until the episode is ended by passing a True value as
-`done`. Once the episode is over, the host application will make no further
+*done*. Once the episode is over, the host application will make no further
 call to {meth}`~gym.Env.step` until the next episode is started via
 {meth}`~gym.Env.reset`. A host application is also free to end an episode
 prematurely, e.g. to call {meth}`~gym.Env.reset` before an episode is over.
 There is no guarantee that any episode is ever driven to completion.
 
-The `info` dict is free to return any additional information. There is
+The *info* dict is free to return any additional information. There is
 currently only one standardized key:
 
 `"success"`
@@ -350,9 +349,9 @@ restrictions on environments:
   shape; They must only differ in their bounds. The bounds of the action space
   must be symmetric around zero and normalized (equal to or less than one).
 - If the environment supports any rendering at all, it should support at least
-  the render modes `human`, `ansi` and `matplotlib_figures`. The former two
-  facilitate debugging and stand-alone usage, the latter makes it possible to
-  embed the environment into a GUI.
+  the *human*, *ansi* and *matplotlib_figures*. The former two facilitate
+  debugging and stand-alone usage, the latter makes it possible to embed the
+  environment into a GUI.
 - The environment metadata must contain a key `cern.machine` with a value of
   type {class}`~cernml.coi.Machine`. It tells users which CERN accelerator the
   environment belongs to.
@@ -361,12 +360,11 @@ restrictions on environments:
 - The problems must never diverge to NaN or infinity.
 
 For the convenience of problem authors, this package provides a function
-{func}`~cernml.coi.check` that verifies these requirements on a best-effort
+{func}`~cernml.coi.check()` that verifies these requirements on a best-effort
 basis. If you package your problem, we recommend adding a unit test to your
 package that calls this function and exercise it on every CI job. See [the
-Acc-Py guidelines on testing][Acc-Py-Testing] for more information.
-
-[Acc-Py-Testing]: https://wikis.cern.ch/display/ACCPY/Testing
+Acc-Py guidelines on testing](https://wikis.cern.ch/display/ACCPY/Testing) for
+more information.
 
 ## Problem Registry
 
@@ -459,7 +457,7 @@ the ability to cleanly shut down operations – usually by raising an exception
 [C-Sharp Cancellation Tokens]: https://docs.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads
 
 To use this feature, your problem must first declare that its support it by
-setting the `cern.cancellable` [metadata](#metadata). When it does so, a host
+setting the `"cern.cancellable"` [metadata](#metadata). When it does so, a host
 application will pass a {class}`~cernml.coi.unstable.cancellation.Token` to the
 constructor. On this token, the problem should check whether cancellation has
 been requested whenever it enters a loop that may run for a long time.
@@ -685,7 +683,7 @@ existing {meth}`~gym.GoalEnv.compute_reward`.
 
 One quirk of this interface is that
 {meth}`~cernml.coi.SeparableEnv.compute_reward` takes a dummy parameter
-`desired` that must always be None. This is for compatibility with
+*desired* that must always be None. This is for compatibility with
 {class}`~gym.GoalEnv`, ensuring that both methods have the same signature. This
 makes it easier to write generic code that can handle both interfaces equally
 well.
@@ -777,10 +775,10 @@ value.
 One consequence is that it is not safe to optimize a function at a skeleton
 point for which no incorporation rule is defined.
 
-The `cernml.lsa_utils` package provides utilities to the authors of
+The {mod}`utils:cernml.lsa_utils` package provides utilities to the authors of
 optimization problems that allow them to easily incorporate a desired change
 into a function by applying these rules. Due to the above architecture,
 incorporation requires communication with the rules database. The
-`~cernml.lsa_utils` package uses
+{mod}`~utils:cernml.lsa_utils` package uses
 [PJLSA](https://gitlab.cern.ch/scripting-tools/pjlsa) for this communication.
 As such, these utilities only work within the CERN network.

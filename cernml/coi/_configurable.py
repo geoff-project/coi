@@ -132,23 +132,23 @@ class Config:
                 Typically, this is the current setting for this field.
             label: The display name of the parameter. This will be
                 displayed to the user, if possible. If not passed,
-                ``dest`` is reused.
+                *dest* is reused.
             help: A string that further explains this configurable
                 parameter. A GUI might e.g. present this string as a
                 tooltip.
             type: A function used for type-checking and conversion. This
                 function should take a string and produce a value of the
-                same type as ``value``. It will be applied to any user
+                same type as *value*. It will be applied to any user
                 input that produces a new configuration. If the given
                 string is not a valid input, this function should raise
                 an exception. If not passed, this is simply the type of
-                ``value``, e.g. ``int``, ``float``, etc.
-            range: If passed, must be a tuple ``(low, high)``. A
+                *value*, e.g. :class`int`, :class:`float`, etc.
+            range: If passed, must be a tuple (*low*, *high*). A
                 user-chosen value for this field must be within the
                 closed interval described by these values.
             choices: If passed, must be a list of values of the same
-                type as ``value``. A user-chosen value for this field
-                must be one of this list.
+                type as *value*. A user-chosen value for this field must
+                be one of this list.
             default: If passed, a default value that the user should be
                 able to easily reset this field to. This is preferrable
                 if there is a single obvious choice for this field.
@@ -181,7 +181,7 @@ class Config:
 
         Args:
             name: The name of the configurable field. This is the same
-                as the ``dest`` parameter of :meth:`add()`.
+                as the *dest* parameter of :meth:`add()`.
             text_repr: The string input to validate.
 
         Returns:
@@ -196,7 +196,7 @@ class Config:
         """Validate user-chosen set of configurations.
 
         Args:
-            values: The mapping ``dest`` to unparsed string values. This
+            values: The mapping *dest* to unparsed string values. This
                 must have exactly one item for every configurable field.
                 Neither missing nor excess items are allowed.
 
@@ -205,8 +205,8 @@ class Config:
             attributes.
 
         Raises:
-            BadConfig: if a field fails to validate, if ``values`` has
-                too many items or if it misses an item.
+            BadConfig: if a field fails to validate, if *values* has too
+                many items or if it misses an item.
         """
         values = dict(values)  # Make a copy, we want to manipulate it.
         result = SimpleNamespace()
@@ -288,7 +288,7 @@ class Configurable(metaclass=ABCMeta):
     def apply_config(self, values: SimpleNamespace) -> None:
         """Configure this object using the given values.
 
-        The ``values`` have already been validated using the information
+        The *values* have already been validated using the information
         given in :meth:`get_config()`, but this method may apply further
         checks.
 
@@ -299,7 +299,7 @@ class Configurable(metaclass=ABCMeta):
         Args:
             values: A namespace object. It has one attribute for each
                 field declared in :meth:`get_config()`. The attribute
-                name is exactly the ``dest`` parameter of
+                name is exactly the *dest* parameter of
                 :meth:`Config.add()`.
 
         Raises:

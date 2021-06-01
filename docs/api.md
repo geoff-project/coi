@@ -3,6 +3,8 @@
 ## Common Optimization Interfaces
 
 ```{eval-rst}
+.. autoclass:: cernml.coi.Constraint
+
 .. autoclass:: cernml.coi.Machine
     :members:
     :undoc-members:
@@ -115,10 +117,10 @@
 
     A goal-based environment. It functions just as any regular OpenAI Gym
     environment but it imposes a required structure on the
-    :attr:`observation_space`. More concretely, the observation space is
-    required to contain at least three elements, namely *observation*,
-    *desired\_goal*, and *achieved\_goal*. Here, *desired\_goal* specifies the
-    goal that the agent should attempt to achieve. *achieved\_goal* is the goal
+    :attr:`~gym.Env.observation_space`. More concretely, the observation space
+    is required to contain at least three elements, namely *observation*,
+    *desired_goal*, and *achieved_goal*. Here, *desired_goal* specifies the
+    goal that the agent should attempt to achieve. *achieved_goal* is the goal
     that it currently achieved instead. The *observation* contains the actual
     observations of the environment as per usual.
 
@@ -280,6 +282,10 @@
 .. autodata:: cernml.coi.registry
 
 .. autoclass:: gym.envs.registration.EnvRegistry
+    :members:
+    :show-inheritance:
+
+.. autoclass:: gym.envs.registration.EnvSpec
     :members:
     :show-inheritance:
 ```

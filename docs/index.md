@@ -8,9 +8,11 @@ optimization and reinforcement learning (RL) on the same optimization problems.
 This makes it possible to unify both approaches into a generic optimization
 application in the CERN Control Center.
 
-This repository can be found online on CERN's [Gitlab][].
+The {doc}`cernml-coi-utils <utils:index>` package provides many additional
+features that complement the COIs.
 
-[Gitlab]: https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi/
+This repository can be found online on CERN's
+[Gitlab](https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi/).
 
 ```{toctree}
 ---

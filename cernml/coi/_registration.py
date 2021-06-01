@@ -24,9 +24,9 @@ def register(
                 (env-name)-v(version)
                 (module):(env-name)-v(version)
 
-            where ``module`` is the name of the defining module (may
-            contain periods), ``env-name`` is the name and ``version``
-            is a non-negative integer.
+            where *module* is the name of the defining module (may
+            contain periods), *env-name* is the name and *version* is a
+            non-negative integer.
 
     Keyword Args:
         entry_point: Either a callable or a string of the following
@@ -43,17 +43,17 @@ def register(
 
         max_episode_steps: The maximum number of steps after which an
             episode is forcefully ended. If this parameter is not None,
-            the return value of ``entry_point`` is wrapped in a
+            the return value of *entry_point* is wrapped in a
             :class:`gym.wrappers.TimeLimit` upon instantiation.
 
         kwargs: Any further arguments that should be passed to
-            ``entry_point``. This should contain all required arguments
-            so that a call ``make(the_id)`` will always succeed.
+            *entry_point*. This should contain all required arguments so
+            that a call ``make(the_id)`` will always succeed.
 
     Note:
         After instantiating a registered problem, the registry spec of
         an object will be added to it as ``obj.unwrapped.spec``. That
-        means whatever object is returned by ``entry_point`` *must* have
+        means whatever object is returned by *entry_point* *must* have
         an attribute :attr:`~Problem.unwrapped` that points to itself or
         any wrapped problem.
     """
@@ -90,7 +90,7 @@ def spec(id: str) -> EnvSpec:
         id: The name under which the environment has been registered.
 
     Returns:
-        A :class:`gym.envs.registration.EnvSpec` object that contains
+        An :class:`~gym.envs.registration.EnvSpec` object that contains
         the arguments with which the problem has been registered.
 
     Raises:

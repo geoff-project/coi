@@ -30,8 +30,8 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     Raises:
         AssertionError: if any check fails.
 
-    This method provides a plugin interface via the `entry point
-    <https://setuptools.readthedocs.io/en/latest/userguide/entry_point.html#advertising-behavior>`_
+    This method provides a plugin interface via the :ref:`entry point
+    <setuptools:dynamic discovery of services and plugins>`
     ``"cernml.coi.checkers"``. This means that other packages may
     provide additional checkers. Upon each call, this method will load
     all plugins and call them with the signature ``checker(problem,

@@ -2,16 +2,21 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
+import typing as t
 from abc import ABCMeta, abstractmethod
-from typing import List, Tuple, Union
 
 import gym
 import numpy
-import scipy.optimize
 
 from ._problem import Problem
 
-Constraint = Union[scipy.optimize.LinearConstraint, scipy.optimize.NonlinearConstraint]
+if t.TYPE_CHECKING:
+    # pylint: disable = unused-import
+    import scipy.optimize
+
+Constraint = t.Union[
+    "scipy.optimize.LinearConstraint", "scipy.optimize.NonlinearConstraint"
+]
 
 
 class SingleOptimizable(Problem, metaclass=ABCMeta):
@@ -52,14 +57,14 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             restrict this e.g. for normalization purposes.
         constraints: The constraints that apply to this optimization
             problem. For now, each constraint must be either a
-            :class:`scipy.optimize.LinearConstraint` or a
-            :meth:`scipy.optimize.NonlinearConstraint`. In the future,
+            :class:`~scipy.optimize.LinearConstraint` or a
+            :class:`~scipy.optimize.NonlinearConstraint`. In the future,
             this might be relaxed to allow more optimization algorithms.
     """
 
     optimization_space: gym.spaces.Space = None
-    objective_range: Tuple[float, float] = (-float("inf"), float("inf"))
-    constraints: List[Constraint] = []
+    objective_range: t.Tuple[float, float] = (-float("inf"), float("inf"))
+    constraints: t.List["Constraint"] = []
 
     @abstractmethod
     def get_initial_params(self) -> numpy.ndarray:

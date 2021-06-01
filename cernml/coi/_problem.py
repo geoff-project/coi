@@ -19,9 +19,9 @@ class Problem(metaclass=ABCMeta):
     - provide an easy way to test whether an interface is compatible
       with the generic optimization framework.
 
-    This is an *abstract* base class. This means even classes that don't
-    inherit from it may be considered a subclass. To be considered a
-    subclass, a class must merely:
+    This is an :term:`std:abstract base class`. This means even classes
+    that don't inherit from it may be considered a subclass. To be
+    considered a subclass, a class must merely:
 
     - provide a method :meth:`render()`,
     - provide a method :meth:`close()`,
@@ -50,18 +50,19 @@ class Problem(metaclass=ABCMeta):
                 :class:`Machine`.
             ``"cern.japc"``
                 A boolean flag indicating that the problem's constructor
-                expects an argument named ``japc`` of type
-                :class:`pyjapc.PyJapc`. Enable it if your class performs
-                any machine communication via JAPC. Do not create your
-                own :class:`pyjapc.PyJapc` instance. Among other things,
-                this ensures that the correct timing selector is set.
+                expects an argument named *japc* of type
+                :class:`~pyjapc.PyJapc`. Enable it if your class
+                performs any machine communication via JAPC. Do not
+                create your own :class:`~pyjapc.PyJapc` instance. Among
+                other things, this ensures that the correct timing
+                selector is set.
             ``"cern.cancellable"``
                 A boolean flag indicating that the problem's constructor
-                expects an argument named ``cancellation_token`` of type
-                :class:`CancellationToken`. Enable it if your class ever
-                enters any long-running loops that the user may want to
-                interrupt. A classic example is the acquisition and
-                validation of cycle-bound data.
+                expects an argument named *cancellation_token* of type
+                :class:`~cernml.coi.unstable.cancellation.Token`. Enable
+                it if your class ever enters any long-running loops that
+                the user may want to interrupt. A classic example is the
+                acquisition and validation of cycle-bound data.
 
             Additionally, all keys that start with ``"cern."`` are
             reserved for future use.
@@ -100,7 +101,7 @@ class Problem(metaclass=ABCMeta):
     def unwrapped(self) -> "Problem":
         """Return the core problem.
 
-        By default, this just returns ``self``. However, if this class
+        By default, this just returns *self*. However, if this class
         is a wrapper around another problem (which might, in turn, also
         be a wrapper), it should return that problem recursively.
 
@@ -151,14 +152,16 @@ class Problem(metaclass=ABCMeta):
             terminal-style text representation. The text can include
             newlines and ANSI escape sequences (e.g. for colors).
         ``"matplotlib_figures"``
-            Render to one or more :class:`matplotlib.figure.Figure`
+            Render to one or more :class:`~matplotlib.figure.Figure`
             objects. This should return all figures whose contents have
             changed. The following return types are allowed:
 
-            - a single ``Figure`` object;
-            - an iterable of ``Figure`` objects or tuples ``(str,
-              Figure)`` or both;
-            - a mapping with ``str`` keys and ``Figure`` values.
+            - a single :class:`~matplotlib.figure.Figure` object;
+            - an iterable of bare :class:`~matplotlib.figure.Figure`
+              objects or 2-tuples of :class:`str` and
+              :class:`~matplotlib.figure.Figure` or both;
+            - a mapping with :class:`str` keys and
+              :class:`~matplotlib.figure.Figure` values.
 
             Strings are interpreted as window titles for their
             associated figure.

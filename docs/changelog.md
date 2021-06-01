@@ -12,11 +12,11 @@ change in any given release.
 ## Unreleased
 
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
-- FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from `Any` to `numpy.ndarray`.
+- FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from {data}`~std:typing.Any` to {class}`~np:numpy.ndarray`.
 
 ## v0.7.3
 
-- ADD: Split the COI tutorial into a [tutorial on packaging](tutorials/packaging.md) and a [tutorial on the COI proper](tutorials/implement-singleoptimizable.md).
+- ADD: Split the COI tutorial into a {doc}`tutorial on packaging <tutorials/packaging>` and a {doc}`tutorial on the COI proper <tutorials/implement-singleoptimizable>`.
 - FIX: Improve the documentation of {class}`~gym.Env` and other Gym classes.
 - OTHER: Upgraded docs. Switch markdown parser from Recommonmark to Myst. Change theme from *Read the Docs* to *Sphinxdoc*.
 - OTHER: Changes to the CI pipeline. Version of code checkers are pinned now. Added Pycodestyle to the list of checkers to run.
@@ -49,7 +49,7 @@ change in any given release.
 
 ## v0.6.1
 
-- ADD: `title` parameter to {meth}`SimpleRenderer.from_generator<cernml.coi.unstable.renderer.SimpleRenderer.from_generator>`.
+- ADD: *title* parameter to {meth}`SimpleRenderer.from_generator<cernml.coi.unstable.renderer.SimpleRenderer.from_generator>`.
 - FIX: Missing `figure.draw()` when calling {meth}`SimpleRenderer.update("human")<cernml.coi.unstable.renderer.SimpleRenderer.update>`.
 
 ## v0.6.0
@@ -58,7 +58,7 @@ change in any given release.
 - BREAKING: Move the Matplotlib utilities into [`mpl_utils`](api.md#matplotlib-utilities).
 - ADD: Unstable module {class}`renderer<cernml.coi.unstable.renderer.Renderer>`.
 - ADD: Unstable module [`japc_utils`](api.md#pyjapc-utilities).
-- ADD: Allow a single `Figure` as return value of {meth}`render("matplotlib_figure")<cernml.coi.Problem.render>`.
+- ADD: Allow a single {class}`~matplotlib.figure.Figure` as return value of {meth}`render("matplotlib_figure")<cernml.coi.Problem.render>`.
 
 ## v0.5.0
 
@@ -95,7 +95,7 @@ change in any given release.
 
 ## v0.4.1
 
-- FIX: Expose {func}`cernml.coi.check` argument `headless`.
+- FIX: Expose {func}`cernml.coi.check` argument *headless*.
 
 ## v0.4.0
 

@@ -122,7 +122,7 @@ class CancelledError(Exception):
     """The current task has been requested to be cancelled.
 
     Note that it inherits from :class:`Exception`, so it can be caught
-    by an overly broad ``except`` clause.
+    by an overly broad :keyword:`except` clause.
     """
 
 
@@ -187,12 +187,12 @@ class TokenSource:
     """Sending half of a cancellation channel.
 
     This half is usually created by a host application. It then sends
-    the token to a :class:`Problem` upon instantiation.
+    the token to a :class:`~cernml.coi.Problem` upon instantiation.
 
-    Whenever a :class:`Problem` enters a long-running calculation, it
-    should periodically check the token for a cancellation request. If
-    such a request has arrived, the problem has a chance to gracefully
-    abort its calculation.
+    Whenever a :class:`~cernml.coi.Problem` enters a long-running
+    calculation, it should periodically check the token for a
+    cancellation request. If such a request has arrived, the problem has
+    a chance to gracefully abort its calculation.
 
     As a convenience feature, token sources are also context managers.
     They yield their token when entering a context and automatically
@@ -240,8 +240,8 @@ class TokenSource:
     def token(self) -> "Token":
         """The token associated with source.
 
-        Pass this token to a :class:`Problem` to be able to communicate
-        a cancellation to it.
+        Pass this token to a :class:`~cernml.coi.Problem` to be able to
+        communicate a cancellation to it.
         """
         return self._token
 
@@ -362,8 +362,9 @@ class Token:
     def wait_handle(self) -> threading.Condition:
         """A condition variable on which to wait for cancellation.
 
-        If you do not use condition variables to synchronize multiple
-        threads, you may safely ignore this attribute.
+        If you do not use :class:`~threading.Condition` variables to
+        synchronize multiple threads, you may safely ignore this
+        attribute.
 
         This lazily creates the condition variable. You may use it to
         wait for cancellation. To avoid deadlocks, you should check
@@ -405,10 +406,9 @@ class Token:
         """Raise an exception if a cancellation request has arrived.
 
         Raises:
-            CancelledError: If :attr:`cancellation_requested` is
-                True. Note that it inherits from :class:`Exception`,
-                so it can be caught by an overly broad ``except``
-                clause.
+            CancelledError: If :attr:`cancellation_requested` is True.
+                Note that it inherits from :class:`Exception`, so it can
+                be caught by an overly broad :keyword:`except` clause.
         """
         if self.cancellation_requested:
             raise CancelledError()
