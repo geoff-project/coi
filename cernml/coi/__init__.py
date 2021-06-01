@@ -2,11 +2,12 @@
 
 The most primitive interface provided by this package is the
 :class:`Problem`, and it isn't very interesting on its own. More
-important are two interfaces that extend :class:`Problem`:
+important are three interfaces that extend :class:`Problem`:
 
 - :class:`gym.Env`, as provided by `OpenAI Gym
   <https://github.com/openai/gym/>`_;
-- :class:`SingleOptimizable`, provided by this package.
+- :class:`SingleOptimizable` and :class:`FunctionOptimizable`, provided
+  by this package.
 
 The former is implemented by classes that describe reinforcement
 learning (RL) problems; the latter by classes that describe
@@ -30,6 +31,7 @@ refer to `our package docs
 """
 
 from ._configurable import BadConfig, Config, Configurable, DuplicateConfig
+from ._func_opt import FunctionOptimizable
 from ._machine import Machine
 from ._problem import Problem
 from ._registration import make, register, registry, spec
@@ -44,6 +46,7 @@ __all__ = [
     "Configurable",
     "Constraint",
     "DuplicateConfig",
+    "FunctionOptimizable",
     "Machine",
     "OptEnv",
     "OptGoalEnv",

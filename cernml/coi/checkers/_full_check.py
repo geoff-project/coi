@@ -7,6 +7,7 @@ import gym
 import importlib_metadata
 
 from ._env import check_env
+from ._func_opt import FunctionOptimizable, check_function_optimizable
 from ._problem import Problem, check_problem
 from ._single_opt import SingleOptimizable, check_single_optimizable
 
@@ -47,6 +48,9 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     if isinstance(unwrapped_env, SingleOptimizable):
         LOG.debug("Checking SingleOptimizable interface of %s", env)
         check_single_optimizable(t.cast(SingleOptimizable, env), warn=warn)
+    if isinstance(unwrapped_env, FunctionOptimizable):
+        LOG.debug("Checking FunctionOptimizable interface of %s", env)
+        check_function_optimizable(t.cast(FunctionOptimizable, env), warn=warn)
     if isinstance(unwrapped_env, gym.Env):
         LOG.debug("Checking Env interface of %s", env)
         check_env(t.cast(gym.Env, env), warn=warn)
