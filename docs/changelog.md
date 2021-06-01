@@ -9,6 +9,11 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 The exception to this are the contents of `cernml.coi.unstable`, which may
 change in any given release.
 
+## Unreleased
+
+- ADD: Merge the {class}`~cernml.coi.FunctionOptimizable` interface (and its checker) from cernml-coi-funcs v0.2.2.
+- FIX: Correct the type annotation on {class}`cernml.coi.SingleOptimizable.get_initial_params()` from `Any` to `numpy.ndarray`.
+
 ## v0.7.3
 
 - ADD: Split the COI tutorial into a [tutorial on packaging](tutorials/packaging.md) and a [tutorial on the COI proper](tutorials/implement-singleoptimizable.md).
