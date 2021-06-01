@@ -99,35 +99,3 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             optimizers may want to minimize that loss.
         """
         raise NotImplementedError()
-
-
-class OptEnv(gym.Env, SingleOptimizable):
-    """An optimizable environment.
-
-    This is an intersection of :class:`~gym.Env` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
-    """
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> Any:
-        if cls is OptEnv:
-            bases = other.__mro__
-            return gym.Env in bases and SingleOptimizable in bases
-        return NotImplemented
-
-
-class OptGoalEnv(gym.GoalEnv, SingleOptimizable):
-    """An optimizable multi-goal environment.
-
-    This is an intersection of :class:`~gym.GoalEnv` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
-    """
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> Any:
-        if cls is OptGoalEnv:
-            bases = other.__mro__
-            return gym.GoalEnv in bases and SingleOptimizable in bases
-        return NotImplemented

@@ -7,8 +7,6 @@ import typing as t
 import gym
 import numpy as np
 
-from ._optenv import SingleOptimizable
-
 InfoDict = t.Dict[str, t.Any]
 GoalObs = t.Dict[str, np.ndarray]  # Use t.TypedDict once we require Python 3.7.
 
@@ -126,22 +124,6 @@ class SeparableEnv(gym.Env):
         raise NotImplementedError()
 
 
-class SeparableOptEnv(SeparableEnv, SingleOptimizable):
-    """An optimizable and separable environment.
-
-    This is an intersection of :class:`SeparableEnv` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
-    """
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is SeparableOptEnv:
-            bases = other.__mro__
-            return SeparableEnv in bases and SingleOptimizable in bases
-        return NotImplemented
-
-
 class SeparableGoalEnv(gym.GoalEnv):
     """A multi-goal environment whose calculations nicely separate.
 
@@ -226,19 +208,3 @@ class SeparableGoalEnv(gym.GoalEnv):
             True if the episode has ended, False otherwise.
         """
         raise NotImplementedError()
-
-
-class SeparableOptGoalEnv(SeparableGoalEnv, SingleOptimizable):
-    """An optimizable and separable multi-goal environment.
-
-    This is an intersection of :class:`SeparableGoalEnv` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
-    """
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is SeparableOptGoalEnv:
-            bases = other.__mro__
-            return SeparableGoalEnv in bases and SingleOptimizable in bases
-        return NotImplemented
