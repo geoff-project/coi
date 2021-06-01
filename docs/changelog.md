@@ -23,13 +23,13 @@ change in any given release.
 
 ## v0.7.2
 
-- ADD: [`next_if_ready()`](api.html#cernml.coi.unstable.japc_utils.ParamStream.next_if_ready) no longer checks stream's the cancellation token.
-- ADD: [`parameter_name`](api.html#cernml.coi.unstable.japc_utils.ParamStream.parameter_name) and [`parameter_names`](api.html#cernml.coi.unstable.japc_utils.ParamGroupStream.parameter_names).
-- FIX: `repr()` of [`ParamGroupStream`](api.html#cernml.coi.unstable.japc_utils.ParamGroupStream) called wrong Java API.
+- ADD: {meth}`~cernml.coi.unstable.japc_utils.ParamStream.next_if_ready()` no longer checks stream's the cancellation token.
+- ADD: {attr}`ParamStream.parameter_name <cernml.coi.unstable.japc_utils.ParamStream.parameter_name>` and {attr}`ParamGroupStream.parameter_names <cernml.coi.unstable.japc_utils.ParamGroupStream.parameter_names>`.
+- FIX: `repr()` of {class}`~cernml.coi.unstable.japc_utils.ParamGroupStream` called wrong Java API.
 
 ## v0.7.1
 
-- ADD: Enum member [`Machine.ISOLDE`](api.html#cernml.coi.Machine.ISOLDE).
+- ADD: Enum member {attr}`Machine.ISOLDE <cernml.coi.Machine.ISOLDE>`.
 
 ## v0.7.0
 
