@@ -31,16 +31,35 @@ refer to `our package docs
 
 from ._configurable import BadConfig, Config, Configurable, DuplicateConfig
 from ._machine import Machine
-from ._optenv import Constraint, OptEnv, OptGoalEnv, SingleOptimizable
+from ._optenv import Constraint, SingleOptimizable
 from ._problem import Problem
 from ._registration import make, register, registry, spec
-from ._sepenv import (
-    SeparableEnv,
-    SeparableGoalEnv,
-    SeparableOptEnv,
-    SeparableOptGoalEnv,
-)
+from ._sepenv import SeparableEnv, SeparableGoalEnv
+from ._union_interfaces import OptEnv, OptGoalEnv, SeparableOptEnv, SeparableOptGoalEnv
 from .checkers import check
+
+__all__ = [
+    "BadConfig",
+    "Config",
+    "Configurable",
+    "Constraint",
+    "DuplicateConfig",
+    "Machine",
+    "OptEnv",
+    "OptGoalEnv",
+    "Problem",
+    "SeparableEnv",
+    "SeparableGoalEnv",
+    "SeparableOptEnv",
+    "SeparableOptGoalEnv",
+    "SingleOptimizable",
+    "check",
+    "checkers",
+    "make",
+    "register",
+    "registry",
+    "spec",
+]
 
 __version__: str
 try:
