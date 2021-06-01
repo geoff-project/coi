@@ -3,7 +3,7 @@
 # pylint: disable = abstract-method, too-few-public-methods
 
 from abc import ABCMeta, abstractmethod
-from typing import Any, List, Tuple, Union
+from typing import List, Tuple, Union
 
 import gym
 import numpy
@@ -62,7 +62,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
     constraints: List[Constraint] = []
 
     @abstractmethod
-    def get_initial_params(self) -> Any:
+    def get_initial_params(self) -> numpy.ndarray:
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space,
