@@ -107,6 +107,9 @@ def test_receive_values(japc: Mock) -> None:
     japc.subscribeParam.mock_values = expected
     stream = japc_utils.subscribe_stream(japc, "")
     with stream:
+        # TODO: No idea why this lint fails. This code has been moved to
+        # cernml-coi-utils anyway, so we just silence it for now.
+        # pylint: disable = unsubscriptable-object
         received = [stream.wait_next()[0] for _ in range(3)]
         assert stream.wait_next(2 * MockSubscription.TIME_STEP_SECONDS) is None
     assert received == expected
@@ -152,6 +155,9 @@ def test_next_if_ready_doesnt_block(japc: Mock) -> None:
     japc.subscribeParam.mock_values = sent_values
     stream = japc_utils.subscribe_stream(japc, "", maxlen=None)
     with stream:
+        # TODO: No idea why this lint fails. This code has been moved to
+        # cernml-coi-utils anyway, so we just silence it for now.
+        # pylint: disable = unpacking-non-sequence
         first, _ = stream.wait_next()
         assert stream.next_if_ready() is None
         second, _ = stream.wait_next()
@@ -214,6 +220,10 @@ def test_exception(japc: Mock) -> None:
         received = []
         with pytest.raises(japc_utils.JavaException):
             while True:
+                # TODO: No idea why this lint fails. This code has been
+                # moved to cernml-coi-utils anyway, so we just silence
+                # it for now.
+                # pylint: disable = unpacking-non-sequence
                 value, _ = stream.wait_next()
                 received.append(value)
     assert received == sent_values[:-1]

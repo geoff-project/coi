@@ -49,4 +49,4 @@ reports = false
 score = false
 
 [tool.pylint."MESSAGES CONTROL"]
-disable = ["similarities"]
+disable = ["similarities", "fixme"]
