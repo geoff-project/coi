@@ -16,6 +16,10 @@
     :members:
     :show-inheritance:
 
+.. autoclass:: cernml.coi.FunctionOptimizable
+    :members:
+    :show-inheritance:
+
 .. class:: gym.Env
 
     Bases: :class:`cernml.coi.Problem`
@@ -316,6 +320,8 @@
 .. autofunction:: cernml.coi.checkers.check_problem
 
 .. autofunction:: cernml.coi.checkers.check_single_optimizable
+
+.. autofunction:: cernml.coi.checkers.check_function_optimizable
 
 .. autofunction:: cernml.coi.checkers.check_env
 ```

@@ -41,10 +41,11 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
     def get_optimization_space(self, cycle_time: float) -> gym.Space:
         """Return the optimization space for a given point in time.
 
-        This should return a :class:`gym.Space` instance that describes
-        the phase space of parameters. While one would typically expect
-        this phase space to be constant for all points on the function
-        that is to be optimized, there are cases where this is not true.
+        This should return a :class:`~gym.spaces.Space` instance that
+        describes the phase space of parameters. While one would
+        typically expect this phase space to be constant for all points
+        on the function that is to be optimized, there are cases where
+        this is not true.
 
         Trivially, one can imagine a ramping function where the range of
         allowed values in the flat bottom is smaller than at the flat

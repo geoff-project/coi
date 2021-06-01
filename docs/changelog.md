@@ -11,8 +11,8 @@ change in any given release.
 
 ## Unreleased
 
-- ADD: Merge the {class}`~cernml.coi.FunctionOptimizable` interface (and its checker) from cernml-coi-funcs v0.2.2.
-- FIX: Correct the type annotation on {class}`cernml.coi.SingleOptimizable.get_initial_params()` from `Any` to `numpy.ndarray`.
+- ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
+- FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from `Any` to `numpy.ndarray`.
 
 ## v0.7.3
 
