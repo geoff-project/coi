@@ -54,8 +54,8 @@ class Config:
         coi._configurable.BadConfig: invalid value for foo: 'a'
     """
 
-    # Note: Once Python 3.6 support is dropped, this should subclass
-    # NamedTuple _and_ Generic[T].
+    # TODO: Starting with Python 3.7, this should subclass NamedTuple
+    # _and_ Generic[T].
     class Field(NamedTuple):
         """A single configurable field.
 

@@ -11,7 +11,7 @@ change in any given release.
 
 ## Unreleased
 
-No changes yet!
+- BREAKING: Drop Python 3.6 support.
 
 ## v0.7.5
 
