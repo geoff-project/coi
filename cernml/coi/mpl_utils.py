@@ -1,8 +1,16 @@
 """Utilities for working with the Matplotlib."""
 
 import typing as t
+import warnings
 
 from matplotlib.figure import Figure
+
+warnings.warn(
+    "cernml.coi.mpl_utils is deprecated. "
+    "Please install cernml-coi-utils and use cernml.mpl_utils",
+    DeprecationWarning,
+)
+
 
 MaybeTitledFigure = t.Union[Figure, t.Tuple[str, Figure]]
 """Helper annotation for :class:`MatplotlibFigures`."""

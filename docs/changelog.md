@@ -12,6 +12,7 @@ change in any given release.
 ## Unreleased
 
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
+- ADD: Deprecate [`japc_utils`](api.md#pyjapc-utilities), [`renderer`](api.md#matplotlib-utilities) and [`mpl_utils`](api.md#matplotlib-utilities). The same features are provided by the [cernml-coi-utils](https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi-utils/) package.
 - FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from {data}`~std:typing.Any` to {class}`~np:numpy.ndarray`.
 
 ## v0.7.3

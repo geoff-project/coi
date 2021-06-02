@@ -7,6 +7,7 @@ import functools
 import logging
 import threading
 import typing as t
+import warnings
 from collections import deque
 
 if t.TYPE_CHECKING:
@@ -16,6 +17,12 @@ if t.TYPE_CHECKING:
     from . import cancellation
 
 LOG = logging.getLogger(__name__)
+
+warnings.warn(
+    "cernml.coi.unstable.japc_utils is deprecated. "
+    "Please install cernml-coi-utils and use cernml.japc_utils",
+    DeprecationWarning,
+)
 
 
 class StreamError(Exception):

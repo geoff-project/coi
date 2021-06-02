@@ -1,10 +1,17 @@
 """Sketch of a ``Renderer`` interface for the COI."""
 import typing as t
+import warnings
 
 from matplotlib import pyplot
 from matplotlib.figure import Figure
 
 from ..mpl_utils import MatplotlibFigures
+
+warnings.warn(
+    "cernml.coi.unstable.renderer is deprecated. "
+    "Please install cernml-coi-utils and use cernml.mpl_utils",
+    DeprecationWarning,
+)
 
 
 class Renderer:

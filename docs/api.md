@@ -340,27 +340,31 @@ The following functions and types are only available if the
 ```{eval-rst}
 .. autofunction:: cernml.coi.mpl_utils.iter_matplotlib_figures
 
+    .. warning::
+        This function is deprecated. Please use the corresponding item provided
+        by the cernml-coi-utils package instead.
+
 .. autoclass:: cernml.coi.unstable.renderer.Renderer
     :members:
     :show-inheritance:
 
     .. warning::
-        This class is considered *unstable* and may change arbitrarily between
-        minor releases.
+        This class is deprecated. Please use the corresponding item provided by
+        the cernml-coi-utils package instead.
 
 .. autoclass:: cernml.coi.unstable.renderer.SimpleRenderer
     :members:
     :show-inheritance:
 
     .. warning::
-        This class is considered *unstable* and may change arbitrarily between
-        minor releases.
+        This class is deprecated. Please use the corresponding item provided by
+        the cernml-coi-utils package instead.
 
 .. autodecorator:: cernml.coi.unstable.renderer.render_generator
 
     .. warning::
-        This decorator is considered *unstable* and may change arbitrarily
-        between minor releases.
+        This decorator is deprecated. Please use the corresponding item
+        provided by the cernml-coi-utils package instead.
 ```
 
 ## Cancellation
@@ -383,36 +387,36 @@ The following functions and types are only available if
 .. autofunction:: cernml.coi.unstable.japc_utils.monitoring
 
     .. warning::
-        This function is considered *unstable* and may change arbitrarily
-        between minor releases.
+        This function is deprecated. Please use the corresponding item provided
+        by the cernml-coi-utils package instead.
 
 .. autofunction:: cernml.coi.unstable.japc_utils.subscriptions
 
     .. warning::
-        This function is considered *unstable* and may change arbitrarily
-        between minor releases.
+        This function is deprecated. Please use the corresponding item provided
+        by the cernml-coi-utils package instead.
 
 .. autofunction:: cernml.coi.unstable.japc_utils.subscribe_stream
 
     .. warning::
-        This function is considered *unstable* and may change arbitrarily
-        between minor releases.
+        This function is deprecated. Please use the corresponding item provided
+        by the cernml-coi-utils package instead.
 
 .. autoclass:: cernml.coi.unstable.japc_utils.ParamStream
     :members:
     :inherited-members:
 
     .. warning::
-        This class is considered *unstable* and may change arbitrarily between
-        minor releases.
+        This class is deprecated. Please use the corresponding item provided by
+        the cernml-coi-utils package instead.
 
 .. autoclass:: cernml.coi.unstable.japc_utils.ParamGroupStream
     :members:
     :inherited-members:
 
     .. warning::
-        This class is considered *unstable* and may change arbitrarily between
-        minor releases.
+        This class is deprecated. Please use the corresponding item provided by
+        the cernml-coi-utils package instead.
 
 .. autoclass:: cernml.coi.unstable.japc_utils.Header
     :members:
@@ -420,18 +424,18 @@ The following functions and types are only available if
     :show-inheritance:
 
     .. warning::
-        This class is considered *unstable* and may change arbitrarily between
-        minor releases.
+        This class is deprecated. Please use the corresponding item provided by
+        the cernml-coi-utils package instead.
 
 .. autoexception:: cernml.coi.unstable.japc_utils.StreamError
 
     .. warning::
-        This exception is considered *unstable* and may change arbitrarily
-        between minor releases.
+        This exception is deprecated. Please use the corresponding item
+        provided by the cernml-coi-utils package instead.
 
 .. autoexception:: cernml.coi.unstable.japc_utils.JavaException
 
     .. warning::
-        This exception is considered *unstable* and may change arbitrarily
-        between minor releases.
+        This exception is deprecated. Please use the corresponding item
+        provided by the cernml-coi-utils package instead.
 ```
