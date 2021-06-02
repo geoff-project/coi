@@ -1,20 +1,9 @@
 """Provide :class:`Configurable`, an interface for GUI compatibility."""
 
+import typing as t
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from types import SimpleNamespace
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    NamedTuple,
-    Optional,
-    Sequence,
-    Tuple,
-)
 
 from ._abc_helpers import check_methods as _check_methods
 
@@ -56,7 +45,7 @@ class Config:
 
     # TODO: Starting with Python 3.7, this should subclass NamedTuple
     # _and_ Generic[T].
-    class Field(NamedTuple):
+    class Field(t.NamedTuple):
         """A single configurable field.
 
         Don't instantiate this class yourself. Use
@@ -64,15 +53,15 @@ class Config:
         """
 
         dest: str
-        value: Any
+        value: t.Any
         label: str
-        help: Optional[str]
-        type: Callable[[str], Any]
-        range: Optional[Tuple[Any, Any]]
-        choices: Optional[List[Any]]
-        default: Optional[Any]
+        help: t.Optional[str]
+        type: t.Callable[[str], t.Any]
+        range: t.Optional[t.Tuple[t.Any, t.Any]]
+        choices: t.Optional[t.List[t.Any]]
+        default: t.Optional[t.Any]
 
-        def validate(self, text_repr: str) -> Any:
+        def validate(self, text_repr: str) -> t.Any:
             """Validate a user-chosen value.
 
             Args:
@@ -86,7 +75,7 @@ class Config:
                     validated.
             """
             try:
-                value: Any = self.type(text_repr)
+                value: t.Any = self.type(text_repr)
                 if self.range is not None:
                     low, high = self.range
                     if not low <= value <= high:
@@ -101,26 +90,26 @@ class Config:
             return value
 
     def __init__(self) -> None:
-        self._fields: Dict[str, Config.Field] = OrderedDict()
+        self._fields: t.Dict[str, Config.Field] = OrderedDict()
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__}: {list(self._fields)}>"
 
-    def fields(self) -> Iterable[Field]:
+    def fields(self) -> t.Iterable[Field]:
         """Return a read-only view of all declared fields."""
         return self._fields.values()
 
     def add(
         self,
         dest: str,
-        value: Any,
+        value: t.Any,
         *,
-        label: Optional[str] = None,
-        help: Optional[str] = None,
-        type: Optional[Callable[[str], Any]] = None,
-        range: Optional[Tuple[Any, Any]] = None,
-        choices: Optional[Sequence[Any]] = None,
-        default: Optional[Any] = None,
+        label: t.Optional[str] = None,
+        help: t.Optional[str] = None,
+        type: t.Optional[t.Callable[[str], t.Any]] = None,
+        range: t.Optional[t.Tuple[t.Any, t.Any]] = None,
+        choices: t.Optional[t.Sequence[t.Any]] = None,
+        default: t.Optional[t.Any] = None,
     ) -> "Config":
         """Add a new config field.
 
@@ -176,7 +165,7 @@ class Config:
         )
         return self
 
-    def validate(self, name: str, text_repr: str) -> Any:
+    def validate(self, name: str, text_repr: str) -> t.Any:
         """Validate a user-chosen value.
 
         Args:
@@ -192,7 +181,7 @@ class Config:
         """
         return self._fields[name].validate(text_repr)
 
-    def validate_all(self, values: Mapping[str, str]) -> SimpleNamespace:
+    def validate_all(self, values: t.Mapping[str, str]) -> SimpleNamespace:
         """Validate user-chosen set of configurations.
 
         Args:
@@ -307,7 +296,7 @@ class Configurable(metaclass=ABCMeta):
         """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> Any:
+    def __subclasshook__(cls, other: type) -> t.Any:
         if cls is Configurable:
             return _check_methods(other, "get_config", "apply_config")
         return NotImplemented
