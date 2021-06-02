@@ -27,7 +27,7 @@ change in any given release.
 
 - ADD: {meth}`~cernml.coi.unstable.japc_utils.ParamStream.next_if_ready()` no longer checks stream's the cancellation token.
 - ADD: {attr}`ParamStream.parameter_name <cernml.coi.unstable.japc_utils.ParamStream.parameter_name>` and {attr}`ParamGroupStream.parameter_names <cernml.coi.unstable.japc_utils.ParamGroupStream.parameter_names>`.
-- FIX: `repr()` of {class}`~cernml.coi.unstable.japc_utils.ParamGroupStream` called wrong Java API.
+- FIX: {func}`repr()` of {class}`~cernml.coi.unstable.japc_utils.ParamGroupStream` called wrong Java API.
 
 ## v0.7.1
 
@@ -70,7 +70,7 @@ change in any given release.
 
 - FIX: Typo in {attr}`~cernml.coi.Problem.metadata` key `"cern.machine"`.
 - FIX: Mark {attr}`~cernml.coi.Problem.metadata` as a class variable.
-- FIX: Make base {attr}`~cernml.coi.Problem.metadata` a `mappingproxy` to prevent accidental mutation.
+- FIX: Make base {attr}`~cernml.coi.Problem.metadata` a {class}`~types.MappingProxyType` to prevent accidental mutation.
 
 ## v0.4.6
 
