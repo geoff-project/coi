@@ -12,7 +12,7 @@ change in any given release.
 ## Unreleased
 
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
-- ADD: Deprecate [`japc_utils`](api.md#pyjapc-utilities), [`renderer`](api.md#matplotlib-utilities) and [`mpl_utils`](api.md#matplotlib-utilities). The same features are provided by the [cernml-coi-utils](https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi-utils/) package.
+- ADD: Deprecate {doc}`japc_utils<api/japc_utils>`, {doc}`renderer<api/mpl_utils>` and {doc}`mpl_utils<api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
 - ADD: Stabilize the {mod}`~cernml.coi.cancellation` module. It is now available under `cernml.coi.cancellation`. The old location at `cernml.coi.unstable.cancellation` remains available but is deprecated.
 - FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from {data}`~std:typing.Any` to {class}`~np:numpy.ndarray`.
 
@@ -57,9 +57,9 @@ change in any given release.
 ## v0.6.0
 
 - BREAKING: Instate [a variant of semantic versioning](#changelog).
-- BREAKING: Move the Matplotlib utilities into [`mpl_utils`](api.md#matplotlib-utilities).
+- BREAKING: Move the Matplotlib utilities into {doc}`renderer<api/mpl_utils>`.
 - ADD: Unstable module {class}`renderer<cernml.coi.unstable.renderer.Renderer>`.
-- ADD: Unstable module [`japc_utils`](api.md#pyjapc-utilities).
+- ADD: Unstable module {doc}`japc_utils<api/japc_utils>`.
 - ADD: Allow a single {class}`~matplotlib.figure.Figure` as return value of {meth}`render("matplotlib_figure")<cernml.coi.Problem.render>`.
 
 ## v0.5.0
@@ -124,7 +124,7 @@ change in any given release.
 - BREAKING: Rename `Optimizable` to {class}`~cernml.coi.SingleOptimizable`.
 - BREAKING: Add dependency on Numpy.
 - ADD: {class}`~cernml.coi.Problem` interface.
-- ADD: [Environment registry](api.md#problem-registry).
+- ADD: {doc}`Environment registry<api/registry>`.
 - FIX: Check inheritance of `env.unwrapped` in {func}`check_env()<cernml.coi.check>`.
 
 ## v0.2.1

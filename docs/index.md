@@ -21,6 +21,6 @@ maxdepth: 2
 
 tutorials/index
 guide/index
-api
+api/index
 changelog
 ```
