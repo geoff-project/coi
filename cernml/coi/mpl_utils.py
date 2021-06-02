@@ -9,6 +9,7 @@ warnings.warn(
     "cernml.coi.mpl_utils is deprecated. "
     "Please install cernml-coi-utils and use cernml.mpl_utils",
     DeprecationWarning,
+    stacklevel=2,
 )
 
 

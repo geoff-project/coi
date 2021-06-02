@@ -22,6 +22,7 @@ warnings.warn(
     "cernml.coi.unstable.japc_utils is deprecated. "
     "Please install cernml-coi-utils and use cernml.japc_utils",
     DeprecationWarning,
+    stacklevel=2,
 )
 
 

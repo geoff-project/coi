@@ -15,4 +15,5 @@ warnings.warn(
     "cernml.coi.unstable.cancellation is deprecated. "
     "Please use cernml.coi.cancellation instead.",
     DeprecationWarning,
+    stacklevel=2,
 )

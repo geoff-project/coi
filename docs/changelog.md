@@ -13,6 +13,10 @@ change in any given release.
 
 No changes yet!
 
+## v0.7.5
+
+- FIX: Increase the stacklevel of the [](#v0.7.4) deprecation warnings so that they appear more reliably.
+
 ## v0.7.4
 
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.

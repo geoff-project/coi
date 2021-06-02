@@ -11,6 +11,7 @@ warnings.warn(
     "cernml.coi.unstable.renderer is deprecated. "
     "Please install cernml-coi-utils and use cernml.mpl_utils",
     DeprecationWarning,
+    stacklevel=2,
 )
 
 
