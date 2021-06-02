@@ -20,7 +20,7 @@ maxdepth: 2
 ---
 
 tutorials/index
-guide
+guide/index
 api
 changelog
 ```

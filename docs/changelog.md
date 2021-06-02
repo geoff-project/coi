@@ -35,16 +35,16 @@ change in any given release.
 
 ## v0.7.0
 
-- BREAKING: Remove [Cancellation tokens](guide.md#cancellation). The stable API did not accommodate all required use cases and could not be fixed in a backwards-compatible manner.
-- ADD: Re-add [Cancellation tokens](guide.md#cancellation) as an unstable module. The new API supports cancellation completion and resets.
+- BREAKING: Remove [Cancellation tokens](guide/cancellation.md#cancellation). The stable API did not accommodate all required use cases and could not be fixed in a backwards-compatible manner.
+- ADD: Re-add [Cancellation tokens](guide/cancellation.md#cancellation) as an unstable module. The new API supports cancellation completion and resets.
 
 ## v0.6.2
 
 - ADD: Rename all variants of {class}`~cernml.coi.Machine` to `SCREAMING_SNAKE_CASE`. The `PascalCase` names remain available, but issue a deprecation warning.
-- ADD: [Cancellation tokens](guide.md#cancellation).
+- ADD: [Cancellation tokens](guide/cancellation.md#cancellation).
 - ADD: Cancellation support to {func}`parameter streams<cernml.coi.unstable.japc_utils.subscribe_stream>`.
 - ADD: Property {attr}`~cernml.coi.unstable.japc_utils.ParamStream.locked` to parameter streams.
-- ADD: Document [parameter streams](guide.md#synchronization).
+- ADD: Document [parameter streams](guide/cancellation.md#synchronization).
 - ADD: Document plugin support in {func}`~cernml.coi.check`.
 - FIX: Add default values for all known {attr}`~cernml.coi.Problem.metadata` keys.
 - FIX: Missing `figure.show()` when calling {meth}`SimpleRenderer.update("human")<cernml.coi.unstable.renderer.SimpleRenderer.update>`.
