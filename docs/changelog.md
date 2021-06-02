@@ -11,6 +11,10 @@ change in any given release.
 
 ## Unreleased
 
+No changes yet!
+
+## v0.7.4
+
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
 - ADD: Deprecate {doc}`japc_utils<api/japc_utils>`, {doc}`renderer<api/mpl_utils>` and {doc}`mpl_utils<api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
 - ADD: Stabilize the {mod}`~cernml.coi.cancellation` module. It is now available under `cernml.coi.cancellation`. The old location at `cernml.coi.unstable.cancellation` remains available but is deprecated.
