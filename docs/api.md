@@ -370,12 +370,8 @@ The following functions and types are only available if the
 ## Cancellation
 
 ```{eval-rst}
-.. automodule:: cernml.coi.unstable.cancellation
+.. automodule:: cernml.coi.cancellation
     :members:
-
-    .. warning::
-        This module is considered *unstable* and may change arbitrarily
-        between minor releases.
 ```
 
 ## PyJapc Utilities

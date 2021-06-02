@@ -59,9 +59,9 @@ class Problem(metaclass=ABCMeta):
             ``"cern.cancellable"``
                 A boolean flag indicating that the problem's constructor
                 expects an argument named *cancellation_token* of type
-                :class:`~cernml.coi.unstable.cancellation.Token`. Enable
-                it if your class ever enters any long-running loops that
-                the user may want to interrupt. A classic example is the
+                :class:`~cernml.coi.cancellation.Token`. Enable it if
+                your class ever enters any long-running loops that the
+                user may want to interrupt. A classic example is the
                 acquisition and validation of cycle-bound data.
 
             Additionally, all keys that start with ``"cern."`` are

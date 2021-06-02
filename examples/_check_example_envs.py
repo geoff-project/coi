@@ -7,7 +7,7 @@ import configurable
 import parabola
 
 from cernml import coi
-from cernml.coi.unstable import cancellation
+from cernml.coi import cancellation
 
 if not coi.registry.all():
     raise AssertionError("no environments registered")

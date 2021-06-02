@@ -16,7 +16,7 @@ from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from cernml import coi
-from cernml.coi.unstable import cancellation
+from cernml.coi import cancellation
 
 
 class ConfParabola(coi.OptEnv, coi.Configurable):

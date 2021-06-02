@@ -94,7 +94,7 @@ argument named *japc* of type {class}`~japc:pyjapc.PyJapc`;
 `"cern.cancellable"`
 : A boolean flag indicating whether the problem's constructor expects an
 argument named `cancellation_token` of type
-{class}`cancellation.Token<cernml.coi.unstable.cancellation.Token>` (see
+{class}`cancellation.Token<cernml.coi.cancellation.Token>` (see
 [](#cancellation)).
 
 See the {attr}`API docs<cernml.coi.Problem.metadata>` for a full spec.
@@ -458,7 +458,7 @@ the ability to cleanly shut down operations – usually by raising an exception
 
 To use this feature, your problem must first declare that its support it by
 setting the `"cern.cancellable"` [metadata](#metadata). When it does so, a host
-application will pass a {class}`~cernml.coi.unstable.cancellation.Token` to the
+application will pass a {class}`~cernml.coi.cancellation.Token` to the
 constructor. On this token, the problem should check whether cancellation has
 been requested whenever it enters a loop that may run for a long time.
 
@@ -512,8 +512,7 @@ class MyProblem(coi.SingleOptimizable):
 
 If you have your own data acquisition logic, you can use the token yourself by
 regularly calling
-{meth}`~cernml.coi.unstable.cancellation.Token.raise_if_cancellation_requested`
-on it:
+{meth}`~cernml.coi.cancellation.Token.raise_if_cancellation_requested` on it:
 
 ```python
 from time import sleep
@@ -534,13 +533,13 @@ class MyProblem(coi.SingleOptimizable):
 ```
 
 If you write a host application yourself, you will usually want to create a
-{class}`~cernml.coi.unstable.cancellation.TokenSource` and pass its token to
-the optimization problem if it is cancellable:
+{class}`~cernml.coi.cancellation.TokenSource` and pass its token to the
+optimization problem if it is cancellable:
 
 ```python
 from threading import Thread
 from cernml import coi
-from cernml.coi.unstable import cancellation
+from cernml.coi import cancellation
 
 class MyApp:
     def __init__(self):

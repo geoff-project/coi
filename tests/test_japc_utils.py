@@ -12,7 +12,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from cernml.coi.unstable import cancellation, japc_utils
+from cernml.coi import cancellation
+from cernml.coi.unstable import japc_utils
 
 
 def test_monitoring() -> None:
