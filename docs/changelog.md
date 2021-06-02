@@ -13,6 +13,7 @@ change in any given release.
 
 - BREAKING: Drop Python 3.6 support.
 - BREAKING: Drop the `cernml.coi.__version__` attribute. To query the COI version, use instead {mod}`importlib_metadata`. (With Python 3.8+, this is in the standard library as {mod}`importlib.metadata`.)
+- BREAKING: Remove `PascalPase`-style members of {class}`~cernml.coi.Machine`. Use the `SCREAMING_SNAKE_CASE`-style members intead.
 
 ## v0.7.5
 
