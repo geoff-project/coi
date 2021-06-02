@@ -6,9 +6,6 @@ whenever breaking changes to the public API are published, the first non-zero
 version number will increase. This means that code that uses COI version 0.6.0
 will continue to work with version 0.6.1, but may break with version 0.7.0.
 
-The exception to this are the contents of `cernml.coi.unstable`, which may
-change in any given release.
-
 ## Unreleased
 
 - BREAKING: Drop Python 3.6 support.
@@ -17,6 +14,7 @@ change in any given release.
 - BREAKING: Remove `cernml.coi.unstable.japc_utils`. It is now provided by {doc}`cernml-coi-utils<utils:index>` as {mod}`cernml.japc_utils`.
 - BREAKING: Remove `cernml.coi.unstable.renderer` and `cernml.coi.mpl_utils`. Both are now provided by {doc}`cernml-coi-utils<utils:index>`'s {mod}`cernml.mpl_utils`.
 - BREAKING: Remove `cernml.coi.unstable.cancellation`. The module is now available as {mod}`cernml.coi.cancellation`.
+- BREAKING: Remove `cernml.coi.unstable`. The module is now empty.
 
 ## v0.7.5
 
