@@ -15,7 +15,7 @@ No changes yet!
 
 ## v0.7.5
 
-- FIX: Increase the stacklevel of the [](#v0.7.4) deprecation warnings so that they appear more reliably.
+- FIX: Increase the stacklevel of the [](#v074) deprecation warnings so that they appear more reliably.
 
 ## v0.7.4
 
