@@ -15,7 +15,7 @@ change in any given release.
 - BREAKING: Drop the `cernml.coi.__version__` attribute. To query the COI version, use instead {mod}`importlib_metadata`. (With Python 3.8+, this is in the standard library as {mod}`importlib.metadata`.)
 - BREAKING: Remove `PascalPase`-style members of {class}`~cernml.coi.Machine`. Use the `SCREAMING_SNAKE_CASE`-style members intead.
 - BREAKING: Remove `cernml.coi.unstable.japc_utils`. It is now provided by {doc}`cernml-coi-utils<utils:index>` as {mod}`cernml.japc_utils`.
-- BREAKING: Remove `cernml.coi.unstable.renderer`. The same classes are now provided by {doc}`cernml-coi-utils<utils:index>`'s {mod}`cernml.mpl_utils`.
+- BREAKING: Remove `cernml.coi.unstable.renderer` and `cernml.coi.mpl_utils`. Both are now provided by {doc}`cernml-coi-utils<utils:index>`'s {mod}`cernml.mpl_utils`.
 
 ## v0.7.5
 
@@ -24,7 +24,7 @@ change in any given release.
 ## v0.7.4
 
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
-- ADD: Deprecate `cernml.coi.unstable.japc_utils`, {doc}`renderer<utils:api/mpl_utils>` and {doc}`mpl_utils<api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
+- ADD: Deprecate `cernml.coi.unstable.japc_utils`, {doc}`renderer<utils:api/mpl_utils>` and {doc}`mpl_utils<utils:api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
 - ADD: Stabilize the {mod}`~cernml.coi.cancellation` module. It is now available under `cernml.coi.cancellation`. The old location at `cernml.coi.unstable.cancellation` remains available but is deprecated.
 - FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from {data}`~std:typing.Any` to {class}`~np:numpy.ndarray`.
 
@@ -116,7 +116,7 @@ change in any given release.
 - BREAKING: Mark the package as fully type-annotated.
 - BREAKING: Switch to pyproject.toml and setup.cfg based building.
 - BREAKING: Rewrite `check_env()` as {func}`cernml.coi.check`.
-- ADD: {func}`~cernml.coi.mpl_utils.iter_matplotlib_figures`.
+- ADD: {func}`cernml.coi.mpl_utils.iter_matplotlib_figures()<cernml.mpl_utils.iter_matplotlib_figures>`.
 
 ## v0.3.3
 

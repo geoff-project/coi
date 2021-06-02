@@ -649,7 +649,7 @@ into some sort of GUI widget for display purposes. And because the GUI stays in
 control, it can take care of GUI things like resizing, zooming, etc. for us.
 
 And just like that, our optimization problem is ready to be embedded into a GUI
-application. Here is a very simple one, in just 53 lines of code:
+application. Here is a very simple one, in just 54 lines of code:
 
 ```python
 import jpype
@@ -660,7 +660,8 @@ from matplotlib.backends.backend_qt5agg import (
 )
 from pyjapc import PyJapc
 from coi_example import AwakeElectronBeamSteering
-from cenrml.coi.mpl_utils import iter_matplotlib_figures
+# Requires `pip install cernml-coi-utils`.
+from cernml.mpl_utils import iter_matplotlib_figures
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:

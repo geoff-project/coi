@@ -57,10 +57,6 @@ exclude_patterns = [
 
 autodoc_member_order = "groupwise"
 autodoc_typehints = "signature"
-autodoc_type_aliases = {
-    "MatplotlibFigures": "cernml.coi.mpl_utils.MatplotlibFigures",
-    "MaybeTitledFigure": "cernml.coi.mpl_utils.MaybeTitledFigure",
-}
 
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
