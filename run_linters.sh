@@ -6,9 +6,6 @@
 
 exit_code=0
 
-pylint --version
-pylint cernml/ || exit_code=$((exit_code + $?))
-pylint tests/*.py || exit_code=$((exit_code + $?))
 black --version
 black --check . || exit_code=$((exit_code + $?))
 isort --version
@@ -16,7 +13,10 @@ isort --check . || exit_code=$((exit_code + $?))
 pycodestyle --version
 pycodestyle . || exit_code=$((exit_code + $?))
 mypy --version
-mypy -p cernml || exit_code=$((exit_code + $?))
 mypy examples/ tests/ || exit_code=$((exit_code + $?))
+mypy -p cernml || exit_code=$((exit_code + $?))
+pylint --version
+pylint cernml/ || exit_code=$((exit_code + $?))
+pylint tests/*.py || exit_code=$((exit_code + $?))
 
 exit $exit_code
