@@ -20,42 +20,19 @@ lines of code in the most common cases.
 
 ## Synchronization
 
-To solve the problem of synchronization, the COI provide the concept of
-*parameter streams*. A stream is a combination of a PyJapc subscription
-handler, a data queue, and synchronization logic between the two. It allows you
-to subscribe to a JAPC parameter and wait for the next value to arrive:
+To solve the problem of synchronization, the {doc}`utils:index` introduce the
+concept of *parameter streams*. Below is a trivial example on how to use them:
+Please see the dedicated {doc}`guide<utils:guide/japc_utils>` for more
+information.
 
 ```python
 from pyjapc import PyJapc
-from cernml.coi.unstable.japc_utils import subscribe_stream
+from cernml.japc_utils import subscribe_stream
 
 japc = PyJapc("LHC.USER.ALL", noSet=True)
 the_field = subscribe_stream(japc, "device/property#field")
 # Blocks execution until the next value is there.
-value, header = the_field.wait_next()
-```
-
-They allow you to get the next value without manually maintaining a queue and
-sleeping for what you think is a reasonable time between cycles. This example
-sets a JAPC parameter and then waits until the next cycle after the operation:
-
-```python
-from datetime import datetime, timezone
-japc.setParam(...)
-now = datetime.now(timezone.utc)
-for value, header in iter(the_field.wait_next, None):
-    if header.cycle_stamp > now:
-        break
-make_use(value)
-```
-
-See the {func}`~cernml.coi.unstable.japc_utils.subscribe_stream` docs for all
-details.
-
-```{warning}
-Parameter streams are considered *unstable* and may change arbitrarily between
-minor releases. The more users experiment with them, and the more feedback we
-gather, the more likely they are to get stabilized soon.
+value, header = the_field.wait_for_next()
 ```
 
 ## Cancellation
@@ -80,7 +57,8 @@ already support cancellation tokens:
 
 ```python
 from cernml.coi
-from cernml.coi.unstable.japc_utils import subscribe_stream
+# Requires `pip install cernml-coi-utils`.
+from cernml.japc_utils import subscribe_stream
 
 class MyProblem(coi.SingleOptimizable):
     metadata = {

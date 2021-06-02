@@ -14,6 +14,7 @@ change in any given release.
 - BREAKING: Drop Python 3.6 support.
 - BREAKING: Drop the `cernml.coi.__version__` attribute. To query the COI version, use instead {mod}`importlib_metadata`. (With Python 3.8+, this is in the standard library as {mod}`importlib.metadata`.)
 - BREAKING: Remove `PascalPase`-style members of {class}`~cernml.coi.Machine`. Use the `SCREAMING_SNAKE_CASE`-style members intead.
+- BREAKING: Remove `cernml.coi.unstable.japc_utils`. It is now provided by {doc}`cernml-coi-utils<utils:index>` as {mod}`cernml.japc_utils`.
 
 ## v0.7.5
 
@@ -22,7 +23,7 @@ change in any given release.
 ## v0.7.4
 
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
-- ADD: Deprecate {doc}`japc_utils<api/japc_utils>`, {doc}`renderer<api/mpl_utils>` and {doc}`mpl_utils<api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
+- ADD: Deprecate `cernml.coi.unstable.japc_utils`, {doc}`renderer<api/mpl_utils>` and {doc}`mpl_utils<api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
 - ADD: Stabilize the {mod}`~cernml.coi.cancellation` module. It is now available under `cernml.coi.cancellation`. The old location at `cernml.coi.unstable.cancellation` remains available but is deprecated.
 - FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from {data}`~std:typing.Any` to {class}`~np:numpy.ndarray`.
 
@@ -35,9 +36,9 @@ change in any given release.
 
 ## v0.7.2
 
-- ADD: {meth}`~cernml.coi.unstable.japc_utils.ParamStream.next_if_ready()` no longer checks stream's the cancellation token.
-- ADD: {attr}`ParamStream.parameter_name <cernml.coi.unstable.japc_utils.ParamStream.parameter_name>` and {attr}`ParamGroupStream.parameter_names <cernml.coi.unstable.japc_utils.ParamGroupStream.parameter_names>`.
-- FIX: {func}`repr()` of {class}`~cernml.coi.unstable.japc_utils.ParamGroupStream` called wrong Java API.
+- ADD: {meth}`ParamStream.next_if_ready()<cernml.japc_utils.ParamStream.pop_if_ready()>` no longer checks stream's the cancellation token.
+- ADD: {attr}`ParamStream.parameter_name <cernml.japc_utils.ParamStream.parameter_name>` and {attr}`ParamGroupStream.parameter_names <cernml.japc_utils.ParamGroupStream.parameter_names>`.
+- FIX: {func}`repr()` of {class}`~cernml.japc_utils.ParamGroupStream` called wrong Java API.
 
 ## v0.7.1
 
@@ -52,8 +53,8 @@ change in any given release.
 
 - ADD: Rename all variants of {class}`~cernml.coi.Machine` to `SCREAMING_SNAKE_CASE`. The `PascalCase` names remain available, but issue a deprecation warning.
 - ADD: [Cancellation tokens](guide/cancellation.md#cancellation).
-- ADD: Cancellation support to {func}`parameter streams<cernml.coi.unstable.japc_utils.subscribe_stream>`.
-- ADD: Property {attr}`~cernml.coi.unstable.japc_utils.ParamStream.locked` to parameter streams.
+- ADD: Cancellation support to {func}`parameter streams<cernml.japc_utils.subscribe_stream>`.
+- ADD: Property {attr}`~cernml.japc_utils.ParamStream.locked` to parameter streams.
 - ADD: Document [parameter streams](guide/cancellation.md#synchronization).
 - ADD: Document plugin support in {func}`~cernml.coi.check`.
 - FIX: Add default values for all known {attr}`~cernml.coi.Problem.metadata` keys.
@@ -69,7 +70,7 @@ change in any given release.
 - BREAKING: Instate [a variant of semantic versioning](#changelog).
 - BREAKING: Move the Matplotlib utilities into {doc}`renderer<api/mpl_utils>`.
 - ADD: Unstable module {class}`renderer<cernml.coi.unstable.renderer.Renderer>`.
-- ADD: Unstable module {doc}`japc_utils<api/japc_utils>`.
+- ADD: {mod}`cernml.coi.unstable.japc_utils<cernml.japc_utils>`.
 - ADD: Allow a single {class}`~matplotlib.figure.Figure` as return value of {meth}`render("matplotlib_figure")<cernml.coi.Problem.render>`.
 
 ## v0.5.0

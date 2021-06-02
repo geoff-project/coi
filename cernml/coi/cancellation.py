@@ -25,9 +25,9 @@ Usually, it is more convenient to check the token's state with
     ...         # Something that takes a long time:
     ...         time.sleep(0.01)
 
-Note that :func:`~cernml.coi.unstable.japc_utils.subscribe_stream`
-supports cancellation tokens. This makes it easy to interrupt a thread
-that is waiting a long time for accelerator data.
+Note that :func:`cernml.japc_utils.subscribe_stream()` supports
+cancellation tokens. This makes it easy to interrupt a thread that is
+waiting a long time for accelerator data.
 
 Normally, a cancellation request cannot be undone. This is on purpose,
 as cancellation might have left the task object in an unclean state.

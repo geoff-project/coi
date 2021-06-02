@@ -13,5 +13,4 @@ otherenvs
 checkers
 cancellation
 mpl_utils
-japc_utils
 ```
