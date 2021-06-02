@@ -16,6 +16,7 @@ change in any given release.
 - BREAKING: Remove `PascalPase`-style members of {class}`~cernml.coi.Machine`. Use the `SCREAMING_SNAKE_CASE`-style members intead.
 - BREAKING: Remove `cernml.coi.unstable.japc_utils`. It is now provided by {doc}`cernml-coi-utils<utils:index>` as {mod}`cernml.japc_utils`.
 - BREAKING: Remove `cernml.coi.unstable.renderer` and `cernml.coi.mpl_utils`. Both are now provided by {doc}`cernml-coi-utils<utils:index>`'s {mod}`cernml.mpl_utils`.
+- BREAKING: Remove `cernml.coi.unstable.cancellation`. The module is now available as {mod}`cernml.coi.cancellation`.
 
 ## v0.7.5
 
