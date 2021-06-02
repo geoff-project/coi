@@ -9,26 +9,4 @@ is importable.
     .. warning::
         This function is deprecated. Please use the corresponding item provided
         by the cernml-coi-utils package instead.
-
-.. autoclass:: cernml.coi.unstable.renderer.Renderer
-    :members:
-    :show-inheritance:
-
-    .. warning::
-        This class is deprecated. Please use the corresponding item provided by
-        the cernml-coi-utils package instead.
-
-.. autoclass:: cernml.coi.unstable.renderer.SimpleRenderer
-    :members:
-    :show-inheritance:
-
-    .. warning::
-        This class is deprecated. Please use the corresponding item provided by
-        the cernml-coi-utils package instead.
-
-.. autodecorator:: cernml.coi.unstable.renderer.render_generator
-
-    .. warning::
-        This decorator is deprecated. Please use the corresponding item
-        provided by the cernml-coi-utils package instead.
 ```

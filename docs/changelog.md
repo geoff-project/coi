@@ -15,6 +15,7 @@ change in any given release.
 - BREAKING: Drop the `cernml.coi.__version__` attribute. To query the COI version, use instead {mod}`importlib_metadata`. (With Python 3.8+, this is in the standard library as {mod}`importlib.metadata`.)
 - BREAKING: Remove `PascalPase`-style members of {class}`~cernml.coi.Machine`. Use the `SCREAMING_SNAKE_CASE`-style members intead.
 - BREAKING: Remove `cernml.coi.unstable.japc_utils`. It is now provided by {doc}`cernml-coi-utils<utils:index>` as {mod}`cernml.japc_utils`.
+- BREAKING: Remove `cernml.coi.unstable.renderer`. The same classes are now provided by {doc}`cernml-coi-utils<utils:index>`'s {mod}`cernml.mpl_utils`.
 
 ## v0.7.5
 
@@ -23,7 +24,7 @@ change in any given release.
 ## v0.7.4
 
 - ADD: Merge {class}`~cernml.coi.FunctionOptimizable` and {func}`~cernml.coi.checkers.check_function_optimizable()` from cernml-coi-funcs v0.2.2.
-- ADD: Deprecate `cernml.coi.unstable.japc_utils`, {doc}`renderer<api/mpl_utils>` and {doc}`mpl_utils<api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
+- ADD: Deprecate `cernml.coi.unstable.japc_utils`, {doc}`renderer<utils:api/mpl_utils>` and {doc}`mpl_utils<api/mpl_utils>`. The same features are provided by the {doc}`cernml-coi-utils<utils:index>` package.
 - ADD: Stabilize the {mod}`~cernml.coi.cancellation` module. It is now available under `cernml.coi.cancellation`. The old location at `cernml.coi.unstable.cancellation` remains available but is deprecated.
 - FIX: Correct the type annotation on {class}`~cernml.coi.SingleOptimizable.get_initial_params()` from {data}`~std:typing.Any` to {class}`~np:numpy.ndarray`.
 
@@ -58,18 +59,18 @@ change in any given release.
 - ADD: Document [parameter streams](guide/cancellation.md#synchronization).
 - ADD: Document plugin support in {func}`~cernml.coi.check`.
 - FIX: Add default values for all known {attr}`~cernml.coi.Problem.metadata` keys.
-- FIX: Missing `figure.show()` when calling {meth}`SimpleRenderer.update("human")<cernml.coi.unstable.renderer.SimpleRenderer.update>`.
+- FIX: Missing `figure.show()` when calling {meth}`SimpleRenderer.update("human")<cernml.mpl_utils.Renderer.update>`.
 
 ## v0.6.1
 
-- ADD: *title* parameter to {meth}`SimpleRenderer.from_generator<cernml.coi.unstable.renderer.SimpleRenderer.from_generator>`.
-- FIX: Missing `figure.draw()` when calling {meth}`SimpleRenderer.update("human")<cernml.coi.unstable.renderer.SimpleRenderer.update>`.
+- ADD: *title* parameter to {meth}`SimpleRenderer.from_generator()<cernml.mpl_utils.FigureRenderer.from_callback>`.
+- FIX: Missing `figure.draw()` when calling {meth}`SimpleRenderer.update("human")<cernml.mpl_utils.Renderer.update>`.
 
 ## v0.6.0
 
 - BREAKING: Instate [a variant of semantic versioning](#changelog).
-- BREAKING: Move the Matplotlib utilities into {doc}`renderer<api/mpl_utils>`.
-- ADD: Unstable module {class}`renderer<cernml.coi.unstable.renderer.Renderer>`.
+- BREAKING: Move the {doc}`Matplotlib utilities<utils:api/mpl_utils>` into `cernml.coi.mpl_utils`.
+- ADD: {class}`cernml.coi.unstable.renderer<cernml.mpl_utils.Renderer>`.
 - ADD: {mod}`cernml.coi.unstable.japc_utils<cernml.japc_utils>`.
 - ADD: Allow a single {class}`~matplotlib.figure.Figure` as return value of {meth}`render("matplotlib_figure")<cernml.coi.Problem.render>`.
 
