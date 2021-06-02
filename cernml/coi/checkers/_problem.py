@@ -13,8 +13,6 @@ from .._problem import Problem
 
 try:
     from matplotlib.figure import Figure
-
-    from ..mpl_utils import iter_matplotlib_figures
 except ImportError:
     MPL_AVAILABLE = False
 else:
@@ -113,18 +111,37 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
             result, (str, io.StringIO)
         ), f"render('ansi') should return str or StringIO, not {result!r}"
 
+    def _assert_unmanaged_figure(figure: Figure) -> None:
+        assert not hasattr(figure, "number"), (
+            "figures returned by render('matplotlib_figures') "
+            "must not be managed by PyPlot; create them via "
+            "`matplotlib.figure.Figure()`"
+        )
+
     def _assert_matplotlib_figures(result: t.Any) -> None:
         # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
-        assert isinstance(
-            result, collections.abc.Collection
-        ), f"render('matplotlib_figures') should return a collection, not {result!r}"
-        for title, figure in iter_matplotlib_figures(result):
-            assert isinstance(title, str), f"not a string: {title!r}"
-            assert isinstance(figure, Figure), f"not a figure: {figure}"
-            assert not hasattr(figure, "number"), (
-                "figures returned by render('matplotlib_figures') "
-                "must not be managed by PyPlot; create them via "
-                "`matplotlib.figure.Figure()`"
+        if isinstance(result, Figure):
+            _assert_unmanaged_figure(result)
+        elif hasattr(result, "items"):
+            for title, figure in t.cast(dict, result):
+                assert isinstance(title, str), f"not a string: {title!r}"
+                assert isinstance(figure, Figure), f"not a figure: {figure}"
+                _assert_unmanaged_figure(figure)
+        elif hasattr(result, "__iter__") or hasattr(result, "__getitem__"):
+            for item in t.cast(t.Iterable, result):
+                if hasattr(item, "__iter__") or hasattr(item, "__getitem__"):
+                    title, figure = t.cast(t.Tuple[t.Any, t.Any], item)
+                    assert isinstance(title, str), f"not a string: {title!r}"
+                    assert isinstance(figure, Figure), f"not a figure: {figure}"
+                    _assert_unmanaged_figure(figure)
+                else:
+                    assert isinstance(item, Figure), f"not a figure: {item}"
+                    _assert_unmanaged_figure(item)
+        else:
+            raise AssertionError(
+                f"render('matplotlib_figures') returns {result}, "
+                "which is neither a figure, nor a dict str->figure, "
+                "nor a collection of figures or str-figure tuples"
             )
 
     additional_checks = {
