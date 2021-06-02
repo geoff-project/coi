@@ -14,16 +14,9 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 import datetime
 import pathlib
 
+import importlib_metadata
+
 ROOTDIR = pathlib.Path(__file__).absolute().parent.parent
-
-
-def get_version() -> str:
-    """Import the module and extract its version."""
-    # Importing cernml.coi is fine – if we don't do it, the autodoc
-    # extension does.
-    import cernml.coi
-
-    return cernml.coi.__version__
 
 
 # -- Project information -----------------------------------------------
@@ -32,7 +25,7 @@ project = "cernml-coi"
 copyright = f"{datetime.datetime.now().year}, BE-OP-SPS, CERN"
 author = "Nico Madysa"
 
-release = get_version()
+release = importlib_metadata.version("cernml-coi")
 
 
 # -- General configuration ---------------------------------------------
@@ -118,6 +111,7 @@ graphviz_output_format = "svg"
 # -- Options for Intersphinx -------------------------------------------
 
 ACC_PY_DOCS_ROOT = "https://acc-py.web.cern.ch/gitlab/"
+RTD_TEMPLATE = "https://{}.readthedocs.io/en/latest"
 
 intersphinx_mapping = {
     "utils": (
@@ -129,7 +123,8 @@ intersphinx_mapping = {
     "np": ("https://numpy.org/doc/stable/", None),
     "sci": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "std": ("https://docs.python.org/3/", None),
-    "setuptools": ("https://setuptools.readthedocs.io/en/latest/", None),
+    "setuptools": (RTD_TEMPLATE.format("setuptools"), None),
+    "importlib_metadata": (RTD_TEMPLATE.format("importlib_metadata"), None),
 }
 
 # -- Options for Myst-Parser -------------------------------------------

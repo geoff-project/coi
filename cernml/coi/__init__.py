@@ -63,14 +63,3 @@ __all__ = [
     "registry",
     "spec",
 ]
-
-__version__: str
-try:
-    from ._version import VERSION as __version__  # type: ignore
-except ImportError:
-    from setuptools_scm import get_version
-
-    try:
-        __version__ = get_version()
-    finally:
-        del get_version

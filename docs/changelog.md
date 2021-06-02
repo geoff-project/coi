@@ -12,6 +12,7 @@ change in any given release.
 ## Unreleased
 
 - BREAKING: Drop Python 3.6 support.
+- BREAKING: Drop the `cernml.coi.__version__` attribute. To query the COI version, use instead {mod}`importlib_metadata`. (With Python 3.8+, this is in the standard library as {mod}`importlib.metadata`.)
 
 ## v0.7.5
 
