@@ -8,6 +8,8 @@ from types import SimpleNamespace
 
 from ._abc_helpers import check_methods as _check_methods
 
+T = t.TypeVar("T")  # pylint: disable = invalid-name
+
 
 class DuplicateConfig(Exception):
     """Attempted to add two configs with the same name."""
@@ -45,7 +47,7 @@ class Config:
     """
 
     @dataclass(frozen=True)
-    class Field:
+    class Field(t.Generic[T]):
         """A single configurable field.
 
         Don't instantiate this class yourself. Use
@@ -55,15 +57,15 @@ class Config:
         # pylint: disable = too-many-instance-attributes
 
         dest: str
-        value: t.Any
+        value: T
         label: str
         help: t.Optional[str]
-        type: t.Optional[t.Callable[[str], t.Any]]  # /python/mypy/issues/9489
-        range: t.Optional[t.Tuple[t.Any, t.Any]]
-        choices: t.Optional[t.List[t.Any]]
-        default: t.Optional[t.Any]
+        type: t.Optional[t.Callable[[str], T]]  # /python/mypy/issues/9489
+        range: t.Optional[t.Tuple[T, T]]
+        choices: t.Optional[t.List[T]]
+        default: t.Optional[T]
 
-        def validate(self, text_repr: str) -> t.Any:
+        def validate(self, text_repr: str) -> T:
             """Validate a user-chosen value.
 
             Args:
@@ -107,14 +109,14 @@ class Config:
     def add(
         self,
         dest: str,
-        value: t.Any,
+        value: T,
         *,
         label: t.Optional[str] = None,
         help: t.Optional[str] = None,
-        type: t.Optional[t.Callable[[str], t.Any]] = None,
-        range: t.Optional[t.Tuple[t.Any, t.Any]] = None,
-        choices: t.Optional[t.Sequence[t.Any]] = None,
-        default: t.Optional[t.Any] = None,
+        type: t.Optional[t.Callable[[str], T]] = None,
+        range: t.Optional[t.Tuple[T, T]] = None,
+        choices: t.Optional[t.Sequence[T]] = None,
+        default: t.Optional[T] = None,
     ) -> "Config":
         """Add a new config field.
 
