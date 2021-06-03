@@ -16,6 +16,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 - BREAKING: Remove `cernml.coi.unstable.renderer` and `cernml.coi.mpl_utils`. Both are now provided by {doc}`cernml-coi-utils<utils:index>`'s {mod}`cernml.mpl_utils`.
 - BREAKING: Remove `cernml.coi.unstable.cancellation`. The module is now available as {mod}`cernml.coi.cancellation`.
 - BREAKING: Remove `cernml.coi.unstable`. The module is now empty.
+- BREAKING: Change {class}`~cernml.coi.Config.Field` from a {class}`~typing.NamedTuple` into a {func}`~dataclasses.dataclass`.
 - ADD: Support for {doc}`importlib-metadata<importlib_metadata:index>` 4.
 
 ## v0.7.5

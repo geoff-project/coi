@@ -3,6 +3,7 @@
 import typing as t
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+from dataclasses import dataclass
 from types import SimpleNamespace
 
 from ._abc_helpers import check_methods as _check_methods
@@ -43,20 +44,21 @@ class Config:
         coi._configurable.BadConfig: invalid value for foo: 'a'
     """
 
-    # TODO: Starting with Python 3.7, this should subclass NamedTuple
-    # _and_ Generic[T].
-    class Field(t.NamedTuple):
+    @dataclass(frozen=True)
+    class Field:
         """A single configurable field.
 
         Don't instantiate this class yourself. Use
         :meth:`Config.add()` instead.
         """
 
+        # pylint: disable = too-many-instance-attributes
+
         dest: str
         value: t.Any
         label: str
         help: t.Optional[str]
-        type: t.Callable[[str], t.Any]
+        type: t.Optional[t.Callable[[str], t.Any]]  # /python/mypy/issues/9489
         range: t.Optional[t.Tuple[t.Any, t.Any]]
         choices: t.Optional[t.List[t.Any]]
         default: t.Optional[t.Any]
@@ -75,6 +77,9 @@ class Config:
                     validated.
             """
             try:
+                # Workaround for the following Mypy issue:
+                # https://github.com/python/mypy/issues/9489
+                assert self.type is not None
                 value: t.Any = self.type(text_repr)
                 if self.range is not None:
                     low, high = self.range
