@@ -309,7 +309,9 @@ class ConfigureDialog(QtWidgets.QDialog):
             widget = QtWidgets.QComboBox()
             widget.addItems(str(choice) for choice in field.choices)
             widget.setCurrentText(str(field.value))
-            widget.currentTextChanged.connect(self._make_setter(field))
+            widget.currentTextChanged.connect(
+                lambda val: self.set_current_value(field.dest, val)
+            )
             return widget
         if field.range is not None:
             low, high = field.range
@@ -321,46 +323,45 @@ class ConfigureDialog(QtWidgets.QDialog):
                 raise KeyError(type(field.value))
             widget.setValue(field.value)
             widget.setRange(low, high)
-            widget.valueChanged.connect(self._make_setter(field))
+            widget.valueChanged.connect(
+                lambda val: self.set_current_value(field.dest, str(val))
+            )
             return widget
         if isinstance(field.value, (bool, np.bool_)):
             widget = QtWidgets.QCheckBox()
             widget.setChecked(field.value)
-            widget.stateChanged.connect(self._make_setter(field))
+            # Do not use `str(checked)`! `False` converts to `"False"`,
+            # which would convert back to `True` via `bool(string)`.
+            widget.stateChanged.connect(
+                lambda checked: self.set_current_value(
+                    field.dest, "checked" if checked else ""
+                )
+            )
             return widget
         if isinstance(field.value, (int, np.integer)):
             widget = QtWidgets.QLineEdit(str(field.value))
             widget.setValidator(QtGui.QIntValidator())
-            widget.editingFinished.connect(self._make_setter(field, get=widget.text))
+            widget.editingFinished.connect(
+                lambda: self.set_current_value(field.dest, widget.text())
+            )
             return widget
         if isinstance(field.value, (float, np.floating)):
             widget = QtWidgets.QLineEdit(str(field.value))
             widget.setValidator(QtGui.QDoubleValidator())
-            widget.editingFinished.connect(self._make_setter(field, get=widget.text))
+            widget.editingFinished.connect(
+                lambda: self.set_current_value(field.dest, widget.text())
+            )
             return widget
         if isinstance(field.value, str):
             widget = QtWidgets.QLineEdit(str(field.value))
-            widget.editingFinished.connect(self._make_setter(field, get=widget.text))
+            widget.editingFinished.connect(
+                lambda: self.set_current_value(field.dest, widget.text())
+            )
             return widget
         return QtWidgets.QLabel(str(field.value))
 
-    def _make_setter(
-        self,
-        field: coi.Config.Field,
-        get: t.Optional[t.Callable[[], str]] = None,
-    ) -> t.Callable:
-        """Return a callback to update a field's value."""
-
-        def _setter(value: t.Any = None) -> None:
-            if get is not None:
-                value = get()
-            if isinstance(field.value, (bool, np.bool_)):
-                value = "checked" if value else ""
-            else:
-                value = str(value)
-            self.current_values[field.dest] = value
-
-        return _setter
+    def set_current_value(self, name: str, value: str) -> None:
+        self.current_values[name] = value
 
 
 class MainWindow(QtWidgets.QMainWindow):
