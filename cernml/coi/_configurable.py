@@ -125,18 +125,16 @@ class Config:
             value: The value to initialize this parameter with.
                 Typically, this is the current setting for this field.
             label: The display name of the parameter. This will be
-                displayed to the user, if possible. If not passed,
-                *dest* is reused.
+                displayed to the user. If not passed, *dest* is used.
             help: A string that further explains this configurable
-                parameter. A GUI might e.g. present this string as a
-                tooltip.
-            type: A function used for type-checking and conversion. This
-                function should take a string and produce a value of the
-                same type as *value*. It will be applied to any user
-                input that produces a new configuration. If the given
-                string is not a valid input, this function should raise
-                an exception. If not passed, this is simply the type of
-                *value*, e.g. :class`int`, :class:`float`, etc.
+                parameter. In contrast to *label*, this may be one or
+                more sentences.
+            type: A function that type-checks each user input (always a
+                string) and converts it to the same type as *value*. If
+                the given string is not a valid input, this function
+                should raise an exception. If not passed, this is simply
+                the type of *value*, e.g. :class`int`, :class:`float`,
+                etc.
             range: If passed, must be a tuple (*low*, *high*). A
                 user-chosen value for this field must be within the
                 closed interval described by these values.
@@ -146,6 +144,9 @@ class Config:
             default: If passed, a default value that the user should be
                 able to easily reset this field to. This is preferrable
                 if there is a single obvious choice for this field.
+
+        Returns:
+            The config object itself to allow method-chaining.
         """
         # pylint: disable = redefined-builtin
         if dest in self._fields:
