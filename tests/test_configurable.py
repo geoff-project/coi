@@ -15,12 +15,17 @@ def test_bare_field() -> None:
     assert config.validate("foo", "") == ""
 
 
-def test_choice() -> None:
+def test_choices() -> None:
     config = Config().add("foo", "bar", choices=["bar", "baz"])
     assert config.validate("foo", "bar") == "bar"
     assert config.validate("foo", "baz") == "baz"
     with pytest.raises(BadConfig):
         config.validate("foo", "bam")
+
+
+def test_range_and_choice() -> None:
+    with pytest.raises(TypeError):
+        _ = Config().add("foo", 1, range=(0, 3), choices=(0, 1, 2, 3))
 
 
 def test_int() -> None:

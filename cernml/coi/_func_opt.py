@@ -51,7 +51,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         allowed values in the flat bottom is smaller than at the flat
         top.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @abstractmethod
     def get_initial_params(self, cycle_time: float) -> np.ndarray:
@@ -79,7 +79,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         Returns:
             The initial parameters.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @abstractmethod
     def compute_function_objective(
@@ -118,7 +118,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
             The loss associated with these parameters. Numerical
             optimizers may want to minimize that loss.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def get_objective_function_name(self) -> Optional[str]:
         """Return the name of the objective function.

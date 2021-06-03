@@ -10,7 +10,7 @@ import numpy
 
 from ._problem import Problem
 
-if t.TYPE_CHECKING:
+if t.TYPE_CHECKING:  # pragma: no cover
     # pylint: disable = unused-import
     import scipy.optimize
 
@@ -79,7 +79,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         calculations, in the case of problems that are expensive to
         evalaute.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     @abstractmethod
     def compute_single_objective(self, params: numpy.ndarray) -> float:
@@ -103,4 +103,4 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             The loss associated with these parameters. Numerical
             optimizers may want to minimize that loss.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover

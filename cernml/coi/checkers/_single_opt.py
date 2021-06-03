@@ -20,7 +20,14 @@ def check_single_optimizable(opt: SingleOptimizable, warn: bool = True) -> None:
 
 
 def assert_optimization_space(env: SingleOptimizable) -> None:
-    """Check that the spaces are boxes of the same shape."""
+    """Check that the spaces are boxes of the same shape.
+
+    Example:
+
+        >>> class Foo:
+        ...     optimization_space = gym.spaces.Box(-1, 1, ())
+        >>> assert_optimization_space(Foo())
+    """
     opt_space = env.optimization_space
     assert is_box(opt_space), f"optimization space {opt_space} must be a gym.spaces.Box"
     if isinstance(env, gym.Env):

@@ -19,10 +19,11 @@ def check_env(env: gym.Env, warn: bool = True) -> None:
     assert_env_returned_values(env)
     assert_env_no_nan(env)
     if warn:
-        if is_box(env.observation_space):
-            warn_observation_space(env.observation_space)
-        elif isinstance(env.observation_space, gym.spaces.Dict):
-            warn_observation_space(env.observation_space["observation"])
+        warn_observation_space(
+            env.observation_space
+            if is_box(env.observation_space)
+            else env.observation_space["observation"]
+        )
 
 
 def assert_observation_space(env: gym.Env) -> None:
@@ -62,7 +63,19 @@ def assert_action_space(env: gym.Env) -> None:
 
 
 def assert_env_returned_values(env: gym.Env) -> None:
-    """Check the return types of `env.rest()` and `env.step()`."""
+    """Check the return types of `env.rest()` and `env.step()`.
+
+    Example:
+        >>> class Foo:
+        ...     reward_range = (-1.0, 1.0)
+        ...     observation_space = gym.spaces.Box(-1, 1, ())
+        ...     action_space = observation_space
+        ...     def reset(self):
+        ...         return np.array(0.0)
+        ...     def step(self, action):
+        ...         return action, 0.0, False, {}
+        >>> assert_env_returned_values(Foo())
+    """
 
     def _check_obs(obs: np.ndarray) -> None:
         assert (
@@ -112,7 +125,32 @@ def assert_env_no_nan(env: gym.Env) -> None:
 
 
 def warn_observation_space(space: gym.spaces.Box) -> None:
-    """Check that the observation space is either flat or an image."""
+    """Check that the observation space is either flat or an image.
+
+    Examples:
+
+        >>> from warnings import simplefilter
+        >>> from gym.spaces import Box
+        >>> simplefilter("error")
+        >>> warn_observation_space(Box(-1, 1, (10,)))
+        >>> warn_observation_space(Box(-1, 1, (10, 10)))
+        Traceback (most recent call last):
+        ...
+        UserWarning: ... an unconventional shape ...
+        >>> warn_observation_space(Box(-1, 1, (10, 10, 10)))
+        Traceback (most recent call last):
+        ...
+        UserWarning: ... (and have dtype uint8), or ...
+        >>> warn_observation_space(Box(-1, 1, (10, 10, 10), np.uint8))
+        Traceback (most recent call last):
+        ...
+        UserWarning: ... (and have bounds [0, 255]), or ...
+        >>> warn_observation_space(Box(0, 255, (10, 10, 10), np.uint8))
+        Traceback (most recent call last):
+        ...
+        UserWarning: ... at least a resolution of 36x36 pixels
+        >>> warn_observation_space(Box(0, 255, (36, 36, 10), np.uint8))
+    """
     ndims = len(space.shape)
     if ndims == 3:
         if space.dtype != np.uint8:

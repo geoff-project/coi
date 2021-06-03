@@ -9,6 +9,7 @@ from types import SimpleNamespace
 from ._abc_helpers import check_methods as _check_methods
 
 T = t.TypeVar("T")  # pylint: disable = invalid-name
+T.__module__ = ""
 
 
 class DuplicateConfig(Exception):
@@ -35,23 +36,37 @@ class Config:
         >>> config = Config()
         >>> config
         <Config: []>
-        >>> config.add('foo', 3)
+        >>> config.add("foo", 3)
         <Config: ['foo']>
-        >>> values = config.validate_all({'foo': '3'})
+        >>> values = config.validate_all({"foo": "3"})
         >>> values.foo
         3
-        >>> config.validate_all({'foo': 'a'})
+        >>> config.validate_all({"foo": "a"})
         Traceback (most recent call last):
         ...
         coi._configurable.BadConfig: invalid value for foo: 'a'
+        >>> config.add("foo", 0)
+        Traceback (most recent call last):
+        ...
+        coi._configurable.DuplicateConfig: foo
     """
 
     @dataclass(frozen=True)
     class Field(t.Generic[T]):
         """A single configurable field.
 
-        Don't instantiate this class yourself. Use
-        :meth:`Config.add()` instead.
+        This class is created exclusively via
+        :meth:`Config.add()<cernml.coi.Config.add>`. It is a dataclass,
+        so constructor parameters are also available as public fields.
+
+        >>> config = Config().add("foo", 1.0)
+        >>> fields = {field.dest: field for field in config.fields()}
+        >>> fields["foo"].value
+        1.0
+        >>> fields["foo"].value = 2.0
+        Traceback (most recent call last):
+        ...
+        dataclasses.FrozenInstanceError: cannot assign to field 'value'
         """
 
         # pylint: disable = too-many-instance-attributes
@@ -149,6 +164,11 @@ class Config:
 
         Returns:
             The config object itself to allow method-chaining.
+
+        Raises:
+            DuplicateConfig: if a config parameter with this *dest*
+                value has already been declared.
+            TypeError: if both *range* and *choices* are passed.
         """
         # pylint: disable = redefined-builtin
         if dest in self._fields:
@@ -158,7 +178,7 @@ class Config:
         if type is None:
             type = value.__class__
         if range is not None and choices is not None:
-            raise ValueError("cannot pass both `range` and `choices`")
+            raise TypeError("cannot pass both `range` and `choices`")
         if choices is not None:
             choices = list(choices)
         self._fields[dest] = self.Field(
@@ -234,14 +254,15 @@ class Configurable(metaclass=ABCMeta):
 
     For this reason, this interface provides a uniform way for problem
     authors to declare which parameters of their class are configurable
-    and what each parameter's invariants are. Its usage is extremely
-    trivial:
+    and what each parameter's invariants are. It is very easy to use for
+    problem authors:
 
-    1. :meth:`get_config()` returns a declaration of configurable
-       parameters;
-    2. :meth:`apply_config()` takes a collection of configurations
-       and applies them to the problem. At any point, it may raise an
-       exception to signal that an invariant has been violated.
+    1. Implement :meth:`get_config()` and return a declaration of
+       configurable parameters. Certain invariants, limits, etc. may be
+       declared for each parameter.
+    2. Implement :meth:`apply_config()` which is given a collection of
+       new configured values. Transfer each value into your object.
+       Apply any further checks and raise an exception if any fail.
 
     Usage example:
 
@@ -263,8 +284,23 @@ class Configurable(metaclass=ABCMeta):
         >>> issubclass(ExampleEnv, Configurable)
         True
 
-    This is an abstract base class. You need not inherit from it to
-    implement its interface:
+    A host application can use this interface as follows:
+
+        >>> env = ExampleEnv()
+        >>> config = env.get_config()
+        >>> # Present configs to the user.
+        >>> {field.dest: str(field.value) for field in config.fields()}
+        {'action_scale': '1.0'}
+        >>> # Transfer a user choice back to the env.
+        >>> values = config.validate_all({"action_scale": "1.5"})
+        >>> values
+        namespace(action_scale=1.5)
+        >>> env.apply_config(values)
+        >>> env.action_scale
+        1.5
+
+    :class:`Configurable` is an :term:`abstract base class`. You need
+    not inherit from it to implement its interface:
 
         >>> class AbstractChild:
         ...     def get_config(self):

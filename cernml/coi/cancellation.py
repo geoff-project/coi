@@ -164,6 +164,10 @@ class _State(enum.Enum):
         True
         >>> _State.CANCELLING < _State.CANCELLED
         True
+        >>> _State.READY > _State.CANCELLING
+        False
+        >>> _State.READY <= _State.READY
+        True
     """
 
     READY = 0
@@ -256,6 +260,22 @@ class TokenSource:
         If there are any threads waiting for a cancellation request,
         they all get notified. Note that it is up the receiver of the
         token to honor the request.
+
+
+        Example:
+
+            >>> source = TokenSource()
+            >>> source.token.cancellation_requested
+            False
+            >>> source.cancel()
+            >>> source.token.cancellation_requested
+            True
+
+        Cancelling the same token twice is a no-op::
+
+            >>> source.cancel()
+            >>> source.token.cancellation_requested
+            True
         """
         if self._token._state >= _State.CANCELLING:
             return
@@ -305,9 +325,19 @@ class TokenSource:
             >>> source.cancel()
             >>> source.cancellation_requested
             True
+            >>> source.reset_cancellation()
+            Traceback (most recent call last):
+            ...
+            coi.cancellation.CannotReset
             >>> source.token.complete_cancellation()
             >>> source.cancellation_requested
             True
+            >>> source.reset_cancellation()
+            >>> source.cancellation_requested
+            False
+
+        Resetting twice is a no-op::
+
             >>> source.reset_cancellation()
             >>> source.cancellation_requested
             False

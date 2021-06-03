@@ -7,6 +7,7 @@ from types import new_class
 from typing import Sequence, Type
 
 import gym
+import pytest
 
 from cernml import coi
 
@@ -149,3 +150,34 @@ def test_sepoptgoalenv() -> None:
             coi.SeparableOptGoalEnv,
         ],
     )
+
+
+def test_failures() -> None:
+    assert not issubclass(int, gym.Env)
+    assert not issubclass(int, gym.GoalEnv)
+    assert not issubclass(int, coi.SingleOptimizable)
+    assert not issubclass(int, coi.OptEnv)
+    assert not issubclass(int, coi.OptGoalEnv)
+    assert not issubclass(int, coi.SeparableEnv)
+    assert not issubclass(int, coi.SeparableGoalEnv)
+    assert not issubclass(int, coi.SeparableOptEnv)
+    assert not issubclass(int, coi.SeparableOptGoalEnv)
+
+
+@pytest.mark.parametrize(
+    "cls", [coi.OptEnv, coi.OptGoalEnv, coi.SeparableOptEnv, coi.SeparableOptGoalEnv]
+)
+def test_subclasses_arent_magic(cls: Type[coi.Problem]) -> None:
+    # pylint: disable = too-few-public-methods
+    class Subclass(cls):  # type: ignore
+        pass
+
+    class ImplementsProtocol(*cls.__bases__):  # type: ignore
+        reset = ...
+        step = ...
+        get_initial_params = ...
+        compute_single_objective = ...
+
+    for base in cls.__bases__:
+        assert issubclass(ImplementsProtocol, base)
+    assert not issubclass(ImplementsProtocol, Subclass)

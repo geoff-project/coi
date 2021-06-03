@@ -19,6 +19,32 @@ def check_methods(C: type, *methods: str) -> Any:
     Returns:
         True if ``C`` implements all given methods, otherwise
         :obj:`NotImplemented`.
+
+    Examples:
+
+        >>> from abc import ABC
+        >>> class Protocol(ABC):
+        ...     def some_method(self) -> str:
+        ...         raise NotImplementedError()
+        ...     @classmethod
+        ...     def __subclasshook__(cls, other: type) -> Any:
+        ...         if cls is Protocol:
+        ...             return check_methods(other, "some_method")
+        ...         return NotImplemented
+        >>> class SatisfiesProtocol:
+        ...     def some_method(self):
+        ...         return 'foo'
+        >>> issubclass(SatisfiesProtocol, Protocol)
+        True
+        >>> class FailsProtocol:
+        ...     def some_other_method(self):
+        ...         return 'foo'
+        >>> issubclass(FailsProtocol, Protocol)
+        False
+        >>> class DisablesProtocol:
+        ...     some_method = None
+        >>> issubclass(DisablesProtocol, Protocol)
+        False
     """
     # pylint: disable = invalid-name
     # Original implementation:

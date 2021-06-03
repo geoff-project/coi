@@ -1,0 +1,27 @@
+"""Test the inheritance chain of the package."""
+
+# pylint: disable = missing-class-docstring, missing-function-docstring
+# pylint: disable = abstract-method
+
+import numpy as np
+from gym.spaces import Box
+
+from cernml import coi
+
+
+def test_funcopt_defaults() -> None:
+    class Subclass(coi.FunctionOptimizable):
+        def get_optimization_space(self, cycle_time: float) -> Box:
+            return Box(-1, 1, ())
+
+        def get_initial_params(self, cycle_time: float) -> np.ndarray:
+            return cycle_time + np.zeros(())
+
+        def compute_function_objective(
+            self, cycle_time: float, params: np.ndarray
+        ) -> float:
+            return np.sum(params) + cycle_time
+
+    problem = Subclass()
+    assert problem.get_objective_function_name() is None
+    assert problem.get_param_function_names() == []

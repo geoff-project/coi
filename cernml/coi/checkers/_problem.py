@@ -13,7 +13,7 @@ from .._problem import Problem
 
 try:
     from matplotlib.figure import Figure
-except ImportError:
+except ImportError:  # pragma: no cover
     MPL_AVAILABLE = False
 else:
     MPL_AVAILABLE = True
@@ -59,7 +59,32 @@ def assert_render_modes_defined(problem: Problem) -> None:
 def assert_no_undeclared_render(
     problem: Problem, *, warn: bool = True, headless: bool = True
 ) -> None:
-    """Check for render modes that are implemented but not declared."""
+    """Check for render modes that are implemented but not declared.
+
+    Example:
+
+        >>> from warnings import simplefilter
+        >>> simplefilter("error")
+        >>> class Foo(Problem):
+        ...     def render(self, mode):
+        ...         return None
+        >>> assert_no_undeclared_render(Foo())
+        Traceback (most recent call last):
+        ...
+        AssertionError: ... doesn't raise NotImplementedError
+        >>> class Foo(Problem):
+        ...     def render(self, mode):
+        ...         raise TypeError()
+        >>> assert_no_undeclared_render(Foo(), warn=False)
+        >>> assert_no_undeclared_render(Foo())
+        Traceback (most recent call last):
+        ...
+        UserWarning: ... raises instead: TypeError()
+        >>> class Foo(Problem):
+        ...     def render(self, mode):
+        ...         return super().render(mode)
+        >>> assert_no_undeclared_render(Foo())
+    """
     # pylint: disable = broad-except
     # pylint: disable = unsubscriptable-object
     # pylint: disable = isinstance-second-argument-not-valid-type
@@ -169,7 +194,31 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
 
 
 def warn_render_modes(problem: Problem) -> None:
-    """Check that the environment defines the required render modes."""
+    """Check that the environment defines the required render modes.
+
+    Example:
+
+        >>> from warnings import simplefilter
+        >>> simplefilter("error")
+        >>> class Foo:
+        ...     def __init__(self, modes):
+        ...         self.metadata = {"render.modes": modes}
+        >>> warn_render_modes(Foo([
+        ...     "ansi", "human", "matplotlib_figures"
+        ... ]))
+        >>> warn_render_modes(Foo(["human", "matplotlib_figures"]))
+        Traceback (most recent call last):
+        ...
+        UserWarning: missing render mode 'ansi': ...
+        >>> warn_render_modes(Foo(["ansi", "matplotlib_figures"]))
+        Traceback (most recent call last):
+        ...
+        UserWarning: missing render mode 'human': ...
+        >>> warn_render_modes(Foo(["ansi", "human"]))
+        Traceback (most recent call last):
+        ...
+        UserWarning: missing render mode 'matplotlib_figures': ...
+    """
     # pylint: disable = unsubscriptable-object
     render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
     if "ansi" not in render_modes:
@@ -200,46 +249,63 @@ def warn_render_modes(problem: Problem) -> None:
 
 
 def warn_japc(problem: Problem) -> None:
-    """Check that the environment declares JAPC usage."""
-    japc = problem.metadata.get("cern.japc")
-    if japc is None:
-        warnings.warn(
-            "missing key cern.japc in the environment metadata; "
-            "assuming the default value (False)"
-        )
-        return
-    if japc not in (True, False):
-        warnings.warn("declared cern.japc should be a bool")
-        return
-    if japc:
-        init_signature = inspect.signature(type(problem).__init__)
-        if "japc" not in init_signature.parameters:
-            warnings.warn(
-                "environments that declare cern.japc=True should "
-                'accept a keyword argument "japc" in __init__()'
-            )
+    """Check that the environment declares JAPC usage.
+
+    Example:
+
+        >>> from warnings import simplefilter
+        >>> simplefilter("error")
+        >>> class Foo(Problem):
+        ...     metadata = {}
+        >>> warn_japc(Foo())
+        Traceback (most recent call last):
+        ...
+        UserWarning: missing key 'cern.japc' ...
+        >>> class Foo(Problem):
+        ...     metadata = {"cern.japc": ""}
+        >>> warn_japc(Foo())
+        Traceback (most recent call last):
+        ...
+        UserWarning: ... should be a bool
+        >>> class Foo(Problem):
+        ...     metadata = {"cern.japc": True}
+        >>> warn_japc(Foo())
+        Traceback (most recent call last):
+        ...
+        UserWarning: ... accept a keyword argument ...
+        >>> class Foo(Problem):
+        ...     metadata = {"cern.japc": True}
+        ...     def __init__(self, japc=None): pass
+        >>> warn_japc(Foo())
+    """
+    _warn_flag_to_enable_init_arg(problem, "cern.japc", "japc")
 
 
 def warn_cancellable(problem: Problem) -> None:
     """Check that the environment declares its cancellation policy."""
-    cancellable = problem.metadata.get("cern.cancellable")
-    if cancellable is None:
-        warnings.warn(
-            "missing key cern.cancellable in the environment "
+    _warn_flag_to_enable_init_arg(problem, "cern.cancellable", "cancellation_token")
+
+
+def _warn_flag_to_enable_init_arg(
+    problem: Problem, flag_name: str, arg_name: str
+) -> None:
+    """Check a flag that lets a user opt into an __init__ argument."""
+    flag = problem.metadata.get(flag_name)
+    if flag is None:
+        return warnings.warn(
+            f"missing key {flag_name!r} in the environment "
             "metadata; assuming the default value (False)"
         )
-        return
-    if cancellable not in (True, False):
-        warnings.warn("declared cern.cancellable should be a bool")
-        return
-    if cancellable:
+    if flag not in (True, False):
+        return warnings.warn(f"declared {flag_name} should be a bool")
+    if flag:
         init_signature = inspect.signature(type(problem.unwrapped).__init__)
-        if "cancellation_token" not in init_signature.parameters:
-            warnings.warn(
-                "environments that declare cern.cancellable=True "
-                "should accept a keyword argument "
-                '"cancellation_token" in __init__()'
+        if arg_name not in init_signature.parameters:
+            return warnings.warn(
+                f"environments that declare {flag_name}=True should "
+                f"accept a keyword argument {arg_name!r} in __init__()"
             )
+    return None
 
 
 def _get_blocked_modes(*, headless: bool = True) -> t.Sequence[str]:

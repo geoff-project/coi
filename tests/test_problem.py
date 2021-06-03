@@ -3,6 +3,8 @@
 
 import typing as t
 
+import pytest
+
 from cernml import coi
 
 
@@ -20,6 +22,15 @@ def test_problem_is_abstract() -> None:
             return self
 
     assert issubclass(NonInheritingProblem, coi.Problem)
+
+
+def test_render_raises() -> None:
+    class Subclass(coi.Problem):
+        pass
+
+    env = Subclass()
+    with pytest.raises(NotImplementedError):
+        env.render()
 
 
 def test_problem_requires_close() -> None:
