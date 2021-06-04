@@ -15,7 +15,7 @@ else:
     MPL_AVAILABLE = True
 
 
-def get_render_mode_checks() -> t.Dict[str, t.Callable[[t.Any], None]]:
+def get_render_mode_checks() -> t.Dict[str, t.Callable[..., None]]:
     """Return a mapping from render mode to checker for that mode."""
     checks = {
         "rgb_array": assert_rgb_array,
@@ -29,7 +29,12 @@ def get_render_mode_checks() -> t.Dict[str, t.Callable[[t.Any], None]]:
 
 
 def assert_rgb_array(result: t.Any) -> None:
-    """Assert that *result* is an RGB image."""
+    """Assert that *result* is an RGB image.
+
+    Example:
+
+        >>> assert_rgb_array(np.zeros((36, 36, 3)))
+    """
     assert isinstance(
         result, np.ndarray
     ), f"render('rgb_array') should return a NumPy array, not {result!r}"
@@ -43,19 +48,39 @@ def assert_rgb_array(result: t.Any) -> None:
 
 
 def assert_human(result: t.Any) -> None:
-    """Assert that *result* maches the "human" render mode."""
+    """Assert that *result* maches the "human" render mode.
+
+    Example:
+
+        >>> assert_human(None)
+    """
     assert result is None, f"render('human') should return None, not {result!r}"
 
 
 def assert_ansi(result: t.Any) -> None:
-    """Assert that *result* maches the "ansi" render mode."""
+    """Assert that *result* maches the "ansi" render mode.
+
+    Example:
+
+        >>> assert_ansi("")
+    """
     assert isinstance(
         result, (str, io.StringIO)
     ), f"render('ansi') should return str or StringIO, not {result!r}"
 
 
 def assert_matplotlib_figures(result: t.Any) -> None:
-    """Assert that *result* matches the "matplotlib_figures" mode."""
+    """Assert that *result* matches the "matplotlib_figures" mode.
+
+    Example:
+
+        >>> assert_matplotlib_figures(Figure())
+        >>> assert_matplotlib_figures({"foo": Figure()})
+        >>> assert_matplotlib_figures("foo")
+        Traceback (most recent call last):
+        ...
+        AssertionError: render('matplotlib_figures') returns ...
+    """
     # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
     if isinstance(result, Figure):
         return assert_unmanaged_figure(result)
