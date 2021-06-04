@@ -19,6 +19,70 @@ def is_reward(reward: t.Any) -> bool:
     return isinstance(reward, (numbers.Number, np.bool_))
 
 
+def is_bool(value: t.Any) -> bool:
+    """Return True if the object is a true boolean.
+
+    This accepts :class:`bool`, :class:`np.bool_` and possible
+    subclasses, but it rejects integers. (This is nontrivial because
+    Python booleans _are_ integers.)
+
+    Example:
+
+        >>> is_bool(True)
+        True
+        >>> is_bool(np.bool_(0))
+        True
+        >>> is_bool(0)
+        False
+        >>> isinstance(True, int)
+        True
+    """
+    return isinstance(value, (bool, np.bool_))
+
+
+def is_iterable(value: t.Any) -> bool:
+    """Return True if the object is iterable.
+
+    In Python, there are three ways in which objects can be iterable:
+
+    - they are registered as subclasses of
+      :class:`~collections.abc.Iterable`;
+    - they provide a method :meth:`~object.__iter__()`;
+    - they provide a method :meth:`~object.__getitem__()` and do not
+      inherit from :class:`dict`.
+
+    In the latter case, the object must honor the sequence protocol: its
+    :meth:`__getitem__()` must be callable with consecutive integers
+    starting at 0 until it raises an :class:`IndexError`.
+
+    Example:
+
+        >>> is_iterable([])
+        True
+        >>> is_iterable(0)
+        False
+        >>> is_iterable({})
+        True
+        >>> class Foo:
+        ...     def __getitem__(self, i):
+        ...         if i < 5:
+        ...             return 2 * i
+        ...         raise IndexError(i)
+        >>> is_iterable(Foo())
+        True
+        >>> list(Foo())
+        [0, 2, 4, 6, 8]
+        >>> class Bar: pass
+        >>> is_iterable(Bar())
+        False
+        >>> from collections.abc import Iterable
+        >>> _ = Iterable.register(Bar)
+        >>> is_iterable(Bar())
+        True
+    """
+    return isinstance(value, t.Iterable) or hasattr(type(value), "__getitem__")
+
+
 def is_box(space: gym.Space) -> bool:
     """Return True if the given space is a Box."""
     return isinstance(space, gym.spaces.Box)

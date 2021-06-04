@@ -10,6 +10,7 @@ import numpy as np
 
 from .._machine import Machine
 from .._problem import Problem
+from ._generic import is_iterable
 
 try:
     from matplotlib.figure import Figure
@@ -152,9 +153,9 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
                 assert isinstance(title, str), f"not a string: {title!r}"
                 assert isinstance(figure, Figure), f"not a figure: {figure}"
                 _assert_unmanaged_figure(figure)
-        elif hasattr(result, "__iter__") or hasattr(result, "__getitem__"):
+        elif is_iterable(result):
             for item in t.cast(t.Iterable, result):
-                if hasattr(item, "__iter__") or hasattr(item, "__getitem__"):
+                if is_iterable(item):
                     title, figure = t.cast(t.Tuple[t.Any, t.Any], item)
                     assert isinstance(title, str), f"not a string: {title!r}"
                     assert isinstance(figure, Figure), f"not a figure: {figure}"

@@ -7,7 +7,7 @@ import gym
 import numpy as np
 
 from .._sepenv import SeparableEnv
-from ._generic import assert_range, is_box, is_reward
+from ._generic import assert_range, is_bool, is_box, is_reward
 
 
 def check_env(env: gym.Env, warn: bool = True) -> None:
@@ -97,7 +97,7 @@ def assert_env_returned_values(env: gym.Env) -> None:
     assert is_reward(reward), "reward must be a float or integer"
     low, high = env.reward_range
     assert low <= reward <= high, f"reward is out of range [{low}, {high}]: {reward}"
-    assert isinstance(done, (bool, np.bool_)), f"done signal must be a bool: {done}"
+    assert is_bool(done), f"done signal must be a bool: {done}"
     assert isinstance(info, dict), f"info must be a dictionary: {info}"
     if isinstance(env, gym.GoalEnv):
         expected = env.compute_reward(obs["achieved_goal"], obs["desired_goal"], info)
