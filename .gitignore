@@ -1,6 +1,10 @@
 # Automatically generated files.
 cernml/coi/_version.py
 
+# Coverage.py output
+.coverage
+htmlcov/
+
 # Caches and build directories.
 __pycache__
 build/
