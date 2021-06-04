@@ -44,7 +44,7 @@ def assert_rgb_array(result: t.Any) -> None:
 
 def assert_human(result: t.Any) -> None:
     """Assert that *result* maches the "human" render mode."""
-    assert result is None, f"render('rgb_array') should return None, not {result!r}"
+    assert result is None, f"render('human') should return None, not {result!r}"
 
 
 def assert_ansi(result: t.Any) -> None:
