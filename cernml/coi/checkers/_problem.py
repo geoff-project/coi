@@ -2,22 +2,12 @@
 
 import collections.abc
 import inspect
-import io
 import typing as t
 import warnings
 
-import numpy as np
-
 from .._machine import Machine
 from .._problem import Problem
-from ._generic import is_iterable
-
-try:
-    from matplotlib.figure import Figure
-except ImportError:  # pragma: no cover
-    MPL_AVAILABLE = False
-else:
-    MPL_AVAILABLE = True
+from ._render import get_render_mode_checks
 
 
 def check_problem(
@@ -113,71 +103,25 @@ def assert_no_undeclared_render(
 
 
 def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
-    """Check that each declared render mode can be executed."""
-    # pylint: disable = unsubscriptable-object
-    # pylint: disable = isinstance-second-argument-not-valid-type
+    """Check that each declared render mode can be executed.
 
-    def _assert_rgb_array(result: t.Any) -> None:
-        assert isinstance(
-            result, np.ndarray
-        ), f"render('rgb_array') should return a NumPy array, not {result!r}"
-        num_dims = np.ndim(result)
-        assert num_dims == 3, f"render('rgb_array') array should be 3D, not {num_dims}D"
-        num_colors = np.shape(result)[-1]
-        assert num_colors == 3, (
-            f"render('rgb_array') array should have shape (x, y, 3), "
-            f"not (x, y, {num_colors})"
-        )
+    Example:
 
-    def _assert_human(result: t.Any) -> None:
-        assert result is None, f"render('rgb_array') should return None, not {result!r}"
-
-    def _assert_ansi(result: t.Any) -> None:
-        assert isinstance(
-            result, (str, io.StringIO)
-        ), f"render('ansi') should return str or StringIO, not {result!r}"
-
-    def _assert_unmanaged_figure(figure: Figure) -> None:
-        assert not hasattr(figure, "number"), (
-            "figures returned by render('matplotlib_figures') "
-            "must not be managed by PyPlot; create them via "
-            "`matplotlib.figure.Figure()`"
-        )
-
-    def _assert_matplotlib_figures(result: t.Any) -> None:
-        # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
-        if isinstance(result, Figure):
-            _assert_unmanaged_figure(result)
-        elif hasattr(result, "items"):
-            for title, figure in t.cast(dict, result):
-                assert isinstance(title, str), f"not a string: {title!r}"
-                assert isinstance(figure, Figure), f"not a figure: {figure}"
-                _assert_unmanaged_figure(figure)
-        elif is_iterable(result):
-            for item in t.cast(t.Iterable, result):
-                if is_iterable(item):
-                    title, figure = t.cast(t.Tuple[t.Any, t.Any], item)
-                    assert isinstance(title, str), f"not a string: {title!r}"
-                    assert isinstance(figure, Figure), f"not a figure: {figure}"
-                    _assert_unmanaged_figure(figure)
-                else:
-                    assert isinstance(item, Figure), f"not a figure: {item}"
-                    _assert_unmanaged_figure(item)
-        else:
-            raise AssertionError(
-                f"render('matplotlib_figures') returns {result}, "
-                "which is neither a figure, nor a dict str->figure, "
-                "nor a collection of figures or str-figure tuples"
-            )
-
-    additional_checks = {
-        "rgb_array": _assert_rgb_array,
-        "human": _assert_human,
-        "ansi": _assert_ansi,
-    }
-    # Don't fail on missing matplotlib.
-    if MPL_AVAILABLE:
-        additional_checks["matplotlib_figures"] = _assert_matplotlib_figures
+        >>> class Foo(Problem):
+        ...     metadata = {"render.modes": ["ansi"]}
+        >>> assert_execute_render(Foo())
+        Traceback (most recent call last):
+        ...
+        AssertionError: render mode 'ansi' declared ...
+        >>> class Foo(Problem):
+        ...     metadata = {"render.modes": ["custom"]}
+        ...     def render(self, mode):
+        ...         if mode == "custom":
+        ...             return None
+        ...         return super().render(mode)
+        >>> assert_execute_render(Foo())
+    """
+    additional_checks = get_render_mode_checks()
     blocked_modes = _get_blocked_modes(headless=headless)
     render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
     for mode in render_modes:
