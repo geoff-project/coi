@@ -9,7 +9,7 @@ from . import _generic
 
 try:
     from matplotlib.figure import Figure
-except ImportError:  # pragma: no cover
+except ImportError:
     MPL_AVAILABLE = False
 else:
     MPL_AVAILABLE = True

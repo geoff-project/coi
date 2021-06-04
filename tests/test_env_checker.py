@@ -1,91 +1,17 @@
 """Test the check() function."""
 
-# pylint: disable = missing-class-docstring, missing-function-docstring
+# pylint: disable = missing-class-docstring
+# pylint: disable = missing-function-docstring
 
 import typing as t
 
 import gym
 import matplotlib.figure
 import numpy as np
-import pytest
 from matplotlib import pyplot
 from scipy.optimize import LinearConstraint
 
 from cernml import coi
-
-
-class SeparableParabola(coi.SeparableEnv):
-    action_space = gym.spaces.Box(-1, 1, (2,))
-    observation_space = gym.spaces.Box(-2, 2, (2,))
-    reward_range = (-np.sqrt(16.0), 0.0)
-    metadata = {
-        "render.modes": ["ansi", "human", "matplotlib_figures"],
-        "cern.machine": coi.Machine.NO_MACHINE,
-        "cern.japc": False,
-        "cern.cancellable": False,
-    }
-
-    def __init__(self) -> None:
-        self.pos = self.action_space.sample()
-        self.goal = self.action_space.sample()
-        self.constraints = [LinearConstraint(np.diag(np.ones(2)), 0.0, 1.0)]
-
-    @property
-    def distance(self) -> float:
-        return np.linalg.norm(self.pos - self.goal)
-
-    def reset(self) -> np.ndarray:
-        self.pos = self.action_space.sample()
-        self.goal = self.action_space.sample()
-        return self.pos - self.goal
-
-    def compute_observation(
-        self, action: np.ndarray, info: t.Dict
-    ) -> t.Dict[str, np.ndarray]:
-        self.pos += action
-        return np.clip(
-            self.pos - self.goal,
-            self.observation_space.low,
-            self.observation_space.high,
-        )
-
-    def compute_reward(
-        self, obs: np.ndarray, goal: None, info: t.Dict[str, t.Any]
-    ) -> float:
-        return max(-np.linalg.norm(obs), self.reward_range[0])
-
-    def compute_done(
-        self,
-        obs: t.Dict[str, np.ndarray],
-        reward: float,
-        info: t.Dict[str, t.Any],
-    ) -> bool:
-        success = self.distance < 0.05
-        done = success or obs not in self.observation_space
-        if done:
-            info["success"] = success
-        return done
-
-    def render(self, mode: str = "human") -> t.Any:
-        if mode == "human":
-            pyplot.figure()
-            xdata, ydata = zip(self.pos, self.goal)
-            pyplot.scatter(xdata, ydata, c=[0, 1])
-            return None
-        if mode == "matplotlib_figures":
-            xdata, ydata = zip(self.pos, self.goal)
-            figure = matplotlib.figure.Figure()
-            figure.subplots().scatter(xdata, ydata, c=[0, 1])
-            return [figure]
-        if mode == "ansi":
-            return f"{self.pos} -> {self.goal}"
-        return super().render(mode)
-
-    def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
-        return [
-            *self.action_space.seed(seed),
-            *self.observation_space.seed(seed),
-        ]
 
 
 class MultiGoalParabola(coi.SeparableOptGoalEnv):
@@ -234,14 +160,9 @@ class FunctionParabola(coi.FunctionOptimizable):
         return super().render(mode)
 
 
-@pytest.mark.parametrize("warn", [False, True])
-def test_sep_env(warn: bool) -> None:
-    coi.check(SeparableParabola(), warn=warn, headless=True)
-
-
 def test_opt_env() -> None:
-    coi.check(MultiGoalParabola(), headless=True)
+    coi.check(MultiGoalParabola())
 
 
 def test_func_opt() -> None:
-    coi.check(FunctionParabola(), headless=True)
+    coi.check(FunctionParabola())
