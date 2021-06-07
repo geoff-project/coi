@@ -8,6 +8,10 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
+No changes yet!
+
+## v0.8.0
+
 - BREAKING: Drop Python 3.6 support.
 - BREAKING: Require {doc}`importlib-metadata<importlib_metadata:index>` 3.6 (was 3.4).
 - BREAKING: Drop the `cernml.coi.__version__` attribute. To query the COI version, use instead {mod}`importlib_metadata`. (With Python 3.8+, this is in the standard library as {mod}`importlib.metadata`.)
