@@ -22,7 +22,7 @@ test_lint:
   image: ${pyqt_image}
   before_script:
     - python -m pip install -e '.[lint]'
-  script: ${project_root}/run_linters.sh
+  script: ${project_root}/run_linters.sh --print-versions
 
 test_dev:
   extends: .acc_py_dev_test

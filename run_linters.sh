@@ -4,18 +4,26 @@
 # them fails, the script continues running the rest. Only at the end does the
 # script determine whether it has failed or not.
 
+if [[ "$*" ]]; then
+  if [[ "$*" == --print-versions ]]; then
+    black --version
+    isort --version
+    pycodestyle --version
+    mypy --version
+    pylint --version
+  else
+    echo "Usage: $0 [--print-versions]"
+    exit 1
+  fi
+fi
+
 exit_code=0
 
-black --version
 black --check . || exit_code=$((exit_code + $?))
-isort --version
 isort --check . || exit_code=$((exit_code + $?))
-pycodestyle --version
 pycodestyle . || exit_code=$((exit_code + $?))
-mypy --version
 mypy examples/ tests/ || exit_code=$((exit_code + $?))
 mypy -p cernml || exit_code=$((exit_code + $?))
-pylint --version
 pylint cernml/ || exit_code=$((exit_code + $?))
 pylint tests/*.py || exit_code=$((exit_code + $?))
 
