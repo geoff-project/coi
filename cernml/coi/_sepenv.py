@@ -8,7 +8,7 @@ import gym
 import numpy as np
 
 InfoDict = t.Dict[str, t.Any]
-GoalObs = t.Dict[str, np.ndarray]  # TODO: Use t.TypedDict with Python 3.7.
+GoalObs = t.Dict[str, np.ndarray]  # TODO: Use t.TypedDict with Python 3.8.
 
 
 class SeparableEnv(gym.Env):
