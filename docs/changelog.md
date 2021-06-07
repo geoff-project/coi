@@ -23,6 +23,10 @@ No changes yet!
 - BREAKING: Change {class}`~cernml.coi.Config.Field` from a {class}`~typing.NamedTuple` into a {func}`~dataclasses.dataclass`.
 - ADD: Support for {doc}`importlib-metadata<importlib_metadata:index>` 4.
 
+## v0.7.6
+
+- FIX: Backport change from v0.8.x that removes {func}`~cernml.mpl_utils.iter_matplotlib_figures()` calls from {func}`cernml.coi.check()`. This avoids deprecation warnings introduced in the previous version.
+
 ## v0.7.5
 
 - FIX: Increase the stacklevel of the [](#v074) deprecation warnings so that they appear more reliably.
