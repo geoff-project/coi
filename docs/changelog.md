@@ -13,6 +13,10 @@ change in any given release.
 
 No changes yet!
 
+## v0.7.6
+
+- FIX: Backport change from v0.8.x that removes {func}`~cernml.coi.mpl_utils.iter_matplotlib_figures()` calls from {func}`cernml.coi.check()`. This avoids deprecation warnings introduced in the previous version.
+
 ## v0.7.5
 
 - FIX: Increase the stacklevel of the [](#v0.7.4) deprecation warnings so that they appear more reliably.
