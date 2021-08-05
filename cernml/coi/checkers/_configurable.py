@@ -11,7 +11,7 @@ from .._configurable import Config, Configurable
 
 
 def check_configurable(problem: Configurable, warn: bool = True) -> None:
-    """Check that an optimizable follows our conventions."""
+    """Check the run-time invariants of the given interface."""
     config = problem.get_config()
     assert_is_good_config(config, warn)
     assert_handles_values(problem, config, warn)

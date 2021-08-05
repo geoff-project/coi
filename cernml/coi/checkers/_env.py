@@ -11,7 +11,7 @@ from ._generic import assert_range, is_bool, is_box, is_reward
 
 
 def check_env(env: gym.Env, warn: bool = True) -> None:
-    """Check that an environment follows our conventions."""
+    """Check the run-time invariants of the given interface."""
     assert isinstance(env, gym.Env), f"{type(env)} must inherit from gym.Env"
     assert_observation_space(env)
     assert_action_space(env)

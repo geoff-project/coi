@@ -9,7 +9,7 @@ from ._generic import assert_range, is_box
 
 
 def check_function_optimizable(opt: FunctionOptimizable, warn: bool = True) -> None:
-    """Check that an optimizable follows our conventions."""
+    """Check the run-time invariants of the given interface."""
     _ = warn  # Flag is currently unused, keep it for forward compatibility.
     assert_optimization_space(opt)
     assert_range(opt.objective_range, "objective")

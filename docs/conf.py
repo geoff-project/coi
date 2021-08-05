@@ -13,6 +13,7 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import datetime
 import pathlib
+import types
 
 import importlib_metadata
 
@@ -90,11 +91,20 @@ def setup(app):  # type: ignore
         if new_name != old_name:
             class_.__module__ = new_name
 
+    def _hide_checker_arg(func):  # type: ignore
+        name = func.__name__
+        if name != "check" and not name.startswith("check_"):
+            return
+        for type_ in func.__annotations__.values():
+            _hide_class_module(type_)
+
     def _hide_private_modules(_app, obj, _bound_method):  # type: ignore
         if isinstance(obj, type):
             _hide_class_module(obj)
             for base in getattr(obj, "__bases__", []):
                 _hide_class_module(base)
+        elif isinstance(obj, types.FunctionType):
+            _hide_checker_arg(obj)
         _hide_configurable_module(obj)
 
     app.connect("autodoc-before-process-signature", _hide_private_modules)

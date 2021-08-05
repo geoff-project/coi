@@ -11,6 +11,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 - ADD: {meth}`cernml.coi.Config.extend()` to make configuration more composable.
 - ADD: {class}`cernml.coi.ConfigValues` as a convenience alias for {class}`types.SimpleNamespace`.
 - ADD: {func}`~cernml.coi.checkers.check_configurable()` for all implementors of the {class}`~cernml.coi.Configurable` interface.
+- FIX: Broken links in the API docs of the {doc}`api/checkers`.
 
 ## v0.8.0
 

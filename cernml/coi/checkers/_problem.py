@@ -13,7 +13,7 @@ from ._render import get_render_mode_checks
 def check_problem(
     problem: Problem, *, warn: bool = True, headless: bool = True
 ) -> None:
-    """Check that a problem follows our conventions."""
+    """Check the run-time invariants of the given interface."""
     assert_machine(problem)
     assert_render_modes_defined(problem)
     assert_no_undeclared_render(problem, warn=warn, headless=headless)
