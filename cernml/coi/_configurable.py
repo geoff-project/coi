@@ -49,6 +49,48 @@ class Config:
         Traceback (most recent call last):
         ...
         coi._configurable.DuplicateConfig: foo
+
+    If your class consists of multiple configurable components, you can
+    combine their individual configs as long as the names don't overlap:
+
+        >>> class Kicker(Configurable):
+        ...     def __init__(self) -> None:
+        ...         self.scale = 0.1
+        ...     def get_config(self) -> Config:
+        ...         return Config().add("scale", self.scale)
+        ...     def apply_config(self, values: SimpleNamespace) -> None:
+        ...         self.scale = values.scale
+        >>> class LossMonitor(Configurable):
+        ...     def __init__(self) -> None:
+        ...         self.min_reading = 1.0
+        ...     def get_config(self) -> Config:
+        ...         return Config().add("min_reading", self.min_reading)
+        ...     def apply_config(self, values: SimpleNamespace) -> None:
+        ...         self.min_reading = values.min_reading
+        >>> class Problem(Configurable):
+        ...     def __init__(self) -> None:
+        ...         self.kicker = Kicker()
+        ...         self.monitor = LossMonitor()
+        ...     def get_config(self) -> Config:
+        ...         return (
+        ...             Config()
+        ...             .extend(self.kicker.get_config())
+        ...             .extend(self.monitor.get_config())
+        ...         )
+        ...     def apply_config(self, values: SimpleNamespace):
+        ...         self.kicker.apply_config(values)
+        ...         self.monitor.apply_config(values)
+        >>> problem = Problem()
+        >>> config = problem.get_config()
+        >>> config
+        <Config: ['scale', 'min_reading']>
+        >>> values = {'scale': 0.0, 'min_reading': 0.0}
+        >>> values = config.validate_all(values)
+        >>> problem.apply_config(values)
+        >>> problem.kicker.scale
+        0.0
+        >>> problem.monitor.min_reading
+        0.0
     """
 
     @dataclass(frozen=True)
@@ -163,7 +205,7 @@ class Config:
                 if there is a single obvious choice for this field.
 
         Returns:
-            The config object itself to allow method-chaining.
+            This config object itself to allow method-chaining.
 
         Raises:
             DuplicateConfig: if a config parameter with this *dest*
@@ -191,6 +233,37 @@ class Config:
             choices=choices,
             default=default,
         )
+        return self
+
+    def extend(self, other: "Config") -> "Config":
+        """Add all fields of another config to this one.
+
+        Args:
+            other: Another :class:`Config` object from which to copy
+                each field in sequence.
+
+        Returns:
+            This config object itself to allow method-chaining.
+
+        Raises:
+            DuplicateConfig: if *other* contains a config parameter with
+                the same *dest* value as a parameter in this config.
+
+        Example:
+
+            >>> first = Config().add("first", 0.0)
+            >>> second = Config().add("second", 0.0)
+            >>> first.extend(second)
+            <Config: ['first', 'second']>
+            >>> first.extend(second)
+            Traceback (most recent call last):
+            ...
+            coi._configurable.DuplicateConfig: {'second'}
+        """
+        duplicates = self._fields.keys() & other._fields.keys()
+        if duplicates:
+            raise DuplicateConfig(duplicates)
+        self._fields.update(other._fields)
         return self
 
     def validate(self, name: str, text_repr: str) -> t.Any:

@@ -9,6 +9,7 @@
     :show-inheritance:
 
     .. automethod:: add
+    .. automethod:: extend
     .. automethod:: validate
     .. automethod:: validate_all
     .. automethod:: fields

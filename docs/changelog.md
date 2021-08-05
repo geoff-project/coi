@@ -8,7 +8,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
-No changes yet!
+- ADD: {meth}`cernml.coi.Config.extend()` to make configuration more composable.
 
 ## v0.8.0
 
