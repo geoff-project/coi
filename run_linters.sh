@@ -21,7 +21,7 @@ exit_code=0
 
 black --check . || exit_code=$((exit_code + $?))
 isort --check . || exit_code=$((exit_code + $?))
-pycodestyle . || exit_code=$((exit_code + $?))
+pycodestyle cernml/ examples/ tests/ || exit_code=$((exit_code + $?))
 mypy examples/ tests/ || exit_code=$((exit_code + $?))
 mypy -p cernml || exit_code=$((exit_code + $?))
 pylint cernml/ || exit_code=$((exit_code + $?))
