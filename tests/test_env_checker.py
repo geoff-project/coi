@@ -14,7 +14,10 @@ from scipy.optimize import LinearConstraint
 from cernml import coi
 
 
-class MultiGoalParabola(coi.SeparableOptGoalEnv):
+class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
+
+    # pylint: disable = too-many-ancestors
+
     action_space = gym.spaces.Box(-1, 1, (2,))
     observation_space = gym.spaces.Dict(
         observation=gym.spaces.Box(0.0, np.sqrt(8.0), (1,)),
@@ -106,6 +109,12 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv):
             *self.action_space.seed(seed),
             *self.observation_space.seed(seed),
         ]
+
+    def get_config(self) -> coi.Config:
+        return coi.Config()
+
+    def apply_config(self, values: coi.ConfigValues) -> None:
+        pass
 
 
 class FunctionParabola(coi.FunctionOptimizable):

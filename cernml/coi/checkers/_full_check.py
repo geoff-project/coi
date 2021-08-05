@@ -6,6 +6,7 @@ import typing as t
 import gym
 import importlib_metadata
 
+from ._configurable import Configurable, check_configurable
 from ._env import check_env
 from ._func_opt import FunctionOptimizable, check_function_optimizable
 from ._problem import Problem, check_problem
@@ -54,6 +55,9 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     if isinstance(unwrapped_env, gym.Env):
         LOG.debug("Checking Env interface of %s", env)
         check_env(t.cast(gym.Env, env), warn=warn)
+    if isinstance(unwrapped_env, Configurable):
+        LOG.debug("Checking Configurable interface of %s", env)
+        check_configurable(t.cast(Configurable, env), warn=warn)
     entry_points = importlib_metadata.entry_points().select(group="cernml.coi.checkers")
     # Run plug-in checkers.
     for entry_point in entry_points:
