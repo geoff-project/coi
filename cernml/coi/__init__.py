@@ -30,7 +30,13 @@ refer to `our package docs
 <https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi>`_.
 """
 
-from ._configurable import BadConfig, Config, Configurable, DuplicateConfig
+from ._configurable import (
+    BadConfig,
+    Config,
+    Configurable,
+    ConfigValues,
+    DuplicateConfig,
+)
 from ._func_opt import FunctionOptimizable
 from ._machine import Machine
 from ._problem import Problem
@@ -43,6 +49,7 @@ from .checkers import check
 __all__ = [
     "BadConfig",
     "Config",
+    "ConfigValues",
     "Configurable",
     "Constraint",
     "DuplicateConfig",

@@ -1,5 +1,7 @@
 """Provide :class:`Configurable`, an interface for GUI compatibility."""
 
+from __future__ import annotations
+
 import typing as t
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
@@ -10,6 +12,8 @@ from ._abc_helpers import check_methods as _check_methods
 
 T = t.TypeVar("T")  # pylint: disable = invalid-name
 T.__module__ = ""
+
+ConfigValues = SimpleNamespace
 
 
 class DuplicateConfig(Exception):
@@ -58,14 +62,14 @@ class Config:
         ...         self.scale = 0.1
         ...     def get_config(self) -> Config:
         ...         return Config().add("scale", self.scale)
-        ...     def apply_config(self, values: SimpleNamespace) -> None:
+        ...     def apply_config(self, values: ConfigValues) -> None:
         ...         self.scale = values.scale
         >>> class LossMonitor(Configurable):
         ...     def __init__(self) -> None:
         ...         self.min_reading = 1.0
         ...     def get_config(self) -> Config:
         ...         return Config().add("min_reading", self.min_reading)
-        ...     def apply_config(self, values: SimpleNamespace) -> None:
+        ...     def apply_config(self, values: ConfigValues) -> None:
         ...         self.min_reading = values.min_reading
         >>> class Problem(Configurable):
         ...     def __init__(self) -> None:
@@ -77,7 +81,7 @@ class Config:
         ...             .extend(self.kicker.get_config())
         ...             .extend(self.monitor.get_config())
         ...         )
-        ...     def apply_config(self, values: SimpleNamespace):
+        ...     def apply_config(self, values: ConfigValues):
         ...         self.kicker.apply_config(values)
         ...         self.monitor.apply_config(values)
         >>> problem = Problem()
@@ -282,7 +286,7 @@ class Config:
         """
         return self._fields[name].validate(text_repr)
 
-    def validate_all(self, values: t.Mapping[str, str]) -> SimpleNamespace:
+    def validate_all(self, values: t.Mapping[str, str]) -> "ConfigValues":
         """Validate user-chosen set of configurations.
 
         Args:
@@ -291,7 +295,7 @@ class Config:
                 Neither missing nor excess items are allowed.
 
         Returns:
-            A namespace containing the validated and converted values as
+            A namespace with the validated and converted values as
             attributes.
 
         Raises:
@@ -391,7 +395,7 @@ class Configurable(metaclass=ABCMeta):
         """Return a declaration of configurable parameters."""
 
     @abstractmethod
-    def apply_config(self, values: SimpleNamespace) -> None:
+    def apply_config(self, values: "ConfigValues") -> None:
         """Configure this object using the given values.
 
         The *values* have already been validated using the information
@@ -403,10 +407,9 @@ class Configurable(metaclass=ABCMeta):
         applied.
 
         Args:
-            values: A namespace object. It has one attribute for each
-                field declared in :meth:`get_config()`. The attribute
-                name is exactly the *dest* parameter of
-                :meth:`Config.add()`.
+            values: A namespace with one attribute for each field
+                declared in :meth:`get_config()`. The attribute name is
+                exactly the *dest* parameter of :meth:`Config.add()`.
 
         Raises:
             Exception: If any additional validation checks fail.

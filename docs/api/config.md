@@ -2,8 +2,10 @@
 
 ```{eval-rst}
 .. autoclass:: cernml.coi.Configurable
-    :members:
     :show-inheritance:
+
+    .. automethod:: get_config
+    .. automethod:: apply_config
 
 .. autoclass:: cernml.coi.Config
     :show-inheritance:
@@ -16,6 +18,8 @@
     .. autoclass:: cernml.coi.Config.Field
         :members:
         :show-inheritance:
+
+.. autoclass:: cernml.coi.ConfigValues
 
 .. autoexception:: cernml.coi.BadConfig
 

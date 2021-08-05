@@ -9,6 +9,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 ## Unreleased
 
 - ADD: {meth}`cernml.coi.Config.extend()` to make configuration more composable.
+- ADD: {class}`cernml.coi.ConfigValues` as a convenience alias for {class}`types.SimpleNamespace`.
 
 ## v0.8.0
 
