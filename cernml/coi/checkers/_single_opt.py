@@ -16,6 +16,7 @@ def check_single_optimizable(opt: SingleOptimizable, warn: bool = True) -> None:
     assert_optimization_space(opt)
     assert_range(opt.objective_range, "objective")
     assert_constraints(opt.constraints)
+    assert_matching_names(opt)
     assert_opt_returned_values(opt)
 
 
@@ -47,6 +48,49 @@ def assert_constraints(constraints: t.List[Constraint]) -> None:
             f"constraint {constraint!r} is neither LinearConstraint nor "
             f"NonlinearConstraint"
         )
+
+
+def assert_matching_names(opt: SingleOptimizable) -> None:
+    """Check that all names are strings and have the correct number.
+
+    Example:
+
+        >>> class GoodEnv:
+        ...     objective_name = "BCT"
+        ...     param_names = ["Bump H", "Bump V"]
+        ...     constraint_names = ["Minimum intensity"]
+        ...     constraints = [object()]
+        ...     optimization_space = gym.spaces.Box(-1, 1, [2])
+        >>> assert_matching_names(GoodEnv())
+    """
+    if opt.objective_name:
+        assert isinstance(
+            opt.objective_name, str
+        ), f"objective name {opt.objective_name} must be a string"
+    if opt.param_names:
+        assert not isinstance(
+            opt.param_names, str
+        ), f"param names {opt.param_names} must not be a single string"
+        expected = np.prod(opt.optimization_space.shape)
+        assert (
+            len(opt.param_names) == expected
+        ), f"expected {expected} parameter names, got {len(opt.param_names)}"
+        for param_name in opt.param_names:
+            assert isinstance(
+                param_name, str
+            ), f"objective name {param_name} must be a string"
+    if opt.constraint_names:
+        assert not isinstance(
+            opt.constraint_names, str
+        ), f"param names {opt.constraint_names} must not be a single string"
+        expected = len(opt.constraints)
+        assert (
+            len(opt.constraint_names) == expected
+        ), f"expected {expected} parameter names, got {len(opt.constraint_names)}"
+        for constraint_name in opt.constraint_names:
+            assert isinstance(
+                constraint_name, str
+            ), f"objective name {constraint_name} must be a string"
 
 
 def assert_opt_returned_values(opt: SingleOptimizable) -> None:

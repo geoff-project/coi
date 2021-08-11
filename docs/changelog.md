@@ -8,7 +8,8 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
-No changes yet!
+- ADD: New optional attributes {attr}`~cernml.coi.SingleOptimizable.objective_name`, {attr}`~cernml.coi.SingleOptimizable.param_names` and {attr}`~cernml.coi.SingleOptimizable.constraint_names` to {class}`~cernml.coi.SingleOptimizable`.
+- FIX: Adjust the documentation of {meth}`~cernml.coi.FunctionOptimizable.get_objective_function_name()` and {meth}`~cernml.coi.FunctionOptimizable.get_param_function_names()` to be in line with its {class}`~cernml.coi.SingleOptimizable` counter-parts.
 
 ## v0.8.1
 

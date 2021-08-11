@@ -123,21 +123,21 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
     def get_objective_function_name(self) -> Optional[str]:
         """Return the name of the objective function.
 
-        By default, this method returns None. If it returns something,
-        it should be the name of an LSA parameter that it the target of
-        the optimization procedure. A host application may use this name
-        e.g. to show the function to the user as it is being optimized.
+        By default, this method returns the empty string. If it returns
+        a non-empty string, it should be the name of the objective
+        function of this optimization problem. A host application may
+        use this name e.g. to label a graph of the objective function's
+        value as it is being optimized.
         """
         # pylint: disable = no-self-use
         return None
 
     def get_param_function_names(self) -> List[str]:
-        """Return the name of the parameter function.
+        """Return the names of the functions being modified.
 
-        By default, this method returns an empty list. If it returns
-        something, if should be a list of LSA parameter names. The list
-        should contain as many names as there are dimensions in the
-        current optimization space. Each name should correspond to an
+        By default, this method returns an empty list. If the list is
+        non-empty, if should contain as many names as the corresponding
+        {attr}`optimization_space`. Each name should correspond to an
         LSA parameter that is being corrected by the optimization
         procedure.
 

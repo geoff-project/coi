@@ -115,6 +115,50 @@ suitable for embedding into a GUI application.
 See the {meth}`~cernml.coi.Problem.render` docs for a full spec of each render
 mode.
 
+## Naming Your Quantities
+
+In many cases, your objective function and parameters directly correspond to
+machine parameters. For example, many optimization problems might only scale
+their parameters and otherwise send them unmodified to the machine via JAPC.
+Similarly, the objective function might only be a rescaled or inverted reading
+from a detector on the accelerator.
+
+In such cases, it is useful to declare the meaning of your quantities. A host
+application may use this to annotate its graphs of the parameters and objective
+function. The {class}`~cernml.coi.SingleOptimizable` class provides three
+attributes for this purpose:
+
+```python
+from cernml import coi
+
+class SomeProblem(coi.SingleOptimizable):
+
+    objective_name = "RMS BPM Position (mm)"
+    param_names = [
+        "CORRECTOR.10",
+        "CORRECTOR.20",
+        "CORRECTOR.30",
+        "CORRECTOR.40",
+    ]
+    constraint_names = [
+        "BCT Intensity",
+    ]
+
+    def compute_single_objective(self, params):
+        for name, value in zip(self.param_names, params):
+            self._japc.setParam(f"logical.{name}/K", value)
+        ...
+```
+
+Note that these three values need not be defined inside the class scope. You
+are free to define them inside your `__init__()` method or change them at
+run-time. This is useful because some optimization problems might decide to be
+configurable in the exact devices they talk to.
+
+You are free not to define these attributes at all. In this case, the host
+application will see the inherited default values and assume no particular
+meaning of your quantities.
+
 ## Closing
 
 Some optimization problems have to acquire certain resources in order to
@@ -150,7 +194,7 @@ script, consider using the {func}`~std:contextlib.closing()` context manager:
     from contextlib import closing
 
     with closing(MyProblem(...)) as problem:
-    optimize(problem)
+        optimize(problem)
 
 The context manager ensures that {meth}`~cernml.coi.Problem.close` is called
 under all circumstances – even if an exception occurs.

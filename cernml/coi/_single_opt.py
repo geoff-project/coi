@@ -51,20 +51,37 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         optimization_space: A :class:`~gym.spaces.Space` instance that
             describes the phase space of parameters. This may be the
             same or different from the :attr:`~gym.Env.action_space`.
-        objective_range: Specifies the range in which the return value
-            of :meth:`compute_single_objective()` will lie. The default
-            is to allow any finite float value, but subclasses may
-            restrict this e.g. for normalization purposes.
-        constraints: The constraints that apply to this optimization
-            problem. For now, each constraint must be either a
-            :class:`~scipy.optimize.LinearConstraint` or a
+            This attribute is required.
+        objective_range: Optional. Specifies the range in which the
+            return value of :meth:`compute_single_objective()` will lie.
+            The default is to allow any finite float value, but
+            subclasses may restrict this e.g. for normalization
+            purposes.
+        objective_name: Optional. A custom name for the objective
+            function. You should only set this attribute if there is a
+            physical meaning to the objective. The default is not to
+            attach any meaning to the objective function.
+        param_names: Optional. Custom names for each of the parameters
+            of the problem. If set, this list should have exactly as
+            many elements as the :attr:`optimization_space`. The default
+            is not to attach any meaning to the individual parameters.
+        constraints: Optional. The constraints that apply to this
+            optimization problem. For now, each constraint must be
+            either a :class:`~scipy.optimize.LinearConstraint` or a
             :class:`~scipy.optimize.NonlinearConstraint`. In the future,
             this might be relaxed to allow more optimization algorithms.
+        constraint_names: Optional. Custom names for each of the
+            :attr:`constraints` of the problem. If set, this list should
+            have exactly as many elements as the :attr:`constraints`.
+            The default is not to attach any meaning to the constraints.
     """
 
     optimization_space: gym.spaces.Space = None
     objective_range: t.Tuple[float, float] = (-float("inf"), float("inf"))
+    objective_name: str = ""
+    param_names: t.List[str] = []
     constraints: t.List["Constraint"] = []
+    constraint_names: t.List[str] = []
 
     @abstractmethod
     def get_initial_params(self) -> numpy.ndarray:
