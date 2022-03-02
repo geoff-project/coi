@@ -71,7 +71,7 @@ def assert_env_returned_values(env: gym.Env) -> None:
         ...     observation_space = gym.spaces.Box(-1, 1, ())
         ...     action_space = observation_space
         ...     def reset(self):
-        ...         return np.array(0.0)
+        ...         return np.array(0.0, dtype=np.float32)
         ...     def step(self, action):
         ...         return action, 0.0, False, {}
         >>> assert_env_returned_values(Foo())
