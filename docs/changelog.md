@@ -9,6 +9,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 ## Unreleased
 
 - ADD: Add install extra `doc_only` to build docs in a non-CERN environment. (This skips the PyJapc dependency.)
+- FIX: Restrict Gym compatibility, as [version 0.22](https://github.com/openai/gym/releases/tag/0.22.0) removes {class}`~gym.GoalEnv`.
 
 ## v0.8.2
 
