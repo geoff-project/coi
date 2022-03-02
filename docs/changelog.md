@@ -8,6 +8,10 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
+No changes yet!
+
+## v0.8.3
+
 - ADD: Add install extra `doc_only` to build docs in a non-CERN environment. (This skips the PyJapc dependency.)
 - FIX: Restrict Gym compatibility, as [version 0.22](https://github.com/openai/gym/releases/tag/0.22.0) removes {class}`~gym.GoalEnv`.
 - FIX: [](#v080) nominally increased the minimum required version of {doc}`importlib-metadata<importlib_metadata:index>`, but this was never enforced. Now, at least version 3.6 is required.
