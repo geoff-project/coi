@@ -5,7 +5,7 @@ include:
 variables:
   project_dir: cernml
   project_name: cernml.coi
-  pyqt_image: gitlab-registry.cern.ch/acc-co/devops/python/distribution/ci/pyqt:v2020-11rc2
+  pyqt_image: registry.cern.ch/acc/acc-py_cc7_openjdk11_gui_ci:2020.11
   PY_VERSION: "3.7"
 
 # Build: Create a wheel to speed up installation.
