@@ -98,7 +98,7 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
         if mode == "matplotlib_figures":
             xdata, ydata = zip(self.pos, self.goal)
             figure = matplotlib.figure.Figure()
-            figure.subplots().scatter(xdata, ydata, c=[0, 1])
+            figure.add_subplot(1, 1, 1).scatter(xdata, ydata, c=[0, 1])
             return [figure]
         if mode == "ansi":
             return f"{self.pos} -> {self.goal}"
@@ -162,7 +162,7 @@ class FunctionParabola(coi.FunctionOptimizable):
         if mode == "matplotlib_figures":
             xdata, ydata = zip(self.pos, self.goals.get(self.time, [0, 0]))
             figure = matplotlib.figure.Figure()
-            figure.subplots().scatter(xdata, ydata, c=[0, 1])
+            figure.add_subplot(1, 1, 1).scatter(xdata, ydata, c=[0, 1])
             return [figure]
         if mode == "ansi":
             return f"{self.pos} -> {self.time} -> {self.goals.get(self.time)}"

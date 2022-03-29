@@ -80,7 +80,7 @@ class Parabola(coi.OptEnv):
             self.observation_space.low,
             self.observation_space.high,
         )
-        reward = -sum(self.pos ** 2)
+        reward = -sum(self.pos**2)
         success = reward > self.objective
         done = success or next_pos not in self.observation_space
         info = dict(success=success, objective=self.objective)
@@ -97,7 +97,7 @@ class Parabola(coi.OptEnv):
             self.observation_space.low,
             self.observation_space.high,
         )
-        loss = sum(self.pos ** 2)
+        loss = sum(self.pos**2)
         return loss
 
     def render(self, mode: str = "human") -> t.Any:

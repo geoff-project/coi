@@ -26,4 +26,4 @@ def test_step() -> None:
     assert reward == env.compute_reward.return_value
     env.compute_done.assert_called_once_with(obs, reward, info)
     assert done == env.compute_done.return_value
-    assert info == {}
+    assert info == {}  # pylint: disable=use-implicit-booleaness-not-comparison

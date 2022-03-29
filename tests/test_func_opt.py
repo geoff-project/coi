@@ -23,5 +23,7 @@ def test_funcopt_defaults() -> None:
             return np.sum(params) + cycle_time
 
     problem = Subclass()
+    # pylint: disable = assignment-from-none
+    # pylint: disable = use-implicit-booleaness-not-comparison
     assert problem.get_objective_function_name() is None
     assert problem.get_param_function_names() == []
