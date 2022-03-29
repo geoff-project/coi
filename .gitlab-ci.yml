@@ -59,3 +59,15 @@ build_docs_on_tag:
   image: ${pyqt_image}
   before_script:
     - yum -y install graphviz
+
+pages:
+  stage: deploy
+  dependencies:
+    - build_docs_on_tag
+  script:
+    - cp -r docs/html public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
