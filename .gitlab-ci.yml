@@ -61,6 +61,7 @@ build_docs_on_tag:
     - yum -y install graphviz
 
 pages:
+  extends: .acc_py_on_tag
   stage: deploy
   dependencies:
     - build_docs_on_tag
@@ -69,5 +70,3 @@ pages:
   artifacts:
     paths:
       - public
-  only:
-    - master
