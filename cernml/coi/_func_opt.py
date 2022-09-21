@@ -129,7 +129,6 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         use this name e.g. to label a graph of the objective function's
         value as it is being optimized.
         """
-        # pylint: disable = no-self-use
         return None
 
     def get_param_function_names(self) -> List[str]:
@@ -144,5 +143,4 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         A host application may use these names to show the functions
         that are being modified to the user.
         """
-        # pylint: disable = no-self-use
         return []

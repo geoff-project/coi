@@ -189,7 +189,7 @@ class Problem(metaclass=ABCMeta):
             recommended to call :func:`super()` in implementations to
             use the functionality of this method.
         """
-        # pylint: disable = no-self-use, unused-argument
+        # pylint: disable = unused-argument
         # Hack: Make PyLint realize that this method is not abstract. We
         # do allow people to not override this method in their subclass.
         # However, PyLint thinks that any method that raises

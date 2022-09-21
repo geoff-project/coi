@@ -304,60 +304,61 @@ class ConfigureDialog(QtWidgets.QDialog):
     def _make_field_widget(self, field: coi.Config.Field) -> QtWidgets.QWidget:
         """Given a field, pick the best widget to configure it."""
         # pylint: disable = too-many-return-statements
-        widget: QtWidgets.QWidget
         if field.choices is not None:
-            widget = QtWidgets.QComboBox()
-            widget.addItems(str(choice) for choice in field.choices)
-            widget.setCurrentText(str(field.value))
-            widget.currentTextChanged.connect(
+            combo_box = QtWidgets.QComboBox()
+            combo_box.addItems(str(choice) for choice in field.choices)
+            combo_box.setCurrentText(str(field.value))
+            combo_box.currentTextChanged.connect(
                 lambda val: self.set_current_value(field.dest, val)
             )
-            return widget
+            return combo_box
         if field.range is not None:
             low, high = field.range
+            spin_box: t.Union[QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox]
             if isinstance(field.value, (int, np.integer)):
-                widget = QtWidgets.QSpinBox()
+                spin_box = QtWidgets.QSpinBox()
+                spin_box.setValue(int(field.value))
             elif isinstance(field.value, (float, np.floating)):
-                widget = QtWidgets.QDoubleSpinBox()
+                spin_box = QtWidgets.QDoubleSpinBox()
+                spin_box.setValue(float(field.value))
             else:
                 raise KeyError(type(field.value))
-            widget.setValue(field.value)
-            widget.setRange(low, high)
-            widget.valueChanged.connect(
+            spin_box.setRange(low, high)
+            spin_box.valueChanged.connect(
                 lambda val: self.set_current_value(field.dest, str(val))
             )
-            return widget
+            return spin_box
         if isinstance(field.value, (bool, np.bool_)):
-            widget = QtWidgets.QCheckBox()
-            widget.setChecked(field.value)
+            check_box = QtWidgets.QCheckBox()
+            check_box.setChecked(bool(field.value))
             # Do not use `str(checked)`! `False` converts to `"False"`,
             # which would convert back to `True` via `bool(string)`.
-            widget.stateChanged.connect(
+            check_box.stateChanged.connect(
                 lambda checked: self.set_current_value(
                     field.dest, "checked" if checked else ""
                 )
             )
-            return widget
+            return check_box
         if isinstance(field.value, (int, np.integer)):
-            widget = QtWidgets.QLineEdit(str(field.value))
-            widget.setValidator(QtGui.QIntValidator())
-            widget.editingFinished.connect(
-                lambda: self.set_current_value(field.dest, widget.text())
+            line_edit = QtWidgets.QLineEdit(str(field.value))
+            line_edit.setValidator(QtGui.QIntValidator())
+            line_edit.editingFinished.connect(
+                lambda: self.set_current_value(field.dest, line_edit.text())
             )
-            return widget
+            return line_edit
         if isinstance(field.value, (float, np.floating)):
-            widget = QtWidgets.QLineEdit(str(field.value))
-            widget.setValidator(QtGui.QDoubleValidator())
-            widget.editingFinished.connect(
-                lambda: self.set_current_value(field.dest, widget.text())
+            line_edit = QtWidgets.QLineEdit(str(field.value))
+            line_edit.setValidator(QtGui.QDoubleValidator())
+            line_edit.editingFinished.connect(
+                lambda: self.set_current_value(field.dest, line_edit.text())
             )
-            return widget
+            return line_edit
         if isinstance(field.value, str):
-            widget = QtWidgets.QLineEdit(str(field.value))
-            widget.editingFinished.connect(
-                lambda: self.set_current_value(field.dest, widget.text())
+            line_edit = QtWidgets.QLineEdit(str(field.value))
+            line_edit.editingFinished.connect(
+                lambda: self.set_current_value(field.dest, line_edit.text())
             )
-            return widget
+            return line_edit
         return QtWidgets.QLabel(str(field.value))
 
     def set_current_value(self, name: str, value: str) -> None:
