@@ -142,14 +142,17 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 Changelog
 ---------
 
-[See here](docs/changelog.md).
+[See here](https://cernml-coi.docs.cern.ch/changelog.html).
 
 Documentation
 -------------
 
-Documentation is provided by the [Acc-Py documentation server][acc-py-docs],
-which is only available inside the CERN network. In addition, the
-[documentation source files](/docs/index.md) are quite readable. Finally, API
+Inside the CERN network, you can read the package documentation on the [Acc-Py
+documentation server][acc-py-docs]. [The same documentation is available
+outside of CERN][pages-docs] via CERN's [Gitlab Pages][pages-howto] service,
+though some cross-links to CERN-internal projects may not work. Finally, API
 documentation is provided through extensive Python docstrings.
 
 [acc-py-docs]: https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi/
+[pages-docs]: https://cernml-coi.docs.cern.ch/
+[pages-howto]: https://how-to.docs.cern.ch/
