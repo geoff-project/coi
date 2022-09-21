@@ -61,7 +61,7 @@ Start a Python project. In your `setup.cfg` or `setup.py`, add dependencies on
 Gym and the COI. Make sure to pick a COI version that is supported by the
 application that will optimize your problem.
 
-```ini
+```conf
 # setup.cfg
 [options]
 install_requires =
