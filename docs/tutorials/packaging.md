@@ -22,7 +22,7 @@ none of the experiments here will impact their other projects.
 Start out by loading Acc-Py. We recommend using the latest Acc-Py Base
 distribution (2020.11 at the time of this writing):
 
-```bash
+```shell-session
 $ source /acc/local/share/python/acc-py/base/pro/setup.sh
 ```
 
@@ -31,7 +31,7 @@ every time you log into your machine. If you don't want this, but you also
 don't want to have to remember this long path, consider putting an alias into
 your `~/.bash_profile` instead:
 
-```bash
+```shell-session
 $ alias setup-acc-py='source /acc/local/share/python/acc-py/base/pro/setup.sh'
 ```
 
@@ -66,7 +66,7 @@ directory, since space in your home directory is limited. Obviously, this does
 not work on [LXPLUS](https://lxplusdoc.web.cern.ch/), where your home directory
 is the only choice.
 
-```bash
+```shell-session
 $ sudo mkdir -p /opt/venvs        # Create a directory for all your venvs.
 $ sudo chown "$USER:" /opt/venvs  # Make it your own (instead of root's).
 $ acc-py venv /opt/venvs/coi-example
@@ -81,7 +81,7 @@ environment. Without it, you would have to install common dependencies such as
 
 Once the virtual environment is created, you can activate it like this:
 
-```bash
+```shell-session
 $ source /opt/venvs/coi-example/bin/activate
 $ which python  # Where does our Python interpreter come from?
 /opt/venvs/coi-example/bin/python
@@ -92,7 +92,7 @@ After activating the environment, you can give it a test run by upgrading the
 Pip package manager. This should be visible only within your virtual
 environment:
 
-```bash
+```shell-session
 $ pip install --upgrade pip
 ```
 
@@ -107,7 +107,7 @@ Further reading:
 Time to get started! Go into your projects folder and initialize a project
 using Acc-Py:
 
-```bash
+```shell-session
 $ cd ~/Projects
 $ acc-py init coi-example
 $ cd ./coi-example
@@ -122,7 +122,7 @@ The `acc-py init` command creates a basic project structure for you. You can
 inspect the results via the [`tree`](http://mama.indstate.edu/users/ice/tree/)
 command:
 
-```bash
+```shell-session
 $ tree
 .
 ├── coi_example
@@ -343,7 +343,7 @@ Further reading:
 With this minimum in place, your package already can be installed via Pip! Give
 it a try:
 
-```bash
+```shell-session
 $ pip install .  # "." means "the current directory".
 ```
 
@@ -361,7 +361,7 @@ coi-example 0.0.1.dev0 (/opt/venvs/coi-example/lib/python3.7/site-packages)
 
 Of course, you can always remove your package again:
 
-```bash
+```shell-session
 $ pip uninstall coi-example
 ```
 
@@ -374,7 +374,7 @@ this case, all changes to the source code become visible immediately. This is
 bad for a production release, but extremely useful during development. This
 feature is called an *editable install*:
 
-```bash
+```shell-session
 $ pip install --editable .
 ```
 
@@ -590,7 +590,7 @@ following the next steps.
 If your project is not in a Git repository yet, this is the time to check it
 in:
 
-```bash
+```shell-session
 $ git init
 $ git add --all
 $ git commit --message="Initial commit."
@@ -601,7 +601,7 @@ $ git push --set-upstream origin master
 Then, all that is necessary to publish the next (or first) version of your
 package is to create a Git tag and upload it to Gitlab.
 
-```bash
+```shell-session
 $ # The tag name doesn't actually matter, but let's stay consistent.
 $ git tag v0.0.1.dev0
 $ git push --tags
@@ -613,7 +613,7 @@ your code. Once this pipeline has finished successfully (which includes running
 your tests), your package is published and immediately available anywhere
 inside CERN:
 
-```bash
+```shell-session
 $ cd ~
 $ pip install coi-example
 ```

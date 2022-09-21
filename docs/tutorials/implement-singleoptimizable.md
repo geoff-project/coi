@@ -336,7 +336,7 @@ and everything runs on its own:
 We can also pass our environment into the [Generic Optimization Frontend and
 Framework][GeOFF] and run it in there:
 
-```bash
+```shell-session
 $ acc-py app run acc-app-optimisation ./coi_example/
 ```
 
