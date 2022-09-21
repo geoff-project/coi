@@ -36,13 +36,16 @@ test_lint:
 
 test_dev:
   extends: .acc_py_dev_test
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   # Override `script` to change the precise pytest-cov arguments.
   script:
     - cd ${project_root}
     - python -m pytest
       --cov=${project_dir}
-      --cov-report html:coverage-html
-      --cov-report xml:coverage-report.xml
+      --cov-branch
+      --cov-report=term
+      --cov-report=html:coverage-html
+      --cov-report=xml:coverage-report.xml
       --junitxml=junit-report.xml
 
 test_examples:
