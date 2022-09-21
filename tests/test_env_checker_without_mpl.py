@@ -59,9 +59,7 @@ def test_sep_env(no_matplotlib: None) -> None:
             self.goal = self.action_space.sample()
             return self.pos - self.goal
 
-        def compute_observation(
-            self, action: np.ndarray, info: t.Dict
-        ) -> t.Dict[str, np.ndarray]:
+        def compute_observation(self, action: np.ndarray, info: t.Dict) -> np.ndarray:
             self.pos += action
             return np.clip(
                 self.pos - self.goal,
@@ -75,10 +73,7 @@ def test_sep_env(no_matplotlib: None) -> None:
             return max(-np.linalg.norm(obs), self.reward_range[0])
 
         def compute_done(
-            self,
-            obs: t.Dict[str, np.ndarray],
-            reward: float,
-            info: t.Dict[str, t.Any],
+            self, obs: np.ndarray, reward: float, info: t.Dict[str, t.Any]
         ) -> bool:
             success = self.distance < 0.05
             return success or obs not in self.observation_space

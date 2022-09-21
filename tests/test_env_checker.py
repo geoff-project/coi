@@ -43,7 +43,7 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
     def distance(self) -> float:
         return np.linalg.norm(self.pos - self.goal)
 
-    def reset(self) -> np.ndarray:
+    def reset(self) -> t.Dict[str, np.ndarray]:
         self.pos = self.action_space.sample()
         self.goal = self.action_space.sample()
         return dict(
@@ -76,7 +76,7 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
         reward: float,
         info: t.Dict[str, t.Any],
     ) -> bool:
-        success = obs["observation"] < 0.05
+        success = all(obs["observation"] < 0.05)
         done = success or obs not in self.observation_space
         if done:
             info["success"] = success
@@ -136,7 +136,7 @@ class FunctionParabola(coi.FunctionOptimizable):
     def distance(self) -> float:
         return np.linalg.norm(self.pos - self.goals[self.time])
 
-    def get_optimization_space(self, cycle_time: float) -> np.ndarray:
+    def get_optimization_space(self, cycle_time: float) -> gym.Space:
         return gym.spaces.Box(-2, 2, (2,))
 
     def get_initial_params(self, cycle_time: float) -> np.ndarray:
