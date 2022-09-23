@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""An example implementation of the `OptEnv` interface."""
+"""An example of how to use the `Configurable` interface."""
 
 import sys
 import typing as t
