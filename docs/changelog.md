@@ -10,6 +10,14 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 No changes yet!
 
+## v0.8.4
+
+- FIX: Change syntax highlighter for shell sessions in docs from `bash` to
+  `shell-session`.
+- OTHER: Upgrade CI templates to v2.
+- OTHER: Use Gitlab Releases and Gitlab badges.
+- OTHER: Add key `project_urls` to setup.cfg.
+
 ## v0.8.3
 
 - ADD: Add install extra `doc_only` to build docs in a non-CERN environment. (This skips the PyJapc dependency.)
