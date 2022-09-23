@@ -8,6 +8,14 @@ variables:
   project_dir: cernml
   project_name: cernml.coi
 
+stages:
+  - .pre
+  - build
+  - test
+  - deploy
+  - release
+  - .post
+
 .coi_use_pyqt_image:
   variables:
     ACC_PY_BASE_IMAGE_NAME: 'acc-py_cc7_openjdk11_gui_ci'
@@ -26,6 +34,7 @@ test_lint:
   extends:
     - .acc_py_run_on_manylinux_py_version
     - .coi_use_pyqt_image
+  stage: test
   before_script:
     - !reference [.acc_py_run_on_manylinux_py_version, before_script]
     - python -m pip install
@@ -64,7 +73,7 @@ test_examples:
 
 test_wheel:
   extends: .acc_py_wheel_test
-  # Override `script` to change the precise pytest-cov arguments.
+  # Override `script` to adjust the pytest arguments.
   script:
     - mkdir -p ~/not-the-source-dir && cd ~/not-the-source-dir
     - python -m pytest --pyargs ${project_name} --doctest-modules
@@ -75,7 +84,7 @@ build_docs:
     - .coi_use_pyqt_image
   before_script:
     - yum -y install graphviz
-    - pip install anybadge
+    - python -m pip install anybadge
     - !reference [.acc_py_build_docs, before_script]
   script:
     - !reference [.acc_py_build_docs, script]
@@ -92,8 +101,12 @@ build_docs:
       - docs/html
       - badges
 
+# Deploy: Publish the wheel on acc-py-repo.cern.ch.
+
+publish:
+  extends: .acc_py_publish
+
 build_docs_on_tag:
-  stage: test
   extends:
     - .acc_py_build_docs_on_tag
     - .coi_use_pyqt_image
@@ -101,25 +114,20 @@ build_docs_on_tag:
     - yum -y install graphviz
     - !reference [.acc_py_build_docs_on_tag, before_script]
 
-# Deploy: Publish the wheel on acc-py-repo.cern.ch.
-
-publish:
-  extends: .acc_py_publish
+# Release: Show the code to the world.
 
 pages:
   extends: .acc_py_on_tag
-  stage: deploy
-  dependencies:
-    - build_docs_on_tag
+  stage: release
   script:
     - cp -r docs/html public/
   artifacts:
-    expire_in: never
+    expire_in: 3 weeks
     paths:
       - public
 
 gitlab_release:
-  stage: deploy
+  stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   rules:
     - if: $CI_COMMIT_TAG
