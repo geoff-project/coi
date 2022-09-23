@@ -75,7 +75,22 @@ build_docs:
     - .coi_use_pyqt_image
   before_script:
     - yum -y install graphviz
+    - pip install anybadge
     - !reference [.acc_py_build_docs, before_script]
+  script:
+    - !reference [.acc_py_build_docs, script]
+    - sphinx_version="$(pip list | grep '^Sphinx\b' | awk '{print $2}')"
+    - mkdir -p badges
+    - anybadge
+      --overwrite
+      --label Documentation
+      --value "Sphinx ${sphinx_version}"
+      --color teal
+      --file badges/docs.svg
+  artifacts:
+    paths:
+      - docs/html
+      - badges
 
 # Deploy: Publish the wheel on acc-py-repo.cern.ch.
 
