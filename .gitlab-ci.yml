@@ -92,18 +92,19 @@ build_docs:
       - docs/html
       - badges
 
-# Deploy: Publish the wheel on acc-py-repo.cern.ch.
-
-publish:
-  extends: .acc_py_publish
-
 build_docs_on_tag:
+  stage: test
   extends:
     - .acc_py_build_docs_on_tag
     - .coi_use_pyqt_image
   before_script:
     - yum -y install graphviz
     - !reference [.acc_py_build_docs_on_tag, before_script]
+
+# Deploy: Publish the wheel on acc-py-repo.cern.ch.
+
+publish:
+  extends: .acc_py_publish
 
 pages:
   extends: .acc_py_on_tag
