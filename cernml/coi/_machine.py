@@ -60,3 +60,5 @@ class Machine(Enum):
     AWAKE = "AWAKE"
     LHC = "LHC"
     ISOLDE = "ISOLDE"
+    AD = "AD"  # pylint: disable=invalid-name
+    ELENA = "ELENA"
