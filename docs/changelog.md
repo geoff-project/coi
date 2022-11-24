@@ -8,6 +8,10 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
+No changes yet!
+
+## v0.8.5
+
 - ADD: Variants `AD` and `ELENA` to enum {class}`~cernml.coi.Machine`.
 
 ## v0.8.4
