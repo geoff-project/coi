@@ -15,6 +15,7 @@
     .. automethod:: validate
     .. automethod:: validate_all
     .. automethod:: fields
+    .. automethod:: get_field_values
     .. autoclass:: cernml.coi.Config.Field
         :members:
         :show-inheritance:
