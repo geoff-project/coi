@@ -9,6 +9,8 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 ## Unreleased
 
 - FIX: Do not require Matplotlib/PyJapc to build documentation
+- FIX: Drop the install extra "pyjapc".
+- OTHER: Bump build dependencies.
 
 ## v0.8.6
 
