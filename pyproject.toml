@@ -43,6 +43,7 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3 :: Only',
 ]
 
@@ -89,8 +90,7 @@ package-data = {'*' = ['py.typed']}
 [tool.setuptools_scm]
 
 [tool.black]
-target-version = ['py37', 'py38']
-include = '\.pyi?$'
+target-version = ['py37', 'py38', 'py39']
 
 [tool.isort]
 profile = 'black'

@@ -8,6 +8,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
+- ADD: Support for Python 3.9 has been added.
 - FIX: Do not require Matplotlib/PyJapc to build documentation
 - FIX: Drop the install extra "pyjapc".
 - OTHER: Bump build dependencies.
