@@ -73,7 +73,7 @@ doc = [
 examples = [
     'cernml-coi[all]',
     'PyQt5 ~= 5.0',
-    'stable_baselines3 >= 0.8.0',
+    'stable_baselines3 >= 1.0',
 ]
 test = [
     'cernml-coi[all]',
