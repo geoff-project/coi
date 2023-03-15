@@ -79,11 +79,6 @@ lint = ["cernml-coi[dev,examples,test]"]
 zip-safe = true
 package-data = {"*" = ["py.typed"]}
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["cernml"]
-namespaces = true
-
 [tool.setuptools_scm]
 
 [tool.black]
@@ -95,7 +90,7 @@ profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "--doctest-modules"
-testpaths = ["tests", "cernml"]
+testpaths = ["src", "tests"]
 
 [tool.pylint.MASTER]
 extension-pkg-whitelist = "PyQt5"
