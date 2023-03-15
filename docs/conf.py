@@ -15,7 +15,11 @@ import datetime
 import pathlib
 import types
 
-import importlib_metadata
+try:
+    import importlib_metadata
+except ImportError:
+    # Starting with Python 3.10 (see pyproject.toml).
+    import importlib.metadata as importlib_metadata  # type: ignore
 
 ROOTDIR = pathlib.Path(__file__).absolute().parent.parent
 

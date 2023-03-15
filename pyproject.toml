@@ -1,83 +1,90 @@
 [build-system]
 requires = [
-    "pip >= 22",
-    "setuptools >= 45",
-    "setuptools-scm[toml] ~= 7.0",
-    "wheel",
+    'pip >= 22',
+    'setuptools >= 45',
+    'setuptools-scm[toml] ~= 7.0',
+    'wheel',
 ]
-build-backend = "setuptools.build_meta"
+build-backend = 'setuptools.build_meta'
 
 [project]
-dynamic = ["version"]
-name = "cernml-coi"
+dynamic = ['version']
+name = 'cernml-coi'
 authors = [
-    {name = "Nico Madysa", email = "nico.madysa@cern.ch"},
+    {name = 'Nico Madysa', email = 'nico.madysa@cern.ch'},
 ]
-description = "Common optimization interfaces for RL/num. optimization"
-readme = "README.md"
-license = {text="Other/Proprietary License"}
-requires-python = ">=3.7"
+description = 'Common optimization interfaces for RL/num. optimization'
+readme = 'README.md'
+license = {text='Other/Proprietary License'}
+requires-python = '>=3.7'
 dependencies = [
     # Temporary hack: Gym 0.22 removes GoalEnv and puts it into a new
     # gym-robotics package. We'll have to address that.
-    "gym >= 0.11, <0.22",
-    "importlib-metadata >=3.6, <5",
-    "numpy ~= 1.10",
-    "scipy ~= 1.1",
+    'gym >= 0.11, <0.22',
+    # Note: on Python 3.9, we still can't use `importlib.metadata`
+    # from the stdlib because we use the SelectableEntryPoints API,
+    # which was only added in importlib_metadata 3.6/Python 3.10.
+    # Note further that we are stuck on importlib_metadata<5 until
+    # we no longer need Gym 0.21. This depends on Stable Baselines 3
+    # adding support for Gym 0.22+. This will most likely materialize
+    # as support for Gymnasium 0.26+.
+    'importlib-metadata >=3.6, <5; python_version<"3.10"',
+    'numpy ~= 1.10',
+    'scipy ~= 1.1',
 ]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Environment :: Console",
-    "Intended Audience :: Science/Research",
-    "License :: Other/Proprietary License",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Physics",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3 :: Only",
+    'Development Status :: 3 - Alpha',
+    'Environment :: Console',
+    'Intended Audience :: Science/Research',
+    'License :: Other/Proprietary License',
+    'Topic :: Scientific/Engineering :: Artificial Intelligence',
+    'Topic :: Scientific/Engineering :: Physics',
+    'Natural Language :: English',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3 :: Only',
 ]
 
 [project.urls]
-gitlab = "https://github.com/cern-desy-acc-opt/shared-interfaces"
-"acc-py docs" = "https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi/"
-"public docs" = "https://cernml-coi.docs.cern.ch/"
-wiki = "https://wikis.cern.ch/pages/viewpage.action?pageId=194741479"
+gitlab = 'https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi/'
+'acc-py docs' = 'https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi/'
+'public docs' = 'https://cernml-coi.docs.cern.ch/'
+wiki = 'https://wikis.cern.ch/pages/viewpage.action?pageId=194741479'
 
 [project.optional-dependencies]
 matplotlib = [
-    "matplotlib ~= 3.0",
+    'matplotlib ~= 3.0',
 ]
 all = [
-    "cernml-coi[matplotlib]",
+    'cernml-coi[matplotlib]',
 ]
 dev = [
-    "black == 22.3.0",
-    "mypy == 0.931",
-    "pycodestyle == 2.8.0",
-    "pylint == 2.14.5",
-    "PyQt5-stubs ~= 5.0",
+    'black ~= 23.1.0',
+    'mypy ~= 1.0',
+    'pycodestyle ~= 2.10.0',
+    'pylint ~= 2.17.0',
+    'PyQt5-stubs ~= 5.0',
 ]
 doc = [
-    "sphinx",
-    "myst-parser",
+    'sphinx',
+    'myst-parser',
 ]
 examples = [
-    "cernml-coi[all]",
-    "PyQt5 ~= 5.0",
-    "stable_baselines3 >= 0.8.0",
+    'cernml-coi[all]',
+    'PyQt5 ~= 5.0',
+    'stable_baselines3 >= 0.8.0',
 ]
 test = [
-    "cernml-coi[all]",
-    "pytest",
-    "pytest-cov",
+    'cernml-coi[all]',
+    'pytest',
+    'pytest-cov',
 ]
-lint = ["cernml-coi[dev,examples,test]"]
+lint = ['cernml-coi[dev,examples,test]']
 
 [tool.setuptools]
 zip-safe = true
-package-data = {"*" = ["py.typed"]}
+package-data = {'*' = ['py.typed']}
 
 [tool.setuptools_scm]
 
@@ -86,14 +93,14 @@ target-version = ['py37', 'py38']
 include = '\.pyi?$'
 
 [tool.isort]
-profile = "black"
+profile = 'black'
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules"
-testpaths = ["src", "tests"]
+addopts = '--doctest-modules'
+testpaths = ['src', 'tests']
 
 [tool.pylint.MASTER]
-extension-pkg-whitelist = "PyQt5"
+extension-pkg-whitelist = 'PyQt5'
 
 [tool.pylint.FORMAT]
 ignore-long-lines = '<?https?://\S+>?$'
@@ -102,8 +109,12 @@ ignore-long-lines = '<?https?://\S+>?$'
 reports = false
 score = false
 
-[tool.pylint."MESSAGES CONTROL"]
-disable = ["similarities", "fixme"]
+[tool.pylint.'MESSAGES CONTROL']
+disable = [
+    'fixme',
+    'similarities',
+    'unpacking-non-sequence',
+]
 
 [tool.mypy]
 disallow_untyped_defs = true
@@ -111,14 +122,14 @@ namespace_packages = true
 
 [[tool.mypy.overrides]]
 module = [
-    "numpy.*",
-    "scipy.*",
-    "gym.*",
-    "matplotlib.*",
-    "setuptools.*",
-    "setuptools_scm.*",
-    "pyjapc.*",
-    "PyQt5.*",
-    "recommonmark.*",
+    'numpy.*',
+    'scipy.*',
+    'gym.*',
+    'matplotlib.*',
+    'setuptools.*',
+    'setuptools_scm.*',
+    'pyjapc.*',
+    'PyQt5.*',
+    'recommonmark.*',
 ]
 ignore_missing_imports = true

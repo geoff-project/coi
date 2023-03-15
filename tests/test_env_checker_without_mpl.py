@@ -52,7 +52,7 @@ def test_sep_env(no_matplotlib: None) -> None:
 
         @property
         def distance(self) -> float:
-            return np.linalg.norm(self.pos - self.goal)
+            return float(np.linalg.norm(self.pos - self.goal))
 
         def reset(self) -> np.ndarray:
             self.pos = self.action_space.sample()

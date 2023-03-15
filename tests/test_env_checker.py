@@ -15,16 +15,15 @@ from cernml import coi
 
 
 class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
-
     # pylint: disable = too-many-ancestors
 
-    action_space = gym.spaces.Box(-1, 1, (2,))
+    action_space = gym.spaces.Box(-1, 1, (2,), dtype=float)
     observation_space = gym.spaces.Dict(
-        observation=gym.spaces.Box(0.0, np.sqrt(8.0), (1,)),
-        achieved_goal=gym.spaces.Box(-2, 2, (2,)),
-        desired_goal=gym.spaces.Box(-2, 2, (2,)),
+        observation=gym.spaces.Box(0.0, np.sqrt(8.0), (1,), dtype=float),
+        achieved_goal=gym.spaces.Box(-2, 2, (2,), dtype=float),
+        desired_goal=gym.spaces.Box(-2, 2, (2,), dtype=float),
     )
-    optimization_space = gym.spaces.Box(-2, 2, (2,))
+    optimization_space = gym.spaces.Box(-2, 2, (2,), dtype=float)
     reward_range = (-np.sqrt(16.0), 0.0)
     objective_range = (0.0, np.sqrt(18.0))
     metadata = {
@@ -41,26 +40,26 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
 
     @property
     def distance(self) -> float:
-        return np.linalg.norm(self.pos - self.goal)
+        return float(np.linalg.norm(self.pos - self.goal))
 
     def reset(self) -> t.Dict[str, np.ndarray]:
         self.pos = self.action_space.sample()
         self.goal = self.action_space.sample()
-        return dict(
-            observation=np.array([self.distance]),
-            achieved_goal=self.pos.copy(),
-            desired_goal=self.goal.copy(),
-        )
+        return {
+            "observation": np.array([self.distance]),
+            "achieved_goal": self.pos.copy(),
+            "desired_goal": self.goal.copy(),
+        }
 
     def compute_observation(
         self, action: np.ndarray, info: t.Dict
     ) -> t.Dict[str, np.ndarray]:
         self.pos += action
-        return dict(
-            observation=np.array([self.distance]),
-            achieved_goal=self.pos.copy(),
-            desired_goal=self.goal.copy(),
-        )
+        return {
+            "observation": np.array([self.distance]),
+            "achieved_goal": self.pos.copy(),
+            "desired_goal": self.goal.copy(),
+        }
 
     def compute_reward(
         self,
@@ -134,7 +133,7 @@ class FunctionParabola(coi.FunctionOptimizable):
 
     @property
     def distance(self) -> float:
-        return np.linalg.norm(self.pos - self.goals[self.time])
+        return float(np.linalg.norm(self.pos - self.goals[self.time]))
 
     def get_optimization_space(self, cycle_time: float) -> gym.Space:
         return gym.spaces.Box(-2, 2, (2,))

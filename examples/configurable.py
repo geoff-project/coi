@@ -63,7 +63,9 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.observation_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.optimization_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.pos = np.zeros((dim,))
-        max_distance = np.linalg.norm(self.optimization_space.high, ord=self.norm)
+        max_distance = float(
+            np.linalg.norm(self.optimization_space.high, ord=self.norm)
+        )
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
         self.figure: t.Optional[Figure] = None
@@ -89,7 +91,9 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(dim,))
         self.optimization_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.pos = np.zeros((dim,))
-        max_distance = np.linalg.norm(self.optimization_space.high, ord=self.norm)
+        max_distance = float(
+            np.linalg.norm(self.optimization_space.high, ord=self.norm)
+        )
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
 
@@ -198,7 +202,9 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         with handle:
             if handle.wait_for(lambda: self.token.cancellation_requested, timeout=0.3):
                 raise cancellation.CancelledError()
-        return np.linalg.norm(pos if pos is not None else self.pos, ord=self.norm)
+        return float(
+            np.linalg.norm(pos if pos is not None else self.pos, ord=self.norm)
+        )
 
 
 coi.register("ConfParabola-v0", entry_point=ConfParabola, max_episode_steps=10)
@@ -223,7 +229,7 @@ class OptimizerThread(QtCore.QThread):
         def constraint(params: np.ndarray) -> float:
             space = self.env.optimization_space
             width = space.high - space.low
-            return np.linalg.norm(2 * params / width, ord=np.inf)
+            return float(np.linalg.norm(2 * params / width, ord=np.inf))
 
         def func(params: np.ndarray) -> float:
             loss = self.env.compute_single_objective(params)
@@ -362,6 +368,10 @@ class ConfigureDialog(QtWidgets.QDialog):
         return QtWidgets.QLabel(str(field.value))
 
     def set_current_value(self, name: str, value: str) -> None:
+        """Update the saved values.
+
+        This is called by each config widget when it changes its value.
+        """
         self.current_values[name] = value
 
 

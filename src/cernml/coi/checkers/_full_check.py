@@ -4,7 +4,12 @@ import logging
 import typing as t
 
 import gym
-import importlib_metadata
+
+try:
+    import importlib_metadata
+except ImportError:  # pragma: no cover
+    # Starting with Python 3.10 (see pyproject.toml).
+    import importlib.metadata as importlib_metadata  # type: ignore
 
 from ._configurable import Configurable, check_configurable
 from ._env import check_env
