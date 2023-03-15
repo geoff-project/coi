@@ -186,16 +186,16 @@ class Config:
         Passing this dict to :meth:`validate_all()` accidentally works
         even though the type signature doesn't match:
 
-            >>> config.validate_all(config.get_field_values())
-            namespace(count=10, flag=False)
+            >>> vars(config.validate_all(config.get_field_values()))
+            {'flag': False, 'count': 10}
 
         Note that bool values don't allow you to convert everything to
         strings blindly to make the types match:
 
-            >>> config.validate_all(
+            >>> vars(config.validate_all(
             ...     {k: str(v) for k, v in values.items()}
-            ... )
-            namespace(count=10, flag=True)
+            ... ))
+            {'flag': True, 'count': 10}
         """
         return {dest: field.value for dest, field in self._fields.items()}
 
