@@ -1,10 +1,88 @@
 [build-system]
 requires = [
+    "pip >= 22",
     "setuptools >= 45",
     "setuptools-scm[toml] ~= 7.0",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = ["version"]
+name = "cernml-coi"
+authors = [
+    {name = "Nico Madysa", email = "nico.madysa@cern.ch"},
+]
+description = "Common optimization interfaces for RL/num. optimization"
+readme = "README.md"
+license = {text="Other/Proprietary License"}
+requires-python = ">=3.7"
+dependencies = [
+    # Temporary hack: Gym 0.22 removes GoalEnv and puts it into a new
+    # gym-robotics package. We'll have to address that.
+    "gym >= 0.11, <0.22",
+    "importlib-metadata >=3.6, <5",
+    "numpy ~= 1.10",
+    "scipy ~= 1.1",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: Other/Proprietary License",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.urls]
+gitlab = "https://github.com/cern-desy-acc-opt/shared-interfaces"
+"acc-py docs" = "https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi/"
+"public docs" = "https://cernml-coi.docs.cern.ch/"
+wiki = "https://wikis.cern.ch/pages/viewpage.action?pageId=194741479"
+
+[project.optional-dependencies]
+matplotlib = [
+    "matplotlib ~= 3.0",
+]
+all = [
+    "cernml-coi[matplotlib]",
+]
+dev = [
+    "black == 22.3.0",
+    "mypy == 0.931",
+    "pycodestyle == 2.8.0",
+    "pylint == 2.14.5",
+    "PyQt5-stubs ~= 5.0",
+]
+doc = [
+    "sphinx",
+    "myst-parser",
+]
+examples = [
+    "cernml-coi[all]",
+    "PyQt5 ~= 5.0",
+    "stable_baselines3 >= 0.8.0",
+]
+test = [
+    "cernml-coi[all]",
+    "pytest",
+    "pytest-cov",
+]
+lint = ["cernml-coi[dev,examples,test]"]
+
+[tool.setuptools]
+zip-safe = true
+package-data = {"*" = ["py.typed"]}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cernml"]
+namespaces = true
 
 [tool.setuptools_scm]
 
@@ -31,3 +109,21 @@ score = false
 
 [tool.pylint."MESSAGES CONTROL"]
 disable = ["similarities", "fixme"]
+
+[tool.mypy]
+disallow_untyped_defs = true
+namespace_packages = true
+
+[[tool.mypy.overrides]]
+module = [
+    "numpy.*",
+    "scipy.*",
+    "gym.*",
+    "matplotlib.*",
+    "setuptools.*",
+    "setuptools_scm.*",
+    "pyjapc.*",
+    "PyQt5.*",
+    "recommonmark.*",
+]
+ignore_missing_imports = true

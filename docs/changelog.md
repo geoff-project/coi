@@ -11,6 +11,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 - FIX: Do not require Matplotlib/PyJapc to build documentation
 - FIX: Drop the install extra "pyjapc".
 - OTHER: Bump build dependencies.
+- OTHER: Switch project layout to src-based and migrate almost all configs to pyproject.toml.
 
 ## v0.8.6
 
