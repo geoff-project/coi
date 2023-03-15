@@ -105,9 +105,11 @@ def assert_handles_values(
     values = make_mock_values(config)
     problem.apply_config(values)
     if warn:
-        submock_class = values.__class__
+        # Dict access to get the underlying properties. Note that
+        # because this is a mock, type(values) != values.__class__.
+        property_mocks = vars(values.__class__)
         for field in config.fields():
-            prop: PropertyMock = vars(submock_class)[field.dest]
+            prop: PropertyMock = property_mocks[field.dest]
             if not prop.call_count:
                 warnings.warn(
                     f"configured value for field {field.dest!r} has "
@@ -118,25 +120,39 @@ def assert_handles_values(
 def make_mock_values(config: Config) -> Mock:
     """Create a mock of the validated config values.
 
-    >>> config = Config().add("foo", 0).add("bar", False)
-    >>> values = make_mock_values(config)
-    >>> values.foo
-    0
-    >>> vars(values.__class__)['foo'].call_args_list
-    [call()]
-    >>> values.bar
-    False
-    >>> values.bar = True
-    >>> vars(values.__class__)['bar'].call_args_list
-    [call(), call(True)]
-    >>> values.baz
-    Traceback (most recent call last):
-    ...
-    AttributeError: Mock object has no attribute 'baz'
-    >>> values.baz = 3
-    Traceback (most recent call last):
-    ...
-    AttributeError: Mock object has no attribute 'baz'
+    Example:
+
+        >>> config = Config().add("foo", "left").add("bar", "right")
+        >>> values = make_mock_values(config)
+
+
+    Getting an attribute is logged:
+
+        >>> vars(values.__class__)['foo'].call_args_list
+        []
+        >>> values.foo
+        'left'
+        >>> vars(values.__class__)['foo'].call_args_list
+        [call()]
+
+    Setting an attribute is logged as well:
+
+        >>> values.bar
+        'right'
+        >>> values.bar = 'RIGHT'
+        >>> vars(values.__class__)['bar'].call_args_list
+        [call(), call('RIGHT')]
+
+    Unconfigured attributes cannot be accessed:
+
+        >>> values.baz
+        Traceback (most recent call last):
+        ...
+        AttributeError: Mock object has no attribute 'baz'
+        >>> values.baz = 3
+        Traceback (most recent call last):
+        ...
+        AttributeError: Mock object has no attribute 'baz'
     """
     strings = {f.dest: get_round_tripping_string_repr(f.value) for f in config.fields()}
     values = config.validate_all(strings)
@@ -147,7 +163,13 @@ def make_mock_values(config: Config) -> Mock:
     for dest, value in vars(values).items():
         prop = PropertyMock(return_value=value)
         setattr(SubMock, dest, prop)
-    return SubMock(spec_set=SubMock)
+    result = SubMock(spec_set=SubMock)
+    # The mere use of `spec_set` already accesses our properties, so we
+    # must reset them manually.
+    for dest in vars(values):
+        # Dict access to get the underlying properties.
+        vars(SubMock)[dest].reset_mock()
+    return result
 
 
 def get_round_tripping_string_repr(value: t.Any) -> str:
