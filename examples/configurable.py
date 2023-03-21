@@ -124,7 +124,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
             raise
         success = reward > self.objective
         done = success or next_pos not in self.observation_space
-        info = dict(success=success, objective=self.objective)
+        info = {"success": success, "objective": self.objective}
         if self.dangling and success and self.objective < self.max_objective:
             self.objective *= 0.95
         return self.pos.copy(), reward, done, info

@@ -32,5 +32,6 @@ mypy examples/ tests/ || exit_code=$((exit_code | $?))
 
 pylint --reports=no --score=no src/ || exit_code=$((exit_code | $?))
 pylint --reports=no --score=no tests/*.py || exit_code=$((exit_code | $?))
+pylint --reports=no --score=no examples/*.py || exit_code=$((exit_code | $?))
 
 exit $exit_code

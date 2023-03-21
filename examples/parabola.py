@@ -83,7 +83,7 @@ class Parabola(coi.OptEnv):
         reward = -sum(self.pos**2)
         success = reward > self.objective
         done = success or next_pos not in self.observation_space
-        info = dict(success=success, objective=self.objective)
+        info = {"success": success, "objective": self.objective}
         if self._train and success and self.objective < self.max_objective:
             self.objective *= 0.95
         return self.pos.copy(), reward, done, info
@@ -183,7 +183,7 @@ def main(argv: t.List[str]) -> None:
     args = get_parser().parse_args(argv)
     env = coi.make("Parabola-v0")
     coi.check(env)
-    successes = dict(rl=main_rl, opt=main_opt)[args.mode](env, 100)
+    successes = {"rl": main_rl, "opt": main_opt}[args.mode](env, 100)
     print(f"Success rate: {np.mean(successes):.1%}")
 
 
