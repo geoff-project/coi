@@ -99,22 +99,10 @@ profile = 'black'
 addopts = '--doctest-modules'
 testpaths = ['src', 'tests']
 
-[tool.pylint.MASTER]
-extension-pkg-whitelist = 'PyQt5'
-
-[tool.pylint.FORMAT]
-ignore-long-lines = '<?https?://\S+>?$'
-
-[tool.pylint.REPORTS]
-reports = false
-score = false
-
-[tool.pylint.'MESSAGES CONTROL']
-disable = [
-    'fixme',
-    'similarities',
-    'unpacking-non-sequence',
-]
+[tool.pylint]
+master = {extension-pkg-whitelist = 'PyQt5'}
+format = {ignore-long-lines = '<?https?://\S+>?$'}
+'messages control' = {disable = ['fixme', 'similarities', 'unpacking-non-sequence']}
 
 [tool.mypy]
 disallow_untyped_defs = true
