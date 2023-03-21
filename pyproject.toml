@@ -106,18 +106,7 @@ format = {ignore-long-lines = '<?https?://\S+>?$'}
 
 [tool.mypy]
 disallow_untyped_defs = true
-namespace_packages = true
 
 [[tool.mypy.overrides]]
-module = [
-    'numpy.*',
-    'scipy.*',
-    'gym.*',
-    'matplotlib.*',
-    'setuptools.*',
-    'setuptools_scm.*',
-    'pyjapc.*',
-    'PyQt5.*',
-    'recommonmark.*',
-]
+module = ['scipy.*', 'gym.*', 'matplotlib.*']
 ignore_missing_imports = true
