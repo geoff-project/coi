@@ -78,7 +78,7 @@ examples = [
 ]
 test = [
     'cernml-coi[all]',
-    'pytest',
+    'pytest >= 6.0',
     'pytest-cov',
 ]
 lint = ['cernml-coi[dev,examples,test]']
