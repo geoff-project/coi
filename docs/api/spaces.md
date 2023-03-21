@@ -42,8 +42,7 @@
 
         Convert a batch of samples from this space to a JSONable data type.
 
-    .. method:: np_random
-        :property:
+    .. property:: np_random
 
         Lazily seed the rng since this is expensive and only needed if sampling
         from this space.

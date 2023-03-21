@@ -68,7 +68,7 @@ dev = [
     'PyQt5-stubs ~= 5.0',
 ]
 doc = [
-    'sphinx',
+    'sphinx >= 4.0',
     'myst-parser',
 ]
 examples = [
