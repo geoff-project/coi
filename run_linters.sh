@@ -20,13 +20,18 @@ fi
 exit_code=0
 
 black --check . || exit_code=$((exit_code + $?))
+
 isort --check . || exit_code=$((exit_code + $?))
+
 pycodestyle src/ examples/ tests/ || exit_code=$((exit_code + $?))
-mypy examples/ tests/ || exit_code=$((exit_code + $?))
+
 # Split out src/ checking to prevent error "Source file found twice under
 # different module names" when using editable installs.
 mypy src/ || exit_code=$((exit_code + $?))
+mypy examples/ tests/ || exit_code=$((exit_code + $?))
+
 pylint src/ || exit_code=$((exit_code + $?))
 pylint tests/*.py || exit_code=$((exit_code + $?))
+pylint examples/*.py || exit_code=$((exit_code + $?))
 
 exit $exit_code
