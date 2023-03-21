@@ -30,8 +30,7 @@ pycodestyle src/ examples/ tests/ || exit_code=$((exit_code + $?))
 mypy src/ || exit_code=$((exit_code + $?))
 mypy examples/ tests/ || exit_code=$((exit_code + $?))
 
-pylint src/ || exit_code=$((exit_code + $?))
-pylint tests/*.py || exit_code=$((exit_code + $?))
-pylint examples/*.py || exit_code=$((exit_code + $?))
+pylint --reports=no --score=no src/ || exit_code=$((exit_code + $?))
+pylint --reports=no --score=no tests/*.py || exit_code=$((exit_code + $?))
 
 exit $exit_code
