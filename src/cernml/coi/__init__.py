@@ -27,7 +27,7 @@ This is inspired by `Stable Baselines' Env Checker
 <https://stable-baselines3.readthedocs.io/en/master/common/env_checker.html>`_,
 but comes with additional requirements. For more information, please
 refer to `our package docs
-<https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi>`_.
+<https://acc-py.web.cern.ch/gitlab/geoff/cernml-coi>`_.
 """
 
 from ._configurable import (

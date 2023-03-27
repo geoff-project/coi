@@ -48,8 +48,8 @@ classifiers = [
 ]
 
 [project.urls]
-gitlab = 'https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi/'
-'acc-py docs' = 'https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi/'
+gitlab = 'https://gitlab.cern.ch/geoff/cernml-coi/'
+'acc-py docs' = 'https://acc-py.web.cern.ch/gitlab/geoff/cernml-coi/'
 'public docs' = 'https://cernml-coi.docs.cern.ch/'
 wiki = 'https://wikis.cern.ch/pages/viewpage.action?pageId=194741479'
 

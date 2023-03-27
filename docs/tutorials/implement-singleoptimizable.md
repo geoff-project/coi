@@ -710,5 +710,5 @@ if __name__ == "__main__":
 
 ![Screenshot of the minimal GUI app](./render-mpl.png)
 
-[GeOFF]: https://gitlab.cern.ch/vkain/acc-app-optimisation
+[GeOFF]: https://gitlab.cern.ch/geoff/geoff-app
 [Gym]: https://github.com/openai/gym/

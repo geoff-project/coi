@@ -125,7 +125,7 @@ RTD_TEMPLATE = "https://{}.readthedocs.io/en/latest"
 
 intersphinx_mapping = {
     "utils": (
-        ACC_PY_DOCS_ROOT + "be-op-ml-optimization/cernml-coi-utils/docs/stable/",
+        ACC_PY_DOCS_ROOT + "geoff/cernml-coi-utils/docs/stable/",
         None,
     ),
     "japc": (ACC_PY_DOCS_ROOT + "scripting-tools/pyjapc/docs/stable/", None),

@@ -185,7 +185,7 @@ def warn_render_modes(problem: Problem) -> None:
     if "matplotlib_figures" not in render_modes:
         warnings.warn(
             "missing render mode 'matplotlib_figures': This is a "
-            "custom render mode used by acc-app-optimisation. It is "
+            "custom render mode used by the reference GUI. It is "
             "meant for embedding a generic problem into a Qt-based "
             "GUI. In this mode, render() should return a list of "
             "`matplotlib.figure.Figure()` objects, but not display "

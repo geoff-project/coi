@@ -12,7 +12,7 @@ The {doc}`cernml-coi-utils <utils:index>` package provides many additional
 features that complement the COIs.
 
 This repository can be found online on CERN's
-[Gitlab](https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi/).
+[Gitlab](https://gitlab.cern.ch/geoff/cernml-coi/).
 
 ```{toctree}
 ---

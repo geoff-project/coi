@@ -11,7 +11,7 @@ application in the CERN Control Center.
 
 This repository can be found online on CERN's [Gitlab][].
 
-[Gitlab]: https://gitlab.cern.ch/be-op-ml-optimization/cernml-coi/
+[Gitlab]: https://gitlab.cern.ch/geoff/cernml-coi/
 
 Table of Contents
 -----------------
@@ -128,7 +128,7 @@ problem = coi.make("Parabola-v0")
 optimize_in_some_way(problem)
 ```
 
-[GeOFF]: https://gitlab.cern.ch/vkain/acc-app-optimisation
+[GeOFF]: https://gitlab.cern.ch/geoff/geoff-app
 
 Stability
 ---------
@@ -153,6 +153,6 @@ outside of CERN][pages-docs] via CERN's [Gitlab Pages][pages-howto] service,
 though some cross-links to CERN-internal projects may not work. Finally, API
 documentation is provided through extensive Python docstrings.
 
-[acc-py-docs]: https://acc-py.web.cern.ch/gitlab/be-op-ml-optimization/cernml-coi/
+[acc-py-docs]: https://acc-py.web.cern.ch/gitlab/geoff/cernml-coi/
 [pages-docs]: https://cernml-coi.docs.cern.ch/
 [pages-howto]: https://how-to.docs.cern.ch/
