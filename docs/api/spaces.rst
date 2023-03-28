@@ -1,6 +1,6 @@
-# Spaces
+Spaces
+======
 
-```{eval-rst}
 .. class:: gym.spaces.Space(shape=None, dtype=None)
 
     Bases: :class:`object`
@@ -105,4 +105,3 @@
                 })
             })
         })
-```

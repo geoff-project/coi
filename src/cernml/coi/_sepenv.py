@@ -110,8 +110,8 @@ class SeparableEnv(gym.Env):
         consider setting ``info["success"] = True``.
 
         Args:
-            obs: The observation calculated by :meth:`reset()` or
-                :meth:`compute_observation()`.
+            obs: The observation calculated by :meth:`~gym.Env.reset()`
+                or :meth:`compute_observation()`.
             reward: The observation calculated by
                 :meth:`compute_reward()`.
             info: an info dictionary with additional information. It may
@@ -151,7 +151,8 @@ class SeparableGoalEnv(gym.GoalEnv):
         """Implementation of :meth:`gym.Env.step()`.
 
         This calls in turn the three new abstract methods:
-        :meth:`compute_observation()`, :meth:`compute_reward()`, and
+        :meth:`compute_observation()`,
+        :meth:`~gym.GoalEnv.compute_reward()`, and
         :meth:`compute_done()`.
         """
         info: InfoDict = {}

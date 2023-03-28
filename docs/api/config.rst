@@ -1,6 +1,6 @@
-# Configuration of Problems
+Configuration of Problems
+=========================
 
-```{eval-rst}
 .. autoclass:: cernml.coi.Configurable
     :show-inheritance:
 
@@ -26,4 +26,3 @@
 .. autoexception:: cernml.coi.BadConfig
 
 .. autoexception:: cernml.coi.DuplicateConfig
-```

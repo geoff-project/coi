@@ -80,7 +80,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
     objective_range: t.Tuple[float, float] = (-float("inf"), float("inf"))
     objective_name: str = ""
     param_names: t.List[str] = []
-    constraints: t.List["Constraint"] = []
+    constraints: t.List[Constraint] = []
     constraint_names: t.List[str] = []
 
     @abstractmethod

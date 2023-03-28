@@ -1,6 +1,6 @@
-# Problem Checkers
+Problem Checkers
+================
 
-```{eval-rst}
 .. autofunction:: cernml.coi.check
 
 .. autofunction:: cernml.coi.checkers.check_problem
@@ -12,4 +12,3 @@
 .. autofunction:: cernml.coi.checkers.check_env
 
 .. autofunction:: cernml.coi.checkers.check_configurable
-```

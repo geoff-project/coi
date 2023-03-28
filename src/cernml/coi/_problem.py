@@ -186,7 +186,7 @@ class Problem(metaclass=ABCMeta):
         Note:
             Make sure to declare all modes that you support in the
             ``"render.modes"`` key of your :attr:`metadata`. It's
-            recommended to call :func:`super()` in implementations to
+            recommended to call :class:`super` in implementations to
             use the functionality of this method.
         """
         # pylint: disable = unused-argument

@@ -102,13 +102,32 @@ def setup(app):  # type: ignore
         for type_ in func.__annotations__.values():
             _hide_class_module(type_)
 
+    def _hide_return_value(func):  # type: ignore
+        name = func.__name__
+        if name.endswith("_space"):
+            return_type = func.__annotations__.get("return")
+            if return_type and isinstance(return_type, type):
+                _hide_class_module(return_type)
+
+    def _resolve_problem_string(func):  # type: ignore
+        # Manually resolve this reference so that Sphinx does not insert
+        # the hidden `_problem` module.
+        return_type = func.__annotations__.get("return")
+        if return_type and return_type == "Problem":
+            func.__annotations__["return"] = "cernml.coi.Problem"
+
     def _hide_private_modules(_app, obj, _bound_method):  # type: ignore
         if isinstance(obj, type):
-            _hide_class_module(obj)
-            for base in getattr(obj, "__bases__", []):
+            if obj.__name__ == "Problem":
+                _resolve_problem_string(obj.unwrapped.fget)
+            for base in obj.__mro__:
                 _hide_class_module(base)
+            for attr_type in obj.__annotations__.values():
+                if isinstance(obj, type):
+                    _hide_class_module(attr_type)
         elif isinstance(obj, types.FunctionType):
             _hide_checker_arg(obj)
+            _hide_return_value(obj)
         _hide_configurable_module(obj)
 
     app.connect("autodoc-before-process-signature", _hide_private_modules)

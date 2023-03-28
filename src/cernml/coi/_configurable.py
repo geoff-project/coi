@@ -1,7 +1,5 @@
 """Provide :class:`Configurable`, an interface for GUI compatibility."""
 
-from __future__ import annotations
-
 import typing as t
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
@@ -199,17 +197,20 @@ class Config:
         """
         return {dest: field.value for dest, field in self._fields.items()}
 
+    # Escape the generic parameter `T` here so that Sphinx does not
+    # parse it. If it did, this would mess up all references to built-in
+    # types in the docs.
     def add(
         self,
         dest: str,
-        value: T,
+        value: "T",
         *,
         label: t.Optional[str] = None,
         help: t.Optional[str] = None,
-        type: t.Optional[t.Callable[[str], T]] = None,
-        range: t.Optional[t.Tuple[T, T]] = None,
-        choices: t.Optional[t.Sequence[T]] = None,
-        default: t.Optional[T] = None,
+        type: t.Optional[t.Callable[[str], "T"]] = None,
+        range: t.Optional[t.Tuple["T", "T"]] = None,
+        choices: t.Optional[t.Sequence["T"]] = None,
+        default: t.Optional["T"] = None,
     ) -> "Config":
         """Add a new config field.
 
@@ -423,11 +424,11 @@ class Configurable(metaclass=ABCMeta):
     """
 
     @abstractmethod
-    def get_config(self) -> "Config":
+    def get_config(self) -> Config:
         """Return a declaration of configurable parameters."""
 
     @abstractmethod
-    def apply_config(self, values: "ConfigValues") -> None:
+    def apply_config(self, values: ConfigValues) -> None:
         """Configure this object using the given values.
 
         The *values* have already been validated using the information

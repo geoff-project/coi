@@ -1,6 +1,6 @@
-# Separable and Goal-Based Interfaces
+Separable and Goal-Based Interfaces
+===================================
 
-```{eval-rst}
 .. class:: gym.GoalEnv
 
     Bases: :class:`gym.Env`
@@ -31,7 +31,6 @@
             w.r.t. to the desired goal.
 
         .. note::
-
             The following should always hold true::
 
                 ob, reward, done, info = env.step()
@@ -60,4 +59,3 @@
 .. autoclass:: cernml.coi.SeparableOptGoalEnv
     :members:
     :show-inheritance:
-```

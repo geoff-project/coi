@@ -1,13 +1,15 @@
 """Definition of the interface for temporal optimization."""
 
+import typing as t
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional, Tuple
 
-import gym
 import numpy as np
 
 from ._problem import Problem
 from ._single_opt import Constraint
+
+if t.TYPE_CHECKING:
+    from gym import Space
 
 
 class FunctionOptimizable(Problem, metaclass=ABCMeta):
@@ -29,16 +31,17 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
             restrict this e.g. for normalization purposes.
         constraints: The constraints that apply to this optimization
             problem. For now, each constraint must be either a
-            :class:`LinearConstraint` or a :class:`NonlinearConstraint`
-            as provided by :mod:`scipy.optimize`. In the future, this
-            might be relaxed to allow more optimization algorithms.
+            :class:`~scipy.optimize.LinearConstraint` or a
+            :class:`~scipy.optimize.NonlinearConstraint` as provided by
+            :mod:`scipy.optimize`. In the future, this might be relaxed
+            to allow more optimization algorithms.
     """
 
-    objective_range: Tuple[float, float] = (-np.inf, np.inf)
-    constraints: List[Constraint] = []
+    objective_range: t.Tuple[float, float] = (-np.inf, np.inf)
+    constraints: t.List[Constraint] = []
 
     @abstractmethod
-    def get_optimization_space(self, cycle_time: float) -> gym.Space:
+    def get_optimization_space(self, cycle_time: float) -> "Space":
         """Return the optimization space for a given point in time.
 
         This should return a :class:`~gym.spaces.Space` instance that
@@ -120,7 +123,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         """
         raise NotImplementedError()  # pragma: no cover
 
-    def get_objective_function_name(self) -> Optional[str]:
+    def get_objective_function_name(self) -> t.Optional[str]:
         """Return the name of the objective function.
 
         By default, this method returns the empty string. If it returns
@@ -131,7 +134,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         """
         return None
 
-    def get_param_function_names(self) -> List[str]:
+    def get_param_function_names(self) -> t.List[str]:
         """Return the names of the functions being modified.
 
         By default, this method returns an empty list. If the list is

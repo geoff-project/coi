@@ -1,6 +1,6 @@
-# Problem Registry
+Problem Registry
+================
 
-```{eval-rst}
 .. autofunction:: cernml.coi.register
 
 .. autofunction:: cernml.coi.make
@@ -16,4 +16,3 @@
 .. autoclass:: gym.envs.registration.EnvSpec
     :members:
     :show-inheritance:
-```

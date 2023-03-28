@@ -1,6 +1,6 @@
-# Common Optimization Interfaces
+Common Optimization Interfaces
+==============================
 
-```{eval-rst}
 .. autoclass:: cernml.coi.Constraint
 
 .. autoclass:: cernml.coi.Machine
@@ -108,4 +108,3 @@
             :info:
                 Contains auxiliary diagnostic information (helpful for
                 debugging, and sometimes learning).
-```
