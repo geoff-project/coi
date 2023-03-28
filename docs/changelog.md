@@ -8,7 +8,8 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
-No changes yet!
+- FIX: Improve various cross-references in the docs.
+- OTHER: The project's Gitlab group has been renamed from *be-op-ml-optimization* to *geoff*. This also changes the URL of these docs inside CERN. Please adjust your links, bookmarks and Git clones.
 
 ## v0.8.7
 
