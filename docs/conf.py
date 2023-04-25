@@ -58,6 +58,10 @@ exclude_patterns = [
     "_build",
 ]
 
+# Don't repeat the class name for methods and attributes in the page
+# table of content of class API docs.
+toc_object_entries_show_parents = "hide"
+
 # -- Options for Autodoc -----------------------------------------------
 
 autodoc_member_order = "groupwise"
