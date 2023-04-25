@@ -9,7 +9,7 @@ from ._problem import Problem
 from ._single_opt import Constraint
 
 if t.TYPE_CHECKING:
-    from gym import Space
+    from gym import Space  # pragma: no cover
 
 
 class FunctionOptimizable(Problem, metaclass=ABCMeta):
