@@ -29,9 +29,10 @@ build_wheel:
 
 # Test: Run linters and unit tests. Run tests both in-tree and out-of-tree.
 
-test_lint_py37:
+test_lint:
   extends:
     - .acc_py_run_on_manylinux_py_version
+    - .acc_py_run_on_all_currently_supported
     - .coi_use_pyqt_image
   stage: test
   before_script:
@@ -42,8 +43,10 @@ test_lint_py37:
     - cd ${project_root}
     - ./run_linters.sh --print-versions
 
-test_dev_py37:
-  extends: .acc_py_dev_test
+test_dev:
+  extends:
+    - .acc_py_dev_test
+    - .acc_py_run_on_all_currently_supported
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   # Override `script` to change the precise pytest-cov arguments.
   script:
@@ -56,9 +59,10 @@ test_dev_py37:
       --cov-report=xml:coverage-report.xml
       --junitxml=junit-report.xml
 
-test_examples_py37:
+test_examples:
   extends:
     - .acc_py_run_on_manylinux_py_version
+    - .acc_py_run_on_all_currently_supported
     - .coi_use_pyqt_image
   before_script:
     - !reference [.acc_py_run_on_manylinux_py_version, before_script]
@@ -70,68 +74,10 @@ test_examples_py37:
     - python parabola.py opt
     - python parabola.py rl
 
-test_wheel_py37:
-  extends: .acc_py_wheel_test
-  # Override `script` to adjust the pytest arguments.
-  script:
-    - mkdir -p ~/not-the-source-dir && cd ~/not-the-source-dir
-    - python -m pytest --pyargs ${project_name} --doctest-modules
-
-test_lint_py39:
-  variables:
-    PY_VERSION: "3.9"
-    ACC_PY_BASE_IMAGE_TAG: '2021.12'
+test_wheel:
   extends:
-    - .acc_py_run_on_manylinux_py_version
-    - .coi_use_pyqt_image
-  stage: test
-  before_script:
-    - !reference [.acc_py_run_on_manylinux_py_version, before_script]
-    - python -m pip install
-      -e ${project_root}[lint]
-  script:
-    - cd ${project_root}
-    - ./run_linters.sh --print-versions
-
-test_dev_py39:
-  variables:
-    PY_VERSION: "3.9"
-    ACC_PY_BASE_IMAGE_TAG: '2021.12'
-  extends: .acc_py_dev_test
-  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
-  # Override `script` to change the precise pytest-cov arguments.
-  script:
-    - cd ${project_root}
-    - python -m pytest
-      --cov=src
-      --cov-branch
-      --cov-report=term
-      --cov-report=html:coverage-html
-      --cov-report=xml:coverage-report.xml
-      --junitxml=junit-report.xml
-
-test_examples_py39:
-  variables:
-    PY_VERSION: "3.9"
-    ACC_PY_BASE_IMAGE_TAG: '2021.12'
-  extends:
-    - .acc_py_run_on_manylinux_py_version
-    - .coi_use_pyqt_image
-  before_script:
-    - !reference [.acc_py_run_on_manylinux_py_version, before_script]
-    - python -m pip install
-      -e ${project_root}[examples]
-  script:
-    - cd ${project_root}/examples
-    - python _check_example_envs.py
-    - python parabola.py opt
-    - python parabola.py rl
-
-test_wheel_py39:
-  variables:
-    PY_VERSION: "3.9"
-    ACC_PY_BASE_IMAGE_TAG: '2021.12'
-  extends: .acc_py_wheel_test
+    - .acc_py_wheel_test
+    - .acc_py_run_on_all_currently_supported
   # Override `script` to adjust the pytest arguments.
   script:
     - mkdir -p ~/not-the-source-dir && cd ~/not-the-source-dir
