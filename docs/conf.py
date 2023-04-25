@@ -103,20 +103,23 @@ def setup(app):  # type: ignore
         name = func.__name__
         if name != "check" and not name.startswith("check_"):
             return
-        for type_ in func.__annotations__.values():
+        annotations = getattr(func, "__annotations__", {})
+        for type_ in annotations.values():
             _hide_class_module(type_)
 
     def _hide_return_value(func):  # type: ignore
         name = func.__name__
         if name.endswith("_space"):
-            return_type = func.__annotations__.get("return")
+            annotations = getattr(func, "__annotations__", {})
+            return_type = annotations.get("return")
             if return_type and isinstance(return_type, type):
                 _hide_class_module(return_type)
 
     def _resolve_problem_string(func):  # type: ignore
         # Manually resolve this reference so that Sphinx does not insert
         # the hidden `_problem` module.
-        return_type = func.__annotations__.get("return")
+        annotations = getattr(func, "__annotations__", {})
+        return_type = annotations.get("return")
         if return_type and return_type == "Problem":
             func.__annotations__["return"] = "cernml.coi.Problem"
 
@@ -126,7 +129,8 @@ def setup(app):  # type: ignore
                 _resolve_problem_string(obj.unwrapped.fget)
             for base in obj.__mro__:
                 _hide_class_module(base)
-            for attr_type in obj.__annotations__.values():
+            annotations = getattr(obj, "__annotations__", {})
+            for attr_type in annotations.values():
                 if isinstance(obj, type):
                     _hide_class_module(attr_type)
         elif isinstance(obj, types.FunctionType):
