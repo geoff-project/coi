@@ -9,6 +9,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 ## Unreleased
 
 - ADD: {meth}`cernml.coi.FunctionOptimizable.override_skeleton_points()` for optimization problems that need to customize the way skeleton points are selected by the user.
+- OTHER: The online docs are now built with Python 3.9. Consequently, type annotations like `Union[str, List[str]]` and `Optional[str]` now use the new [type union syntax added in Python 3.10](https://docs.python.org/3/whatsnew/3.10.html#pep-604-new-type-union-operator), and so look like `str | List[str]` and `str | None` respectively.
 
 ## v0.8.8
 
