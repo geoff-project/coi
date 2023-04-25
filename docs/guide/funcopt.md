@@ -86,3 +86,58 @@ incorporation requires communication with the rules database. The
 {mod}`~utils:cernml.lsa_utils` package uses
 [PJLSA](https://gitlab.cern.ch/scripting-tools/pjlsa) for this communication.
 As such, these utilities only work within the CERN network.
+
+## Custom Skeleton Points
+
+The default and expected behavior of a {class}`~cernml.coi.FunctionOptimizable`
+is that it lets the user choose the skeleton points at which to optimize the
+functions, and to be agnostic over the specific points at which it runs. Some
+authors might wish to customize this choice, however.
+
+Function optimization problems may override the method
+{meth}`~cernml.coi.FunctionOptimizable.override_skeleton_points()` and return a
+list of skeleton points from it. In such a case, a host application should only
+optimize the problem at these points and none other. It's still advisable to
+let a user *review* these skeleton points before starting optimization. An
+optimization problem should still handle the case that only a *subset* of the
+given skeleton points are optimized.
+
+An optimization problem that overrides this function should also be
+{class}`~cernml.coi.Configurable` and let the user configure the skeleton
+points in some *customized* manner. For example, it could define a fixed
+interval, but let the user choose a number of points *N*. The function
+{meth}`~cernml.coi.FunctionOptimizable.override_skeleton_points()` could then
+split the interval into *N−1* equal sub-intervals and return their edges as
+skeleton points. This could look like this:
+
+```python
+>>> import typing as t
+>>> import numpy as np
+>>> from cernml.coi import (
+...     FunctionOptimizable,
+...     Configurable,
+...     Config,
+...     ConfigValues,
+...     BadConfig,
+... )
+>>> class Example(FunctionOptimizable, Configurable):
+...     def __init__(self) -> None:
+...         self._npoints = 5
+...
+...     def get_config(self) -> Config:
+...         return Config().add(
+...             'npoints', self._npoints, range(1, 10)
+...         )
+...
+...     def apply_config(self, values: ConfigValues) -> None:
+...         self._npoints = values.npoints
+...
+...     # Note the narrower return type, because we can.
+...     def override_skeleton_points(self) -> t.List[float]:
+...         return np.linspace(
+...             1400.0, 1800.0, self._npoints
+...         ).tolist()
+...
+...     # Rest of the implementation
+...     ...
+```

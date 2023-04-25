@@ -153,7 +153,7 @@ intersphinx_mapping = {
     "sci": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "std": ("https://docs.python.org/3/", None),
     "setuptools": (RTD_TEMPLATE.format("setuptools"), None),
-    "importlib_metadata": (RTD_TEMPLATE.format("importlib_metadata"), None),
+    "importlib_metadata": (RTD_TEMPLATE.format("importlib-metadata"), None),
 }
 
 # -- Options for Myst-Parser -------------------------------------------

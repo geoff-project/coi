@@ -8,7 +8,7 @@ will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 ## Unreleased
 
-No changes yet!
+- ADD: {meth}`cernml.coi.FunctionOptimizable.override_skeleton_points()` for optimization problems that need to customize the way skeleton points are selected by the user.
 
 ## v0.8.8
 

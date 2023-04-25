@@ -139,7 +139,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
 
         By default, this method returns an empty list. If the list is
         non-empty, if should contain as many names as the corresponding
-        {attr}`optimization_space`. Each name should correspond to an
+        :attr:`optimization_space`. Each name should correspond to an
         LSA parameter that is being corrected by the optimization
         procedure.
 
@@ -147,3 +147,29 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         that are being modified to the user.
         """
         return []
+
+    def override_skeleton_points(self) -> t.Optional[t.List[float]]:
+        """Hook to let the problem choose the skeleton points.
+
+        You should only override this method if your problem cannot be
+        solved well if optimized at arbitrary skeleton points. In such a
+        case, this method allows you to handle the selection of skeleton
+        points in a customized fashion in your own implementation of
+        :class:`~cernml.coi.Configurable`.
+
+        If overridden, this function should return the list of skeleton
+        points at which the problem should be evaluated. As always, each
+        skeleton point should be given as a floating-point time in
+        milliseconds since the beginning of an acceleration cycle. For
+        maximum compatibility, it is suggested not to return fractional
+        cycle times.
+
+        A host application should call this method before starting an
+        optimization run. If the return value is :any:`None`, it may
+        proceed to let the user choose the skeleton points at which to
+        optimize. If the return value is a list, the user should be
+        allowed to review, but not modify it. In that case, the other
+        methods of this class must not be called with any skeleton point
+        that is not in that list.
+        """
+        return None
