@@ -12,9 +12,8 @@ from ._single_opt import SingleOptimizable
 class OptEnv(gym.Env, SingleOptimizable, metaclass=ABCMeta):
     """An optimizable environment.
 
-    This is an intersection of :class:`~gym.Env` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
+    This is an intersection of `~gym.Env` and `SingleOptimizable`. Any
+    class that inherits from both, also inherits from this class.
     """
 
     @classmethod
@@ -28,9 +27,8 @@ class OptEnv(gym.Env, SingleOptimizable, metaclass=ABCMeta):
 class OptGoalEnv(gym.GoalEnv, SingleOptimizable, metaclass=ABCMeta):
     """An optimizable multi-goal environment.
 
-    This is an intersection of :class:`~gym.GoalEnv` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
+    This is an intersection of `~gym.GoalEnv` and `SingleOptimizable`.
+    Any class that inherits from both, also inherits from this class.
     """
 
     @classmethod
@@ -44,9 +42,8 @@ class OptGoalEnv(gym.GoalEnv, SingleOptimizable, metaclass=ABCMeta):
 class SeparableOptEnv(SeparableEnv, SingleOptimizable, metaclass=ABCMeta):
     """An optimizable and separable environment.
 
-    This is an intersection of :class:`SeparableEnv` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
+    This is an intersection of `SeparableEnv` and `SingleOptimizable`.
+    Any class that inherits from both, also inherits from this class.
     """
 
     @classmethod
@@ -60,8 +57,8 @@ class SeparableOptEnv(SeparableEnv, SingleOptimizable, metaclass=ABCMeta):
 class SeparableOptGoalEnv(SeparableGoalEnv, SingleOptimizable, metaclass=ABCMeta):
     """An optimizable and separable multi-goal environment.
 
-    This is an intersection of :class:`SeparableGoalEnv` and
-    :class:`SingleOptimizable`. Any class that inherits from both, also
+    This is an intersection of `SeparableGoalEnv` and
+    `SingleOptimizable`. Any class that inherits from both, also
     inherits from this class.
     """
 

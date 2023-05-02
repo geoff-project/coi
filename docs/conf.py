@@ -62,6 +62,9 @@ exclude_patterns = [
 # table of content of class API docs.
 toc_object_entries_show_parents = "hide"
 
+# Avoid role annotations as much as possible.
+default_role = "py:obj"
+
 # -- Options for Autodoc -----------------------------------------------
 
 autodoc_member_order = "groupwise"

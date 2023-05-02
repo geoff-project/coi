@@ -22,7 +22,7 @@ Common Optimization Interfaces
 
 .. class:: gym.Env
 
-    Bases: :class:`cernml.coi.Problem`
+    Bases: `cernml.coi.Problem`
 
     The main OpenAI Gym class. It encapsulates an environment with arbitrary
     behind-the-scenes dynamics. An environment can be partially or fully
@@ -30,11 +30,11 @@ Common Optimization Interfaces
 
     The main API methods that users of this class need to know are:
 
-    - :meth:`step()`
-    - :meth:`reset()`
-    - :meth:`~cernml.coi.Problem.render()`
-    - :meth:`~cernml.coi.Problem.close()`
-    - :meth:`seed()`
+    - `step()`
+    - `reset()`
+    - `~cernml.coi.Problem.render()`
+    - `~cernml.coi.Problem.close()`
+    - `seed()`
 
     And set the following attributes:
 
@@ -51,7 +51,7 @@ Common Optimization Interfaces
         A tuple corresponding to the min and max possible rewards
 
     .. note::
-        A default reward range set to `[-inf,+inf]` already exists. Set
+        A default reward range set to ``[-inf,+inf]`` already exists. Set
         it if you want a narrower range.
 
     The methods are accessed publicly as "step", "reset", etc ...
@@ -63,9 +63,9 @@ Common Optimization Interfaces
 
         Note that this function should not reset the environment’s random
         number generator(s); random variables in the environment’s state should
-        be sampled independently between multiple calls to :meth:`reset()`. In
-        other words, each call of :meth:`reset()` should yield an environment
-        suitable for a new episode, independent of previous episodes.
+        be sampled independently between multiple calls to `reset()`. In other
+        words, each call of `reset()` should yield an environment suitable for
+        a new episode, independent of previous episodes.
 
         :return: The initial observation.
 
@@ -89,10 +89,9 @@ Common Optimization Interfaces
 
         Run one timestep of the environment's dynamics.
 
-        When end of
-        episode is reached, you are responsible for calling :meth:`reset()`
-        to reset this environment's state.
-        Accepts an action and returns a tuple (observation, reward, done, info).
+        When end of episode is reached, you are responsible for calling
+        `reset()` to reset this environment's state. Accepts an action and
+        returns a tuple (observation, reward, done, info).
 
         :param action: An action provided by the agent.
 
@@ -104,7 +103,7 @@ Common Optimization Interfaces
                 Amount of reward returned after previous action.
             :done:
                 Whether the episode has ended, in which case further
-                :meth:`step()` calls will return undefined results.
+                `step()` calls will return undefined results.
             :info:
                 Contains auxiliary diagnostic information (helpful for
                 debugging, and sometimes learning).

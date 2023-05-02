@@ -22,10 +22,10 @@ Constraint = t.Union[
 class SingleOptimizable(Problem, metaclass=ABCMeta):
     """Interface for single-objective numerical optimization.
 
-    Fundamentally, an environment (described by :class:`gym.Env`)
-    contains a hidden *state* on which *actions* can be performed. Each
-    action causes a *transition* from one state to another. Each
-    transition produces an *observation* and a *reward*.
+    Fundamentally, an environment (described by `gym.Env`) contains a
+    hidden *state* on which *actions* can be performed. Each action
+    causes a *transition* from one state to another. Each transition
+    produces an *observation* and a *reward*.
 
     In contrast, an *optimizable* problem has certain *parameters* that
     can be *set* to transition *into* a certain state. Each state (not
@@ -48,32 +48,31 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
     be state variables that cannot be influenced by the optimizer.
 
     Attributes:
-        optimization_space: A :class:`~gym.spaces.Space` instance that
+        optimization_space: A `~gym.spaces.Space` instance that
             describes the phase space of parameters. This may be the
-            same or different from the :attr:`~gym.Env.action_space`.
-            This attribute is required.
+            same or different from the `~gym.Env.action_space`. This
+            attribute is required.
         objective_range: Optional. Specifies the range in which the
-            return value of :meth:`compute_single_objective()` will lie.
-            The default is to allow any finite float value, but
-            subclasses may restrict this e.g. for normalization
-            purposes.
+            return value of `compute_single_objective()` will lie. The
+            default is to allow any finite float value, but subclasses
+            may restrict this e.g. for normalization purposes.
         objective_name: Optional. A custom name for the objective
             function. You should only set this attribute if there is a
             physical meaning to the objective. The default is not to
             attach any meaning to the objective function.
         param_names: Optional. Custom names for each of the parameters
             of the problem. If set, this list should have exactly as
-            many elements as the :attr:`optimization_space`. The default
-            is not to attach any meaning to the individual parameters.
+            many elements as the `optimization_space`. The default is
+            not to attach any meaning to the individual parameters.
         constraints: Optional. The constraints that apply to this
             optimization problem. For now, each constraint must be
             either a :class:`~scipy.optimize.LinearConstraint` or a
             :class:`~scipy.optimize.NonlinearConstraint`. In the future,
             this might be relaxed to allow more optimization algorithms.
         constraint_names: Optional. Custom names for each of the
-            :attr:`constraints` of the problem. If set, this list should
-            have exactly as many elements as the :attr:`constraints`.
-            The default is not to attach any meaning to the constraints.
+            `constraints` of the problem. If set, this list should have
+            exactly as many elements as the `constraints`. The default
+            is not to attach any meaning to the constraints.
     """
 
     optimization_space: gym.spaces.Space = None
@@ -91,10 +90,9 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         i.e. ``opt.get_initial_params() in opt.optimization_space``
         should be True.
 
-        This method is similar to :meth:`~gym.Env.reset()` but is
-        allowed to always return the same value; or to skip certain
-        calculations, in the case of problems that are expensive to
-        evalaute.
+        This method is similar to `~gym.Env.reset()` but is allowed to
+        always return the same value; or to skip certain calculations,
+        in the case of problems that are expensive to evalaute.
         """
         raise NotImplementedError()  # pragma: no cover
 
@@ -102,9 +100,9 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
     def compute_single_objective(self, params: numpy.ndarray) -> float:
         """Perform an optimization step.
 
-        This function is similar to :meth:`~gym.Env.step()`, but it
-        accepts parameters instead of an action. See the class docstring
-        for the difference.
+        This function is similar to `~gym.Env.step()`, but it accepts
+        parameters instead of an action. See the class docstring for the
+        difference.
 
         This function may modify the environment, but it should
         fundamentally be stateless: Calling it twice with the same
@@ -114,7 +112,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         Args:
             params: The parameters for which the loss shall be
                 calculated. This should be within, but must at least
-                have the same structure, as :attr:`optimization_space`.
+                have the same structure, as `optimization_space`.
 
         Returns:
             The loss associated with these parameters. Numerical

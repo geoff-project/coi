@@ -1,7 +1,7 @@
 """Test the cancellation module.
 
 This module does not need to be thorough. Most coverage is achieved
-through the doctests in :mod:`cernml.coi.cancellation` itself.
+through the doctests in `cernml.coi.cancellation` itself.
 """
 
 # pylint: disable = missing-class-docstring, missing-function-docstring

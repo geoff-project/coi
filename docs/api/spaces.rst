@@ -3,7 +3,7 @@ Spaces
 
 .. class:: gym.spaces.Space(shape=None, dtype=None)
 
-    Bases: :class:`object`
+    Bases: `object`
 
     Defines the observation and action spaces, so you can write generic code
     that applies to any Env. For example, you can choose a random action.
@@ -15,11 +15,11 @@ Spaces
         (e.g. :class:`~gym.spaces.Box`, :class:`~gym.spaces.Discrete`, etc.),
         and container classes (:class:`~gym.spaces.Tuple` and
         :class:`~gym.spaces.Dict`). Note that parametrized probability
-        distributions (through the :meth:`sample()` method), and batching
-        functions (in :class:`gym.vector.VectorEnv`), are only well-defined for
-        instances of spaces provided in gym by default. Moreover, some
-        implementations of Reinforcement Learning algorithms might not handle
-        custom spaces properly. Use custom spaces with care.
+        distributions (through the `sample()` method), and batching functions
+        (in :class:`gym.vector.VectorEnv`), are only well-defined for instances
+        of spaces provided in gym by default. Moreover, some implementations of
+        Reinforcement Learning algorithms might not handle custom spaces
+        properly. Use custom spaces with care.
 
     .. method:: contains(x)
 
@@ -49,7 +49,7 @@ Spaces
 
 .. class:: gym.spaces.Box(low, high, shape=None, dtype=<class 'numpy.float32'>)
 
-    Bases: :class:`gym.spaces.Space`
+    Bases: `gym.spaces.Space`
 
     A (possibly unbounded) box in ℝⁿ. Specifically, a Box represents the
     Cartesian product of *n* closed intervals. Each interval has the form of
@@ -72,7 +72,7 @@ Spaces
 
 .. class:: gym.spaces.Dict(spaces=None, **kwargs)
 
-    Bases: :class:`gym.spaces.Space`
+    Bases: `gym.spaces.Space`
 
     A dictionary of simpler spaces.
 

@@ -1,18 +1,18 @@
 """Common Optimization Interfaces for optimizers and RL agents.
 
-The most primitive interface provided by this package is the
-:class:`Problem`, and it isn't very interesting on its own. More
-important are three interfaces that extend :class:`Problem`:
+The most primitive interface provided by this package is the `Problem`,
+and it isn't very interesting on its own. More important are three
+interfaces that extend `Problem`:
 
-- :class:`gym.Env`, as provided by `OpenAI Gym
+- `gym.Env`, as provided by `OpenAI Gym
   <https://github.com/openai/gym/>`_;
-- :class:`SingleOptimizable` and :class:`FunctionOptimizable`, provided
-  by this package.
+- `SingleOptimizable` and `FunctionOptimizable`, provided by this
+  package.
 
 The former is implemented by classes that describe reinforcement
 learning (RL) problems; the latter by classes that describe
 numerical-optimization problems. A class may implement both, either
-explicitly or through the convenience class :class:`OptEnv`.
+explicitly or through the convenience class `OptEnv`.
 
 This package comes with its own registry, similar to that of
 :mod:`gym.envs.registration`. This makes it possible to globally
@@ -22,8 +22,8 @@ call ``coi.register(name, entry_point=Class)`` after your class
 definition.
 
 For reasons of portability, this API does not support the full range of
-:class:`~gym.Env` classes, but rather puts several restrictions on them.
-This is inspired by `Stable Baselines' Env Checker
+`~gym.Env` classes, but rather puts several restrictions on them. This
+is inspired by `Stable Baselines' Env Checker
 <https://stable-baselines3.readthedocs.io/en/master/common/env_checker.html>`_,
 but comes with additional requirements. For more information, please
 refer to `our package docs

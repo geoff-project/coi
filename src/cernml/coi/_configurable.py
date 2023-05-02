@@ -1,4 +1,4 @@
-"""Provide :class:`Configurable`, an interface for GUI compatibility."""
+"""Provide `Configurable`, an interface for GUI compatibility."""
 
 import typing as t
 from abc import ABCMeta, abstractmethod
@@ -25,13 +25,13 @@ class BadConfig(Exception):
 class Config:
     """Declaration of configurable parameters.
 
-    This is the return type of :meth:`Configurable.get_config()`. It is
-    used by environments to *declare* their configurable parameters,
+    This is the return type of `Configurable.get_config()`. It is used
+    by environments to *declare* their configurable parameters,
     including each parameter's validity invariants. This makes it
     possible for users of the environment to automatically generate an
     interface that prevents invalid values as early as possible.
 
-    For more information, see :class:`Configurable`.
+    For more information, see `Configurable`.
 
     Usage:
 
@@ -100,8 +100,8 @@ class Config:
         """A single configurable field.
 
         This class is created exclusively via
-        :meth:`Config.add()<cernml.coi.Config.add>`. It is a dataclass,
-        so constructor parameters are also available as public fields.
+        `Config.add()<cernml.coi.Config.add>`. It is a dataclass, so
+        constructor parameters are also available as public fields.
 
         >>> config = Config().add("foo", 1.0)
         >>> fields = {field.dest: field for field in config.fields()}
@@ -134,8 +134,7 @@ class Config:
                 The validated and converted value.
 
             Raises:
-                :exc:`BadConfig`: if the value could not be
-                    validated.
+                `BadConfig`: if the value could not be validated.
             """
             try:
                 # Workaround for the following Mypy issue:
@@ -166,10 +165,10 @@ class Config:
         return self._fields.values()
 
     def get_field_values(self) -> t.Dict[str, t.Any]:
-        """Return a :class:`dict` of the pre-configured field values.
+        """Return a `dict` of the pre-configured field values.
 
         Note that this is not quite the expected input to
-        :meth:`validate_all()`; the latter expects the dict values to be
+        `validate_all()`; the latter expects the dict values to be
         strings that convert cleanly back to the original field type.
         This is the case for strings and numbers, but not e.g. for
         boolean values.
@@ -181,7 +180,7 @@ class Config:
             >>> values
             {'flag': False, 'count': 10}
 
-        Passing this dict to :meth:`validate_all()` accidentally works
+        Passing this dict to `validate_all()` accidentally works
         even though the type signature doesn't match:
 
             >>> vars(config.validate_all(config.get_field_values()))
@@ -217,7 +216,7 @@ class Config:
         Args:
             dest: The name of the configurable parameter being declared.
                 This is the name under which the value will be available
-                in :meth:`~Configurable.apply_config()`.
+                in `~Configurable.apply_config()`.
             value: The value to initialize this parameter with.
                 Typically, this is the current setting for this field.
             label: The display name of the parameter. This will be
@@ -229,8 +228,7 @@ class Config:
                 string) and converts it to the same type as *value*. If
                 the given string is not a valid input, this function
                 should raise an exception. If not passed, this is simply
-                the type of *value*, e.g. :class`int`, :class:`float`,
-                etc.
+                the type of *value*, e.g. `int`, `float`, etc.
             range: If passed, must be a tuple (*low*, *high*). A
                 user-chosen value for this field must be within the
                 closed interval described by these values.
@@ -276,7 +274,7 @@ class Config:
         """Add all fields of another config to this one.
 
         Args:
-            other: Another :class:`Config` object from which to copy
+            other: Another `Config` object from which to copy
                 each field in sequence.
 
         Returns:
@@ -308,7 +306,7 @@ class Config:
 
         Args:
             name: The name of the configurable field. This is the same
-                as the *dest* parameter of :meth:`add()`.
+                as the *dest* parameter of `add()`.
             text_repr: The string input to validate.
 
         Returns:
@@ -352,7 +350,7 @@ class Config:
 class Configurable(metaclass=ABCMeta):
     """Interface for problems that are configurable.
 
-    Some :class:`Problem` classes have several parameters that determine
+    Some `Problem` classes have several parameters that determine
     certain details of how they are solved. A classic configurable
     parameter of environments is the *reward objective*, i.e. the
     minimum reward for a step upon which an episode is considered
@@ -367,12 +365,12 @@ class Configurable(metaclass=ABCMeta):
     and what each parameter's invariants are. It is very easy to use for
     problem authors:
 
-    1. Implement :meth:`get_config()` and return a declaration of
-       configurable parameters. Certain invariants, limits, etc. may be
-       declared for each parameter.
-    2. Implement :meth:`apply_config()` which is given a collection of
-       new configured values. Transfer each value into your object.
-       Apply any further checks and raise an exception if any fail.
+    1. Implement `get_config()` and return a declaration of configurable
+       parameters. Certain invariants, limits, etc. may be declared for
+       each parameter.
+    2. Implement `apply_config()` which is given a collection of new
+       configured values. Transfer each value into your object. Apply
+       any further checks and raise an exception if any fail.
 
     Usage example:
 
@@ -409,8 +407,8 @@ class Configurable(metaclass=ABCMeta):
         >>> env.action_scale
         1.5
 
-    :class:`Configurable` is an :term:`abstract base class`. You need
-    not inherit from it to implement its interface:
+    `Configurable` is an :term:`abstract base class`. You need not
+    inherit from it to implement its interface:
 
         >>> class AbstractChild:
         ...     def get_config(self):
@@ -432,7 +430,7 @@ class Configurable(metaclass=ABCMeta):
         """Configure this object using the given values.
 
         The *values* have already been validated using the information
-        given in :meth:`get_config()`, but this method may apply further
+        given in `get_config()`, but this method may apply further
         checks.
 
         This method should be *transactional*, i.e. in the case of
@@ -441,8 +439,8 @@ class Configurable(metaclass=ABCMeta):
 
         Args:
             values: A namespace with one attribute for each field
-                declared in :meth:`get_config()`. The attribute name is
-                exactly the *dest* parameter of :meth:`Config.add()`.
+                declared in `get_config()`. The attribute name is
+                exactly the *dest* parameter of `Config.add()`.
 
         Raises:
             Exception: If any additional validation checks fail.

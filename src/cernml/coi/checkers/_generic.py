@@ -22,9 +22,9 @@ def is_reward(reward: t.Any) -> bool:
 def is_bool(value: t.Any) -> bool:
     """Return True if the object is a true boolean.
 
-    This accepts :class:`bool`, :class:`np.bool_` and possible
-    subclasses, but it rejects integers. (This is nontrivial because
-    Python booleans _are_ integers.)
+    This accepts `bool`, :class:`np.bool_` and possible subclasses, but
+    it rejects integers. (This is nontrivial because Python booleans
+    _are_ integers.)
 
     Example:
 
@@ -45,15 +45,14 @@ def is_iterable(value: t.Any) -> bool:
 
     In Python, there are three ways in which objects can be iterable:
 
-    - they are registered as subclasses of
-      :class:`~collections.abc.Iterable`;
-    - they provide a method :meth:`~object.__iter__()`;
-    - they provide a method :meth:`~object.__getitem__()` and do not
-      inherit from :class:`dict`.
+    - they are registered as subclasses of `~collections.abc.Iterable`;
+    - they provide a method `~object.__iter__()`;
+    - they provide a method `~object.__getitem__()` and do not inherit
+      from `dict`.
 
     In the latter case, the object must honor the sequence protocol: its
-    :meth:`__getitem__()` must be callable with consecutive integers
-    starting at 0 until it raises an :class:`IndexError`.
+    `__getitem__()` must be callable with consecutive integers starting
+    at 0 until it raises an `IndexError`.
 
     Example:
 

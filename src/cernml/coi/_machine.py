@@ -7,18 +7,17 @@ class Machine(Enum):
     """Enum of the various accelerators at CERN.
 
     This enum should be used by environments in their
-    :attr:`~Problem.metadata` dictionary to declare which accelerator
-    they pertain to. This can be used to filter a collection of
-    environments for only those that are interesting to a certain group
-    of operators.
+    `~Problem.metadata` dictionary to declare which accelerator they
+    pertain to. This can be used to filter a collection of environments
+    for only those that are interesting to a certain group of operators.
 
     This list is intentionally left incomplete. If you wish to use this
     API at a machine that is not listed in this enum, please contact the
     developers to have it included.
 
-    In the same vein, if you match a :class:`Machine` against a list of
-    enum members, you should be prepared that new machines may be added
-    in the future.
+    In the same vein, if you match a `Machine` against a list of enum
+    members, you should be prepared that new machines may be added in
+    the future.
 
         >>> # Bad:
         >>> def get_proper_value_for(machine):

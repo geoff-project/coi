@@ -158,7 +158,7 @@ def make_mock_values(config: Config) -> Mock:
     values = config.validate_all(strings)
 
     class SubMock(Mock):
-        """Subclass of :class:`Mock` that isolates property mocks."""
+        """Subclass of `Mock` that isolates property mocks."""
 
     for dest, value in vars(values).items():
         prop = PropertyMock(return_value=value)
@@ -175,7 +175,7 @@ def make_mock_values(config: Config) -> Mock:
 def get_round_tripping_string_repr(value: t.Any) -> str:
     """Get a string representation that roundtrips well.
 
-    This is basically :func:`str()` with a special case for boolean
+    This is basically `str()` with a special case for boolean
     types so that ``bool(str(False)) is False``.
 
     >>> get_round_tripping_string_repr([1, 2, 3])

@@ -18,7 +18,7 @@ def check_methods(C: type, *methods: str) -> Any:
 
     Returns:
         True if ``C`` implements all given methods, otherwise
-        :obj:`NotImplemented`.
+        `NotImplemented`.
 
     Examples:
 

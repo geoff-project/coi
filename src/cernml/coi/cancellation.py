@@ -1,7 +1,7 @@
 """Provide cooperative task cancellation.
 
 Cancellation is implemented as two classes with two-way communication
-between them: :class:`TokenSource` and :class:`Token`:
+between them: `TokenSource` and `Token`:
 
     >>> import threading, time
     >>> def loop(token: Token) -> None:
@@ -17,7 +17,7 @@ between them: :class:`TokenSource` and :class:`Token`:
     >>> thread.join()
 
 Usually, it is more convenient to check the token's state with
-:meth:`Token.raise_if_cancellation_requested()`:
+`Token.raise_if_cancellation_requested()`:
 
     >>> def loop(token: Token) -> None:
     ...     while True:
@@ -121,8 +121,8 @@ import weakref
 class CancelledError(Exception):
     """The current task has been requested to be cancelled.
 
-    Note that it inherits from :class:`Exception`, so it can be caught
-    by an overly broad :keyword:`except` clause.
+    Note that it inherits from `Exception`, so it can be caught by an
+    overly broad :keyword:`except` clause.
     """
 
 
@@ -132,7 +132,7 @@ class CannotReset(Exception):
     There are two possible reasons for this:
 
     1. The task might have simply forgotten to call
-       :meth:`Token.complete_cancellation()`.
+       `Token.complete_cancellation()`.
     2. The task has ended up in a *poisoned* state because of the
        cancellation. For example, two variables meant to be consistent
        with each other no longer are.
@@ -143,18 +143,18 @@ class CannotReset(Exception):
 
 
 class _State(enum.Enum):
-    """Internal state of the :class:`Token`.
+    """Internal state of the `Token`.
 
-    Regular tokens start out in the :attr:`READY` state. Once the
-    :class:`TokenSource` requests cancellation, the token transitions
-    into the :attr:`CANCELLING` state. If the token's holder has handled
-    the cancellation, it may call :meth:`~Token.complete_cancellation()`
-    to transition it into the :attr:`CANCELLED` state.
+    Regular tokens start out in the `READY` state. Once the
+    `TokenSource` requests cancellation, the token transitions into the
+    `CANCELLING` state. If the token's holder has handled the
+    cancellation, it may call `~Token.complete_cancellation()` to
+    transition it into the `CANCELLED` state.
 
     This signals to the token source that cancellation is complete and
-    it may call :meth:`~TokenSource.reset_cancellation()`. This
-    transitions the token back into the :attr:`READY` state. From this,
-    a new cancellation can be requested.
+    it may call `~TokenSource.reset_cancellation()`. This transitions
+    the token back into the `READY` state. From this, a new cancellation
+    can be requested.
 
     For convenience, the state is ordered by the above state machine::
 
@@ -191,12 +191,12 @@ class TokenSource:
     """Sending half of a cancellation channel.
 
     This half is usually created by a host application. It then sends
-    the token to a :class:`~cernml.coi.Problem` upon instantiation.
+    the token to a `~cernml.coi.Problem` upon instantiation.
 
-    Whenever a :class:`~cernml.coi.Problem` enters a long-running
-    calculation, it should periodically check the token for a
-    cancellation request. If such a request has arrived, the problem has
-    a chance to gracefully abort its calculation.
+    Whenever a `~cernml.coi.Problem` enters a long-running calculation,
+    it should periodically check the token for a cancellation request.
+    If such a request has arrived, the problem has a chance to
+    gracefully abort its calculation.
 
     As a convenience feature, token sources are also context managers.
     They yield their token when entering a context and automatically
@@ -244,14 +244,14 @@ class TokenSource:
     def token(self) -> "Token":
         """The token associated with source.
 
-        Pass this token to a :class:`~cernml.coi.Problem` to be able to
+        Pass this token to a `~cernml.coi.Problem` to be able to
         communicate a cancellation to it.
         """
         return self._token
 
     @property
     def cancellation_requested(self) -> bool:
-        """True if :meth:`cancel()` has been called."""
+        """True if `cancel()` has been called."""
         return self._token.cancellation_requested
 
     def cancel(self) -> None:
@@ -356,10 +356,10 @@ class TokenSource:
 class Token:
     """Receiving half of a cancellation channel.
 
-    Usually, you create this object via a :class:`TokenSource`. It
-    creates a token that can receive cancellation requests and mark them
-    as completed. Marking a request as completed allows the token source
-    to send further cancellation requests.
+    Usually, you create this object via a `TokenSource`. It creates a
+    token that can receive cancellation requests and mark them as
+    completed. Marking a request as completed allows the token source to
+    send further cancellation requests.
 
     Args:
         cancelled: If False (the default), create a token that cannot be
@@ -392,13 +392,13 @@ class Token:
     def wait_handle(self) -> threading.Condition:
         """A condition variable on which to wait for cancellation.
 
-        If you do not use :class:`~threading.Condition` variables to
+        If you do not use `~threading.Condition` variables to
         synchronize multiple threads, you may safely ignore this
         attribute.
 
         This lazily creates the condition variable. You may use it to
         wait for cancellation. To avoid deadlocks, you should check
-        :attr:`cancellation_requested` while the condition variable
+        `cancellation_requested` while the condition variable
         is locked:
 
             >>> import threading
@@ -436,9 +436,9 @@ class Token:
         """Raise an exception if a cancellation request has arrived.
 
         Raises:
-            CancelledError: If :attr:`cancellation_requested` is True.
-                Note that it inherits from :class:`Exception`, so it can
-                be caught by an overly broad :keyword:`except` clause.
+            CancelledError: If `cancellation_requested` is True. Note
+                that it inherits from `Exception`, so it can be caught
+                by an overly broad :keyword:`except` clause.
         """
         if self.cancellation_requested:
             raise CancelledError()

@@ -12,8 +12,8 @@ class Problem(metaclass=ABCMeta):
     """Abstract base class of all problems.
 
     You should not derive from this class. Instead, derive from one of
-    its subclasses like :class:`~gym.Env` or :class:`SingleOptimizable`.
-    This class exists for two purposes:
+    its subclasses like `~gym.Env` or `SingleOptimizable`. This class
+    exists for two purposes:
 
     - define which parts of the interfaces are common to all of them;
     - provide an easy way to test whether an interface is compatible
@@ -23,10 +23,10 @@ class Problem(metaclass=ABCMeta):
     that don't inherit from it may be considered a subclass. To be
     considered a subclass, a class must merely:
 
-    - provide a method :meth:`render()`,
-    - provide a method :meth:`close()`,
-    - provide a property :attr:`unwrapped`,
-    - provide a dict :attr:`metadata` as a class attribute.
+    - provide a method `render()`,
+    - provide a method `close()`,
+    - provide a property `unwrapped`,
+    - provide a dict `metadata` as a class attribute.
 
     Attributes:
         metadata: Capabilities and behavior of this problem.
@@ -43,11 +43,10 @@ class Problem(metaclass=ABCMeta):
             ``"render.modes"``
                 The render modes that the optimization problem
                 understands. Standard render modes are documented under
-                :meth:`render()`.
+                `render()`.
             ``"cern.machine"``
                 The accelerator that an optimization problem is
-                associated with. This must be a value of type
-                :class:`Machine`.
+                associated with. This must be a value of type `Machine`.
             ``"cern.japc"``
                 A boolean flag indicating that the problem's constructor
                 expects an argument named *japc* of type
@@ -59,9 +58,9 @@ class Problem(metaclass=ABCMeta):
             ``"cern.cancellable"``
                 A boolean flag indicating that the problem's constructor
                 expects an argument named *cancellation_token* of type
-                :class:`~cernml.coi.cancellation.Token`. Enable it if
-                your class ever enters any long-running loops that the
-                user may want to interrupt. A classic example is the
+                `~cernml.coi.cancellation.Token`. Enable it if your
+                class ever enters any long-running loops that the user
+                may want to interrupt. A classic example is the
                 acquisition and validation of cycle-bound data.
 
             Additionally, all keys that start with ``"cern."`` are
@@ -93,9 +92,8 @@ class Problem(metaclass=ABCMeta):
         After this method has been called, no further methods may be
         called on the problem, with the following exceptions:
 
-        - :attr:`unwrapped` must continue to behave as expected;
-        - calling :meth:`close()` again should do nothing.
-        """
+        - `unwrapped` must continue to behave as expected;
+        - calling `close()` again should do nothing."""
 
     @property
     def unwrapped(self) -> "Problem":
@@ -148,9 +146,9 @@ class Problem(metaclass=ABCMeta):
             representing RGB values for an *x*-by-*y* pixel image,
             suitable for turning into a video.
         ``"ansi"``
-            Return a :class:`str` or :class:`io.StringIO` containing a
-            terminal-style text representation. The text can include
-            newlines and ANSI escape sequences (e.g. for colors).
+            Return a `str` or `io.StringIO` containing a terminal-style
+            text representation. The text can include newlines and ANSI
+            escape sequences (e.g. for colors).
         ``"matplotlib_figures"``
             Render to one or more :class:`~matplotlib.figure.Figure`
             objects. This should return all figures whose contents have
@@ -158,9 +156,9 @@ class Problem(metaclass=ABCMeta):
 
             - a single :class:`~matplotlib.figure.Figure` object;
             - an iterable of bare :class:`~matplotlib.figure.Figure`
-              objects or 2-tuples of :class:`str` and
+              objects or 2-tuples of `str` and
               :class:`~matplotlib.figure.Figure` or both;
-            - a mapping with :class:`str` keys and
+            - a mapping with `str` keys and
               :class:`~matplotlib.figure.Figure` values.
 
             Strings are interpreted as window titles for their
@@ -185,9 +183,9 @@ class Problem(metaclass=ABCMeta):
 
         Note:
             Make sure to declare all modes that you support in the
-            ``"render.modes"`` key of your :attr:`metadata`. It's
-            recommended to call :class:`super` in implementations to
-            use the functionality of this method.
+            ``"render.modes"`` key of your `metadata`. It's recommended
+            to call `super` in implementations to use the functionality
+            of this method.
         """
         # pylint: disable = unused-argument
         # Hack: Make PyLint realize that this method is not abstract. We

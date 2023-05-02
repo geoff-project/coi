@@ -25,9 +25,9 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
 
     Args:
         env: The object whose API is to be checked. Must at least be a
-            :class:`Problem`. If it satisfies other interfaces, like
-            :class:`SingleOptimizable` or :class:`~gym.Env`, all of
-            their APIs are checked as well.
+            `Problem`. If it satisfies other interfaces, like
+            `SingleOptimizable` or `~gym.Env`, all of their APIs are
+            checked as well.
         headless: If True (the default), do not run tests that require a
             GUI.
         warn: If True (the default), run additional tests that might be

@@ -17,18 +17,17 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
 
     An optimization problem in which the target is a function over time
     that is being optimized at multiple *skeleton points* should
-    implement this interface instead of :class:`SingleOptimizable`.
-    This interface allows passing through the skeleton points as
-    parameters called *cycle_time*. The part "cycle" is important to
-    signify that time is measured from the beginning of the cycle; some
-    measuring equipment measures time from the beginning of injection
-    instead.
+    implement this interface instead of `SingleOptimizable`. This
+    interface allows passing through the skeleton points as parameters
+    called *cycle_time*. The part "cycle" is important to signify that
+    time is measured from the beginning of the cycle; some measuring
+    equipment measures time from the beginning of injection instead.
 
     Attributes:
         objective_range: Specifies the range in which the return value
-            of :meth:`compute_function_objective()` will lie. The
-            default is to allow any float value, but subclasses may
-            restrict this e.g. for normalization purposes.
+            of `compute_function_objective()` will lie. The default is
+            to allow any float value, but subclasses may restrict this
+            e.g. for normalization purposes.
         constraints: The constraints that apply to this optimization
             problem. For now, each constraint must be either a
             :class:`~scipy.optimize.LinearConstraint` or a
@@ -44,11 +43,10 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
     def get_optimization_space(self, cycle_time: float) -> "Space":
         """Return the optimization space for a given point in time.
 
-        This should return a :class:`~gym.spaces.Space` instance that
-        describes the phase space of parameters. While one would
-        typically expect this phase space to be constant for all points
-        on the function that is to be optimized, there are cases where
-        this is not true.
+        This should return a `~gym.spaces.Space` instance that describes
+        the phase space of parameters. While one would typically expect
+        this phase space to be constant for all points on the function
+        that is to be optimized, there are cases where this is not true.
 
         Trivially, one can imagine a ramping function where the range of
         allowed values in the flat bottom is smaller than at the flat
@@ -70,10 +68,9 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
             ...     params = opt.get_initial_params(time)
             ...     assert params in space
 
-        This method is similar to :meth:`gym.Env.reset()` but is allowed
-        to always return the same value; or to skip certain
-        calculations, in the case of problems that are expensive to
-        evalaute.
+        This method is similar to `gym.Env.reset()` but is allowed to
+        always return the same value; or to skip certain calculations,
+        in the case of problems that are expensive to evalaute.
 
         Args:
             cycle_time: The point in time at which the objective is
@@ -139,9 +136,9 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
 
         By default, this method returns an empty list. If the list is
         non-empty, if should contain as many names as the corresponding
-        box returned by :attr:`get_optimization_space()`. Each name
-        should correspond to an LSA parameter that is being corrected by
-        the optimization procedure.
+        box returned by `get_optimization_space()`. Each name should
+        correspond to an LSA parameter that is being corrected by the
+        optimization procedure.
 
         A host application may use these names to show the functions
         that are being modified to the user.
@@ -155,7 +152,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         solved well if optimized at arbitrary skeleton points. In such a
         case, this method allows you to handle the selection of skeleton
         points in a customized fashion in your own implementation of
-        :class:`~cernml.coi.Configurable`.
+        `~cernml.coi.Configurable`.
 
         If overridden, this function should return the list of skeleton
         points at which the problem should be evaluated. As always, each
@@ -165,7 +162,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         cycle times.
 
         A host application should call this method before starting an
-        optimization run. If the return value is :any:`None`, it may
+        optimization run. If the return value is `None`, it may
         proceed to let the user choose the skeleton points at which to
         optimize. If the return value is a list, the user should be
         allowed to review, but not modify it. In that case, the other

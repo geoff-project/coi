@@ -54,8 +54,8 @@ def register(
         After instantiating a registered problem, the registry spec of
         an object will be added to it as ``obj.unwrapped.spec``. That
         means whatever object is returned by *entry_point* *must* have
-        an attribute :attr:`~Problem.unwrapped` that points to itself or
-        any wrapped problem.
+        an attribute `~Problem.unwrapped` that points to itself or any
+        wrapped problem.
     """
     # pylint: disable = invalid-name, redefined-builtin
     registry.register(
