@@ -39,7 +39,6 @@ release = importlib_metadata.version("cernml-coi")
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
@@ -163,6 +162,7 @@ intersphinx_mapping = {
     "np": ("https://numpy.org/doc/stable/", None),
     "sci": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "std": ("https://docs.python.org/3/", None),
+    "pkg": ("https://packaging.python.org/en/latest/", None),
     "setuptools": (RTD_TEMPLATE.format("setuptools"), None),
     "importlib_metadata": (RTD_TEMPLATE.format("importlib-metadata"), None),
 }

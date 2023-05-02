@@ -1,4 +1,5 @@
-# User Guide
+User Guide
+==========
 
 The Common Optimization Interfaces make it possible to define optimization
 problems in a uniform fashion so that they can be used with as many
@@ -11,14 +12,11 @@ problem is embedded into some sort of *host* application. As such, the problem
 must be able to advertise certain capabilities and properties and the
 application must be able to query such properties.
 
-```{toctree}
----
-maxdepth: 2
----
+.. toctree::
+    :maxdepth: 2
 
-core
-registry
-cancellation
-otherenvs
-funcopt
-```
+    core
+    registry
+    cancellation
+    otherenvs
+    funcopt
