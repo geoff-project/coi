@@ -61,7 +61,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space
-        that has been returned from `get_optimization_space` for the
+        that has been returned from `get_optimization_space()` for the
         same time. In other words, the following assert should never
         raise an exception:
 
@@ -139,9 +139,9 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
 
         By default, this method returns an empty list. If the list is
         non-empty, if should contain as many names as the corresponding
-        :attr:`optimization_space`. Each name should correspond to an
-        LSA parameter that is being corrected by the optimization
-        procedure.
+        box returned by :attr:`get_optimization_space()`. Each name
+        should correspond to an LSA parameter that is being corrected by
+        the optimization procedure.
 
         A host application may use these names to show the functions
         that are being modified to the user.
