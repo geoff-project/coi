@@ -1,5 +1,5 @@
-Optimization of LSA Functions
-=============================
+Optimizing Points on an LSA Function
+====================================
 
 .. digraph:: inheritance_diagram
     :caption: "Fig. 4: Inheritance diagram of FunctionOptimizable"

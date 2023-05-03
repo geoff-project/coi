@@ -1,5 +1,5 @@
-Problem Registry
-================
+Making Your Code Findable
+=========================
 
 This package provides an *registry* similar to the one provided by Gym itself.
 Every optimization problem that wants to be usable in a generic context should

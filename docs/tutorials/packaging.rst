@@ -200,8 +200,6 @@ __ https://github.com/github/gitignore/
 __ https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository#_ignoring
 __ https://git-scm.com/docs/git-check-ignore
 
-.. _tutorial-adding-pyproject.toml:
-
 Adding :file:`pyproject.toml` (Optional)
 ----------------------------------------
 
@@ -483,8 +481,8 @@ Given that most projects will be written purely in Python, wheels are the
 preferred distribution format. Depending on circumstances, it may make sense to
 publish an sdist in addition. The way to manually create and upload a
 distribution to the package repository is `described elsewhere <Acc-Py package
-upload_>`_. See :ref:`Releasing a Package via CI <tutorial-release-ci>` for the
-preferred and supported method at CERN.
+upload_>`_. See :ref:`Releasing a Package via CI` for the preferred and
+supported method at CERN.
 
 .. _Acc-Py package upload:
    https://wikis.cern.ch/display/ACCPY/Development+Guidelines#DevelopmentGuidelines-CreationandUploadofyourpackage
@@ -499,8 +497,6 @@ Further reading:
 __ https://realpython.com/python-wheels/
 __ https://wikis.cern.ch/display/ACCPY/Building+wheels+for+Python+packages
 __ https://www.youtube.com/watch?v=lpBaZKSODFA (2012)
-
-.. _tutorial-ci:
 
 Continuous Integration
 ----------------------
@@ -652,8 +648,6 @@ __ https://docs.pytest.org/en/latest/explanation/goodpractices.html#tests-as-par
 __ https://wikis.cern.ch/display/ACCPY/GUI+Testing
 __ https://wikis.cern.ch/display/ACCPY/papc+-+a+pure+Python+PyJapc+offline+simulator
 __ https://gitlab.cern.ch/scripting-tools/pyjapc/-/blob/master/.gitlab-ci.yml
-
-.. _tutorial-release-ci:
 
 Releasing a Package via CI
 --------------------------
@@ -812,8 +806,8 @@ If you manage to put all your data into :file:`setup.cfg`, your
     setup()
 
 If you use setuptools version 40.9 or later (which should be specified :ref:`in
-your pyproject.toml file <tutorial-adding-pyproject.toml>`), you can completely
-remove the :file:`setup.py` file in this case.
+your pyproject.toml file <adding :file:\`pyproject.toml\` (optional)>`), you
+can completely remove the :file:`setup.py` file in this case.
 
 Further reading:
 
@@ -1001,7 +995,8 @@ to only that function. If you put them at the end of a line, they only apply to
 that line.
 
 You can prevent bugs from silently sneaking into your code by running Pylint in
-your :ref:`CI/CD pipeline <tutorial-ci>` every time you push code to Gitlab:
+your :ref:`CI/CD pipeline <continuous integration>` every time you push code to
+Gitlab:
 
 .. code-block:: yaml
 

@@ -57,8 +57,6 @@ also implements `~cernml.coi.OptEnv`. A demonstration:
     assert issubclass(Indirect, coi.OptEnv)
 
 
-.. _guide-metadata:
-
 Metadata
 --------
 
@@ -71,7 +69,7 @@ The following keys are defined and understood by this package:
 
 ``"render.modes"``
     the render modes that the optimization problem understands (see
-    :ref:`guide-rendering`);
+    :ref:`Rendering`);
 
 ``"cern.machine"``
     the accelerator that an optimization problem is associated with;
@@ -83,11 +81,9 @@ The following keys are defined and understood by this package:
 ``"cern.cancellable"``
     A boolean flag indicating whether the problem's constructor expects an
     argument named *cancellation_token* of type `cancellation.Token
-    <cernml.coi.cancellation.Token>` (see :ref:`guide-cancellation`).
+    <cernml.coi.cancellation.Token>` (see :ref:`Cancellation`).
 
 See the :attr:`API docs<cernml.coi.Problem.metadata>` for a full spec.
-
-.. _guide-rendering:
 
 Rendering
 ---------
@@ -232,8 +228,6 @@ The interfaces make use of spaces as follows:
     the domain of valid observations returned by `~gym.Env.reset()` and
     `~gym.Env.step()`.
 
-.. _guide-cf-single-opt:
-
 Control Flow for ``SingleOptimizable``
 --------------------------------------
 
@@ -298,8 +292,9 @@ The `~gym.Env.reset()` method is called at the start of an episode. It
 typically picks a random, known-bad initial state and clears any state from the
 previous episode. It eventually must return an initial observation to seed the
 agent. Though an environment may pick a constant initial state or re-use the
-current state, (see :ref:`the above section<guide-cf-single-opt>`), this is
-often reduces the amount of experience a reinforcement learner can gather.
+current state, (see :ref:`the above section <Control Flow for
+\`\`SingleOptimizable\`\`>`), this is often reduces the amount of experience a
+reinforcement learner can gather.
 
 Afterwards, the host application calls an agent to decide on an action given
 the current observation. This action is then passed to `~gym.Env.step()`, which

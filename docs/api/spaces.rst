@@ -1,5 +1,5 @@
-Spaces
-======
+Gym Spaces
+==========
 
 .. class:: gym.spaces.Space(shape=None, dtype=None)
 

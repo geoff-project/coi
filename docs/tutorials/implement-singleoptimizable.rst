@@ -159,21 +159,20 @@ definition: Instead of being its own independent class, it now subclasses the
 
 The interface **requires** the following methods and attributes from us:
 
-- :ref:`metadata <tutorial-impl-metadata>`
-- :ref:`optimization_space <tutorial-impl-opt-space>`
-- :ref:`get_initial_params() <tutorial-impl-get-initial-params>`,
-- :ref:`compute_single_objective() <tutorial-compute-single-objective>`,
+- :ref:`metadata <Adding Metadata>`
+- :ref:`optimization_space <Defining the Optimization Space>`
+- :ref:`get_initial_params() <implementing \`\`get_initial_params()\`\`>`,
+- :ref:`compute_single_objective() <implementing
+  \`\`compute_single_objective()\`\`>`,
 
 and the following ones are **optional** (i.e. we'll get to them later):
 
-- :ref:`constraints <tutorial-impl-constraints>`
-- :ref:`objective_range <tutorial-impl-objective-range>`
-- :ref:`render() <tutorial-impl-custom-rendering>`.
+- :ref:`constraints <Adding Constraints>`
+- :ref:`objective_range <Defining the Objective Range>`
+- :ref:`render() <Custom Rendering Output>`.
 
-.. _tutorial-impl-metadata:
-
-Metadata
-^^^^^^^^
+Adding Metadata
+^^^^^^^^^^^^^^^
 
 Let's start with the boring one, the metadata: Every optimization problem must
 declare a minimal amount of information about itself so that the host
@@ -202,7 +201,7 @@ have conventional meaning. The full list is given :attr:`elsewhere
 
 ``render.modes``
     This must be present and it must be a collection of strings. We'll get to
-    the details :ref:`further down <tutorial-impl-custom-rendering>`, but this
+    the details :ref:`further down <custom rendering output>`, but this
     declares the ways in which a user can visualize your problem. Because this
     list is empty right now, it means our problem can't be visualized at all.
     (We'll change this later.)
@@ -215,10 +214,8 @@ have conventional meaning. The full list is given :attr:`elsewhere
     access. In such a case, our ``__init__()`` method must accept a keyword
     argument *japc* (which it already does).
 
-.. _tutorial-impl-opt-space:
-
-Optimization Space
-^^^^^^^^^^^^^^^^^^
+Defining the Optimization Space
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `~cernml.coi.SingleOptimizable.optimization_space` is a definition of how
 many parameters we are optimizing (the degrees of freedom) and what their valid
@@ -239,10 +236,8 @@ For now, the space must always be a box, its shape must always be a one-tuple
 with the number of degrees of freedom, and the bounds are always −1 and +1.
 These restrictions may be lifted in the future.
 
-.. _tutorial-impl-get-initial-params:
-
-Get Initial Params
-^^^^^^^^^^^^^^^^^^
+Implementing ``get_initial_params()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Every optimization procedure needs an initial point from where to start
 optimization. The method `~cernml.coi.SingleOptimizable.get_initial_params()`
@@ -280,10 +275,8 @@ range from −1 to 1, but the actual corrector values may not. For now, the
 interface requires us to do this normalization manually. In the future, this
 restriction may be lifted in a backwards-compatible manner.
 
-.. _tutorial-compute-single-objective:
-
-Compute Single Objective
-^^^^^^^^^^^^^^^^^^^^^^^^
+Implementing ``compute_single_objective()``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Finally, it's time to write the core of the class: The cost function that an
 optimizer will have to minimize. Note that the interface always assumes a
@@ -304,8 +297,8 @@ from −1 to 1:
             rms = np.sqrt(np.mean(pos ** 2))
             return rms
 
-Registration
-^^^^^^^^^^^^
+Registering the Class
+^^^^^^^^^^^^^^^^^^^^^
 
 Once all this is done, we already can use this class in an interactive session.
 However, to use it inside a host application, we must make one more step. We
@@ -379,10 +372,8 @@ This section contains details on some portions of the interface that only a
 minority of authors will have to deal with. They are here for completeness'
 sake, but feel free to skip this part.
 
-.. _tutorial-impl-objective-range:
-
-Objective Range
-^^^^^^^^^^^^^^^
+Defining the Objective Range
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Similar to how the `~cernml.coi.SingleOptimizable.optimization_space` declares
 the range of possible inputs to the cost function,
@@ -395,10 +386,8 @@ narrow this down, be sure to pick the correct limits: the cost function is not
 allowed to return values outside of this range and `~cernml.coi.check()`
 verifies that this is true.
 
-.. _tutorial-impl-constraints:
-
-Constraints
-^^^^^^^^^^^
+Adding Constraints
+^^^^^^^^^^^^^^^^^^
 
 Some optimization algorithms (such as COBYLA_) have a concept of *constraints*,
 i.e. linear or nonlinear functions whose value must be kept within certain
@@ -439,8 +428,6 @@ it makes sense. To do this, you have to use
    limits. Use `~cernml.coi.SingleOptimizable.optimization_space` and, in case
    of emergencies, raise an exception inside
    `~cernml.coi.SingleOptimizable.compute_single_objective()`.
-
-.. _tutorial-impl-custom-rendering:
 
 Custom Rendering Output
 -----------------------

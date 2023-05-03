@@ -40,6 +40,7 @@ release = importlib_metadata.version("cernml-coi")
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosectionlabel",
     "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",

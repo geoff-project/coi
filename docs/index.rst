@@ -1,5 +1,5 @@
-Common Optimization Interfaces
-==============================
+COI — Common Optimization Interfaces
+====================================
 
 CERN ML is the project of bringing numerical optimization, machine learning and
 reinforcement learning to the operation of the CERN accelerator complex.

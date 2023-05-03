@@ -82,8 +82,6 @@ v0.8.1
 - ADD: :func:`~cernml.coi.checkers.check_configurable()` for all implementors of the :class:`~cernml.coi.Configurable` interface.
 - FIX: Broken links in the API docs of the :doc:`api/checkers`.
 
-.. _v0.8.0:
-
 v0.8.0
 ------
 
@@ -107,8 +105,6 @@ v0.7.5
 ------
 
 - FIX: Increase the stacklevel of the :ref:`v0.7.4` deprecation warnings so that they appear more reliably.
-
-.. _v0.7.4:
 
 v0.7.4
 ------
@@ -141,17 +137,17 @@ v0.7.1
 v0.7.0
 ------
 
-- BREAKING: Remove :ref:`Cancellation tokens <guide-cancellation>`. The stable API did not accommodate all required use cases and could not be fixed in a backwards-compatible manner.
-- ADD: Re-add :ref:`Cancellation tokens <guide-cancellation>` as an unstable module. The new API supports cancellation completion and resets.
+- BREAKING: Remove :ref:`Cancellation tokens <Cancellation>`. The stable API did not accommodate all required use cases and could not be fixed in a backwards-compatible manner.
+- ADD: Re-add :ref:`Cancellation tokens <Cancellation>` as an unstable module. The new API supports cancellation completion and resets.
 
 v0.6.2
 ------
 
 - ADD: Rename all variants of :class:`~cernml.coi.Machine` to ``SCREAMING_SNAKE_CASE``. The ``PascalCase`` names remain available, but issue a deprecation warning.
-- ADD: :ref:`Cancellation tokens <guide-cancellation>`.
+- ADD: :ref:`Cancellation tokens <Cancellation>`.
 - ADD: Cancellation support to :func:`parameter streams<cernml.japc_utils.subscribe_stream>`.
 - ADD: Property :attr:`~cernml.japc_utils.ParamStream.locked` to parameter streams.
-- ADD: Document :ref:`parameter streams <guide-synchronization>`.
+- ADD: Document :ref:`parameter streams <Synchronization>`.
 - ADD: Document plugin support in :func:`~cernml.coi.check`.
 - FIX: Add default values for all known :attr:`~cernml.coi.Problem.metadata` keys.
 - FIX: Missing ``figure.show()`` when calling :meth:`SimpleRenderer.update("human")<cernml.mpl_utils.Renderer.update>`.

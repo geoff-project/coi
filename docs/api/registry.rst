@@ -1,5 +1,5 @@
-Problem Registry
-================
+The Problem Registry
+====================
 
 .. autofunction:: cernml.coi.register
 

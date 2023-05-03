@@ -1,5 +1,5 @@
-Other Interfaces
-================
+More Optimization Interfaces
+============================
 
 This section introduces a few useful, but less common interfaces defined by Gym
 and the COI.

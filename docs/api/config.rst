@@ -1,5 +1,5 @@
-Configuration of Problems
-=========================
+The Configurable Interface
+==========================
 
 .. autoclass:: cernml.coi.Configurable
     :show-inheritance:

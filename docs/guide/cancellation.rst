@@ -1,5 +1,5 @@
-Synchronization and Cancellation
-================================
+Waiting for New Data Without Blocking the GUI
+=============================================
 
 A typical use case for COI problems is optimization of parameters of various
 CERN accelerators. Doing so naturally requires communication with these
@@ -19,8 +19,6 @@ Tricky problems indeed! While this package cannot claim to solve them in all
 possible cases, it provides a few tools to get reasonable behavior with few
 lines of code in the most common cases.
 
-.. _guide-synchronization:
-
 Synchronization
 ---------------
 
@@ -39,8 +37,6 @@ information.
     # Blocks execution until the next value is there.
     value, header = the_field.wait_for_next()
 
-.. _guide-cancellation:
-
 Cancellation
 ------------
 
@@ -55,13 +51,13 @@ raising an exception.
    https://docs.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads
 
 To use this feature, your problem must first declare that its support it by
-setting the ``"cern.cancellable"`` :ref:`metadata <guide-metadata>`. When it
-does so, a host application will pass a `~cernml.coi.cancellation.Token` to the
+setting the ``"cern.cancellable"`` :ref:`metadata <Metadata>`. When it does so,
+a host application will pass a `~cernml.coi.cancellation.Token` to the
 constructor. On this token, the problem should check whether cancellation has
 been requested whenever it enters a loop that may run for a long time.
 
 This sounds complicated, but luckily, :ref:`parameter streams
-<guide-synchronization>` already support cancellation tokens:
+<Synchronization>` already support cancellation tokens:
 
 .. code-block:: python
 
