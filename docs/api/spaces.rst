@@ -15,11 +15,10 @@ Gym Spaces
         (e.g. :class:`~gym.spaces.Box`, :class:`~gym.spaces.Discrete`, etc.),
         and container classes (:class:`~gym.spaces.Tuple` and
         :class:`~gym.spaces.Dict`). Note that parametrized probability
-        distributions (through the `sample()` method), and batching functions
-        (in :class:`gym.vector.VectorEnv`), are only well-defined for instances
-        of spaces provided in gym by default. Moreover, some implementations of
-        Reinforcement Learning algorithms might not handle custom spaces
-        properly. Use custom spaces with care.
+        distributions (through the `sample()` method) are only well-defined for
+        instances of spaces provided in gym by default. Moreover, some
+        implementations of Reinforcement Learning algorithms might not handle
+        custom spaces properly. Use custom spaces with care.
 
     .. method:: contains(x)
 
@@ -105,3 +104,21 @@ Gym Spaces
                 })
             })
         })
+
+.. class:: gym.spaces.Tuple(spaces, seed=None)
+
+    A tuple (i.e. *product*) of simpler spaces.
+
+    Example usage:
+
+        >>> self.observation_space = spaces.Tuple(
+        ...     (spaces.Discrete(2), spaces.Discrete(3))
+        ... )
+
+.. class:: gym.spaces.Discrete(n, seed=None)
+
+    A discrete space in :math:`\{ 0, 1, …, n-1 \}`.
+
+    Example:
+
+        >>> Discrete(2)

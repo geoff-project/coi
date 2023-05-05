@@ -107,3 +107,15 @@ Common Optimization Interfaces
             :info:
                 Contains auxiliary diagnostic information (helpful for
                 debugging, and sometimes learning).
+
+.. class:: gym.Wrapper
+
+   Wraps the environment to allow a modular transformation.
+
+   This class is the base class for all wrappers. The subclass could override
+   some methods to change the behavior of the original environment without
+   touching the original code.
+
+   .. note::
+      Don’t forget to call ``super().__init__(env)`` if the subclass overrides
+      ``__init__()``.
