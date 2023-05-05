@@ -14,20 +14,27 @@ learning (RL) problems; the latter by classes that describe
 numerical-optimization problems. A class may implement both, either
 explicitly or through the convenience class `OptEnv`.
 
-This package comes with its own registry, similar to that of
-:mod:`gym.envs.registration`. This makes it possible to globally
-register both RL and numerical-optimization problems in one common list.
-To make your problem findable by other applications, don't forget to
-call ``coi.register(name, entry_point=Class)`` after your class
-definition.
+This package comes with its own :doc:`registry <registry>`; it is
+similar to Gym's :class:`~gym.envs.registration.EnvRegistry`, but makes
+it possible to register both RL and numerical-optimization problems in
+one common list. To make your problem findable by other applications,
+never forget the following line:
+
+.. code-block:: python
+
+    coi.register("name", entry_point=Class)
 
 For reasons of portability, this API does not support the full range of
 `~gym.Env` classes, but rather puts several restrictions on them. This
-is inspired by `Stable Baselines' Env Checker
-<https://stable-baselines3.readthedocs.io/en/master/common/env_checker.html>`_,
-but comes with additional requirements. For more information, please
-refer to `our package docs
-<https://acc-py.web.cern.ch/gitlab/geoff/cernml-coi>`_.
+is inspired by the :doc:`sb3:common/env_checker` designed by
+:doc:`Stable Baselines <sb3:index>`, but comes with additional
+requirements. For more information, please refer to our
+:doc:`/guide/index`.
+
+Finally, for the purpose of embedding optimization problems as *plugins*
+into a *host application*, this package also provides an interface for
+pre-run :doc:`configuration <config>` of optimization problems and for
+the :doc:`cancellation <cancellation>` of running algorithms.
 """
 
 from ._configurable import (

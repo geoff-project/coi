@@ -150,23 +150,29 @@ graphviz_output_format = "svg"
 
 # -- Options for Intersphinx -------------------------------------------
 
-ACC_PY_DOCS_ROOT = "https://acc-py.web.cern.ch/gitlab/"
-RTD_TEMPLATE = "https://{}.readthedocs.io/en/stable"
+
+def acc_py_docs_link(repo: str) -> str:
+    """A URL pointing to the Acc-Py docs server."""
+    return f"https://acc-py.web.cern.ch/gitlab/{repo}/docs/stable/"
+
+
+def rtd_link(name: str, branch: str = "stable") -> str:
+    """A URL pointing to a Read The Docs project."""
+    return f"https://{name}.readthedocs.io/en/{branch}"
+
 
 intersphinx_mapping = {
-    "utils": (
-        ACC_PY_DOCS_ROOT + "geoff/cernml-coi-utils/docs/stable/",
-        None,
-    ),
-    "japc": (ACC_PY_DOCS_ROOT + "scripting-tools/pyjapc/docs/stable/", None),
+    "utils": (acc_py_docs_link("geoff/cernml-coi-utils"), None),
+    "japc": (acc_py_docs_link("scripting-tools/pyjapc"), None),
     "mpl": ("https://matplotlib.org/stable/", None),
     "np": ("https://numpy.org/doc/stable/", None),
     "sci": ("https://docs.scipy.org/doc/scipy/reference/", None),
     "std": ("https://docs.python.org/3/", None),
     "pkg": ("https://packaging.python.org/en/latest/", None),
-    "setuptools": (RTD_TEMPLATE.format("setuptools"), None),
-    "importlib_metadata": (RTD_TEMPLATE.format("importlib-metadata"), None),
-    "black": (RTD_TEMPLATE.format("black"), None),
+    "sb3": (rtd_link("stable-baselines3", branch="master"), None),
+    "setuptools": (rtd_link("setuptools"), None),
+    "importlib_metadata": (rtd_link("importlib-metadata"), None),
+    "black": (rtd_link("black"), None),
 }
 
 # -- Options for Myst-Parser -------------------------------------------

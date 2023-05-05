@@ -1,6 +1,8 @@
 API Reference
 =============
 
+.. automodule:: cernml.coi
+
 .. toctree::
     :maxdepth: 2
 
