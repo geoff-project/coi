@@ -2,6 +2,7 @@ Gym Spaces
 ==========
 
 .. class:: gym.spaces.Space(shape=None, dtype=None)
+   :canonical: gym.spaces.space.Space
 
     Bases: `object`
 
@@ -47,6 +48,7 @@ Gym Spaces
         from this space.
 
 .. class:: gym.spaces.Box(low, high, shape=None, dtype=<class 'numpy.float32'>)
+   :canonical: gym.spaces.box.Box
 
     Bases: `gym.spaces.Space`
 

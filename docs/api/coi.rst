@@ -21,6 +21,7 @@ Common Optimization Interfaces
     :show-inheritance:
 
 .. class:: gym.Env
+   :canonical: gym.core.Env
 
     Bases: `cernml.coi.Problem`
 

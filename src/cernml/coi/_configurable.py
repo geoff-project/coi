@@ -46,11 +46,11 @@ class Config:
         >>> config.validate_all({"foo": "a"})
         Traceback (most recent call last):
         ...
-        coi._configurable.BadConfig: invalid value for foo: 'a'
+        BadConfig: invalid value for foo: 'a'
         >>> config.add("foo", 0)
         Traceback (most recent call last):
         ...
-        coi._configurable.DuplicateConfig: foo
+        DuplicateConfig: foo
 
     If your class consists of multiple configurable components, you can
     combine their individual configs as long as the names don't overlap:
@@ -293,7 +293,7 @@ class Config:
             >>> first.extend(second)
             Traceback (most recent call last):
             ...
-            coi._configurable.DuplicateConfig: {'second'}
+            DuplicateConfig: {'second'}
         """
         duplicates = self._fields.keys() & other._fields.keys()
         if duplicates:

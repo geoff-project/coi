@@ -11,14 +11,19 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 # -- Path setup --------------------------------------------------------
 
+from __future__ import annotations
+
 import datetime
+import importlib
+import inspect
 import pathlib
-import types
+import typing as t
 
 try:
     import importlib_metadata
 except ImportError:
     # Starting with Python 3.10 (see pyproject.toml).
+    # pylint: disable = ungrouped-imports
     import importlib.metadata as importlib_metadata  # type: ignore
 
 ROOTDIR = pathlib.Path(__file__).absolute().parent.parent
@@ -72,77 +77,6 @@ autodoc_typehints = "signature"
 
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
-napoleon_type_aliases = {
-    "Problem": "cernml.coi._problem.Problem",
-}
-
-
-def setup(app):  # type: ignore
-    """Sphinx setup hook."""
-
-    def _deduce_public_module_name(name):  # type: ignore
-        if name.startswith("cernml.coi._"):
-            return "cernml.coi"
-        if name == "gym.core":
-            return "gym"
-        if name.startswith("gym.spaces."):
-            return "gym.spaces"
-        return name
-
-    def _hide_configurable_module(obj):  # type: ignore
-        annotations = getattr(obj, "__annotations__", {})
-        if annotations.get("return") == "Config":
-            annotations["return"] = "cernml.coi.Config"
-
-    def _hide_class_module(class_):  # type: ignore
-        old_name = getattr(class_, "__module__", "")
-        if not old_name:
-            return
-        new_name = _deduce_public_module_name(old_name)
-        if new_name != old_name:
-            class_.__module__ = new_name
-
-    def _hide_checker_arg(func):  # type: ignore
-        name = func.__name__
-        if name != "check" and not name.startswith("check_"):
-            return
-        annotations = getattr(func, "__annotations__", {})
-        for type_ in annotations.values():
-            _hide_class_module(type_)
-
-    def _hide_return_value(func):  # type: ignore
-        name = func.__name__
-        if name.endswith("_space"):
-            annotations = getattr(func, "__annotations__", {})
-            return_type = annotations.get("return")
-            if return_type and isinstance(return_type, type):
-                _hide_class_module(return_type)
-
-    def _resolve_problem_string(func):  # type: ignore
-        # Manually resolve this reference so that Sphinx does not insert
-        # the hidden `_problem` module.
-        annotations = getattr(func, "__annotations__", {})
-        return_type = annotations.get("return")
-        if return_type and return_type == "Problem":
-            func.__annotations__["return"] = "cernml.coi.Problem"
-
-    def _hide_private_modules(_app, obj, _bound_method):  # type: ignore
-        if isinstance(obj, type):
-            if obj.__name__ == "Problem":
-                _resolve_problem_string(obj.unwrapped.fget)
-            for base in obj.__mro__:
-                _hide_class_module(base)
-            annotations = getattr(obj, "__annotations__", {})
-            for attr_type in annotations.values():
-                if isinstance(obj, type):
-                    _hide_class_module(attr_type)
-        elif isinstance(obj, types.FunctionType):
-            _hide_checker_arg(obj)
-            _hide_return_value(obj)
-        _hide_configurable_module(obj)
-
-    app.connect("autodoc-before-process-signature", _hide_private_modules)
-
 
 # -- Options for Graphviz ----------------------------------------------
 
@@ -190,3 +124,59 @@ html_theme = "sphinxdoc"
 # here, relative to this directory. They are copied after the builtin
 # static files, so a file named "default.css" will overwrite the builtin
 # "default.css". html_static_path = ["_static"]
+
+
+# -- Custom code -------------------------------------------------------
+
+
+def replace_modname(modname: str) -> None:
+    """Change the module that a list of objects publicly belongs to.
+
+    This package follows the pattern to have private modules called
+    :samp:`_{name}` that expose a number of classes and functions that
+    are meant for public use. The parent package then exposes these like
+    this::
+
+        from ._name import Thing
+
+    However, these objects then still expose the private module via
+    their ``__module__`` attribute::
+
+        assert Thing.__module__ == 'parent._name'
+
+    This function iterates through all exported members of the package
+    or module *modname* (as determined by either ``__all__`` or
+    `vars()`) and fixes each one's module of origin up to be the
+    *modname*. It does so recursively for all public attributes (i.e.
+    those whose name does not have a leading underscore).
+    """
+    todo: t.List[t.Any] = [importlib.import_module(modname)]
+    while todo:
+        parent = todo.pop()
+        for pubname in pubnames(parent):
+            obj = inspect.getattr_static(parent, pubname)
+            private_modname = getattr(obj, "__module__", "")
+            if private_modname and _is_true_prefix(modname, private_modname):
+                obj.__module__ = modname
+                todo.append(obj)
+
+
+def pubnames(obj: t.Any) -> t.Iterator[str]:
+    """Return an iterator over the public names in an object."""
+    return iter(
+        t.cast(t.List[str], getattr(obj, "__all__", None))
+        or (
+            name
+            for name, _ in inspect.getmembers_static(obj)
+            if not name.startswith("_")
+        )
+    )
+
+
+def _is_true_prefix(prefix: str, full: str) -> bool:
+    return full.startswith(prefix) and full != prefix
+
+
+# Do submodules first so that `coi.check()` is correctly assigned.
+replace_modname("cernml.coi.checkers")
+replace_modname("cernml.coi")

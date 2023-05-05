@@ -117,6 +117,13 @@ import threading
 import typing as t
 import weakref
 
+__all__ = [
+    "CancelledError",
+    "CannotReset",
+    "Token",
+    "TokenSource",
+]
+
 
 class CancelledError(Exception):
     """The current task has been requested to be cancelled.

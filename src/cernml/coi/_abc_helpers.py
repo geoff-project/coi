@@ -1,6 +1,9 @@
-"""Provides check_methods(), a helper function for ABCs."""
+"""Provides `check_methods()`, a helper function for ABCs."""
 
 from typing import Any
+
+
+__all__ = ['check_methods']
 
 
 def check_methods(C: type, *methods: str) -> Any:

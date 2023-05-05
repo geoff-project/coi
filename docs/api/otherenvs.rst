@@ -2,6 +2,7 @@ Separable and Goal-Based Interfaces
 ===================================
 
 .. class:: gym.GoalEnv
+    :canonical: gym.core.GoalEnv
 
     Bases: `gym.Env`
 
