@@ -2,39 +2,39 @@ Packaging Crash Course
 ======================
 
 This tutorial teaches you briefly how to create a Python package, set up a CI
-pipeline and publish it to the `Acc-Py Artifactory`_. It uses `Acc-Py`_ to
+pipeline and publish it to the `Acc-Py Package Index`_. It uses Acc-Py_ to
 simplify the process, but also explains what happens under the hood. For each
 topic, hyperlinks to further information are provided.
 
-.. _Acc-Py Artifactory: https://artifactory.cern.ch/
-.. _Acc-Py: https://wikis.cern.ch/display/ACCPY/
-
 Each section should be reasonably self-contained. Feel free to skip boring
 sections or go directly to the one that answers your question. See also the
-`Acc-Py deployment walkthrough`_ on converting an unstructured repository of
-Python code into a app-py-deployable Python package.
+`Acc-Py deployment walkthrough`_ for an alternative approach that converts an
+unstructured repository of Python code into a deployable Python package.
 
+.. _Acc-Py Package Index:
+   https://wikis.cern.ch/display/ACCPY/Python+package+index
+.. _Acc-Py: https://wikis.cern.ch/display/ACCPY/
 .. _Acc-Py deployment walkthrough:
    https://wikis.cern.ch/display/ACCPY/Deployment+walk-through
 
 Loading Acc-Py
 --------------
 
-If you're confident in your Python environment, feel free to skip this section.
-This serves as a baseline from which beginners can start and be confident that
-none of the experiments here will impact their other projects.
+If you trust your Python environment, feel free to skip this section. This
+serves as a baseline from which beginners can start and be confident that none
+of the experimentation here will impact their other projects.
 
 Start out by loading Acc-Py. We recommend using the latest Acc-Py Base
-distribution (2020.11 at the time of this writing):
+distribution (2021.12 at the time of this writing):
 
 .. code-block:: shell-session
 
     $ source /acc/local/share/python/acc-py/base/pro/setup.sh
 
-If you put this line into your :file:`~/.bash_profile` script, it will be
-executed every time you log into your machine. If you don't want this, but you
-also don't want to have to remember this long path, consider putting an alias
-into your :file:`~/.bash_profile` instead:
+If you put this line into your :file:`~/.bash_profile` script [#profile]_, it
+will be executed every time you log into your machine. If you don't want this,
+but you also don't want to have to remember this long path, consider putting an
+alias into your :file:`~/.bash_profile` instead:
 
 .. code-block:: shell-session
 
@@ -44,72 +44,82 @@ This way, you can load Acc-Py by invoking :command:`setup-acc-py` on your
 command line.
 
 .. note::
-   Acc-Py is only available within the CERN network. Outside, you can either
-   use your pre-installed Python distribution or use a distribution manager
-   like `Pyflow`_, `Pyenv`_ or `Miniconda`_.
+   If you want to use Acc-Py outside of the CERN network, the `Acc-Py Package
+   Index`_ wiki page has instructions on how to access it from outside. If you
+   want to use multiple Python versions on the same machine, you may use a tool
+   like Pyenv_, Pyflow_ or Miniconda_.
 
 .. _Pyflow: https://github.com/David-OConnor/pyflow,
 .. _Pyenv: https://github.com/pyenv/pyenv or
 .. _Miniconda: https://docs.conda.io/en/latest/miniconda.html.
 
-Further reading:
+Further reading in the Acc-Py Wiki:
 
 - `Acc-Py Base`__
-- `difference between the *Base* and the *Interactive* distributions`__
+- `Acc-Py Interactive Eenvironment`__
 
-__ https://wikis.cern.ch/display/ACCPY/Acc-Py+base
-__ https://wikis.cern.ch/display/ACCPY/Python+distribution
+__ https://wikis.cern.ch/display/ACCPY/Acc-Py+base+distribution
+__ https://wikis.cern.ch/display/ACCPY/Interactive+environment
+
+.. [#profile] See `here <https://unix.stackexchange.com/questions/45684/>`_ for
+   the difference between :file:`.bash_profile` and :file:`.profile`.
 
 Creating a virtual environment
 ------------------------------
 
-Virtual environments separate dependencies of one project from another. This
-way, you can work on one project that uses Tensorflow 1.x, switch your venv,
-then work on another project that uses Tensorflow 2.x.
+Virtual environments (or :doc:`venvs <std:library/venv>` for short) separate
+dependencies of one project from another. This way, you can work on one project
+that uses PyTorch 1.x, switch your venv, then work on another project that
+uses PyTorch 2.x.
 
 Venvs also allow you to install dependencies that are not available in the
 Acc-Py distribution. This approach is much more robust than installing them
-into your home directory via :command:`pip install --user`. The latter is
-discouraged, as it quickly leads to incomprehensible import errors.
+into your home directory via :command:`pip install --user`. The latter often
+leads to hard-to-understand import errors, so it is discouraged.
 
-If you're working on your VM, we recommend creating your venv in the
+If you're working on your `BE-CSS VPC`_, we recommend creating your venv in the
 :file:`/opt` directory, since space in your home directory is limited.
-Obviously, this does not work on `LXPLUS`_, where your home directory is the
-only choice.
+Obviously, this does not work on LXPLUS_, where your home directory is the only
+choice.
 
+.. _BE-CSS VPC:
+   https://wikis.cern.ch/display/ACCADM/VPC+Virtual+Machines+BE-CSS
 .. _LXPLUS: https://lxplusdoc.web.cern.ch/
 
 .. code-block:: shell-session
 
-    $ sudo mkdir -p /opt/venvs        # Create a directory for all your venvs.
-    $ sudo chown "$USER:" /opt/venvs  # Make it your own (instead of root's).
-    $ acc-py venv /opt/venvs/coi-example
+    $ # Create a directory for all your venvs.
+    $ sudo mkdir -p /opt/home/$USER/venvs
+    $ # Make it your own (instead of root's).
+    $ sudo chown "$USER:" /opt/home/$USER/venvs
+    $ acc-py venv /opt/home/$USER/venvs/coi-example
 
-The :command:`acc-py venv` command is a convenience wrapper around the
-:mod:`std:venv` standard library module. In particular, it passes the
-``--system-site-packages`` flag. This flag ensures that everything that is
-preinstalled in the Acc-Py distribution also is available in your new
-environment. Without it, you would have to install common dependencies such as
-:doc:`NumPy <np:index>`.
+.. note::
+   The :command:`acc-py venv` command is a convenience wrapper around the
+   :mod:`std:venv` standard library module. In particular, it passes the
+   ``--system-site-packages`` flag. This flag ensures that everything that is
+   preinstalled in the Acc-Py distribution also is available in your new
+   environment. Without it, you would have to install common dependencies such
+   as :doc:`NumPy <np:index>`.
 
 Once the virtual environment is created, you can activate it like this:
 
 .. code-block:: shell-session
 
-    $ source /opt/venvs/coi-example/bin/activate
+    $ source /opt/home/$USER/venvs/coi-example/bin/activate
     $ which python  # Where does our Python interpreter come from?
-    /opt/venvs/coi-example/bin/python
+    /opt/home/.../venvs/coi-example/bin/python
     $ # deactivate  # Leave the venv again.
 
 After activating the environment, you can give it a test run by upgrading the
-Pip package manager. This should be visible only within your virtual
+Pip package manager. This change should be visible only within your virtual
 environment:
 
 .. code-block:: shell-session
 
     $ pip install --upgrade pip
 
-Further reading:
+Further reading in the Acc-Py Wiki:
 
 - `Getting started with Acc-Py`__
 - `Acc-Py Development advice`__
@@ -152,9 +162,10 @@ You can inspect the results via the :command:`tree` `command <tree_>`_:
 
 This is usually enough to get started. However, there are two useful files that
 Acc-Py does not create for us: :file:`.gitignore` and :file:`pyproject.toml`.
-We might as well add them now.
+If you're not in a hurry, we suggest you create them now. Otherwise, continue
+with :ref:`Adding Dependencies`.
 
-Further reading:
+Further reading in the Acc-Py wiki:
 
 - `Starting a new Python project`__
 - `Project Layout`__
@@ -167,24 +178,37 @@ __ https://wikis.cern.ch/display/ACCPY/Creating+a+Python+package+from+a+director
 Adding :file:`.gitignore` (Optional)
 ------------------------------------
 
-The :file:`.gitignore` file tells Git which files to ignore. It should contain
-all sorts of temporary files that are created by our tools and by Python itself
-(e.g. :file:`__pycache__/`). You can download a very comprehensive and
-universally agreed-on file `from Github <Python.gitignore>`_.
+The :file:`.gitignore` file tells Git which files to ignore. Ignored files will
+never show up as untracked or modified if you run :command:`git status`. This
+is ideal for caches, temporary files and build artifacts. Without
+:file:`.gitignore`, :command:`git status` would quickly become completely
+useless.
+
+While you can create this file yourself, we recommend you download
+Python.gitignore_; it is comprehensive and universally used. 
 
 .. _Python.gitignore:
    https://github.com/github/gitignore/blob/master/Python.gitignore
 
-Note that it is very common to later add project-specific file names and
-patterns to this list. Do not hesitate to edit it!
+.. warning::
+   After downloading the file and putting it inside your project folder, don't
+   forget to *rename* it to :file:`.gitignore`!
+
+It is very common to later add project-specific names of temporary and
+`glob patterns`_ to this list. Do not hesitate to edit it! It only serves as a
+starting point.
+
+.. _glob patterns: https://en.wikipedia.org/wiki/Glob_(programming)
 
 .. note::
    If you use an IDE like `PyCharm`_, it is very common that IDE-specific
    config and manifest files will end up in your project directory. You *could*
    manually add these files to the :file:`.gitignore` file of every single
-   project. However, it is simpler to keep these files in a `global gitignore
+   project. However, there's an easier way.
+
+   Instead, you can add these file names to a `global gitignore
    <git-excludelist_>`_ file that is specific to your machine (and not your
-   project) instead.
+   project).
 
 .. _PyCharm: https://www.jetbrains.com/pycharm/
 .. _git-excludelist:
@@ -192,8 +216,8 @@ patterns to this list. Do not hesitate to edit it!
 
 Further reading:
 
-- `Common gitignore files`__
-- `*Ignoring files* in the Git book`__
+- `A collection of useful .gitignore templates`__ on GitHub.com
+- `Ignoring Files`__ in the Git Book
 - `Gitignore reference`__
 
 __ https://github.com/github/gitignore/
@@ -203,32 +227,44 @@ __ https://git-scm.com/docs/git-check-ignore
 Adding :file:`pyproject.toml` (Optional)
 ----------------------------------------
 
-While `Setuptools`_ is the most common tool to build Python packages, `it is
-<Poetry_>`_ `not the <Flit_>`_ `only one <Meson_>`_. By default, `Pip`_ makes
-the reasonable assumption that you do use Setuptools, but it's still good style
-to declare this fact.
+`Setuptools`_ is still the most common tool used to build and install Python
+packages. Traditionally, it expects project data (name, version,
+dependencies, …) to be declared in a :file:`setup.py` file.
+
+Many people don't like this approach. Executing arbitrary Python code is a
+security risk and it's hard to accommodate alternative, more modern build
+tools such as Poetry_, Flit_ or Meson_. For this reason, the Python community
+has been slowly moving towards a more neutral format.
 
 .. _Setuptools: https://setuptools.readthedocs.io/
 .. _Poetry: https://python-poetry.org/docs/pyproject/#poetry-and-pep-517
-.. _Flit: https://flit.readthedocs.io/en/latest/
+.. _Flit: https://flit.pypa.io/en/latest/
 .. _Meson: https://thiblahute.gitlab.io/mesonpep517/pyproject.html
-.. _Pip: https://pip.pypa.io/en/stable/
 
-The :file:`pyproject.toml` file fulfills just this purpose: It allows declaring
-your build-time dependencies. In addition, many Python tools (e.g. `Black
+This format is the :file:`pyproject.toml` file. It allows a project to declare
+the build system that it uses and can be read without executing untrusted
+Python code.
+
+In addition, many Python tools (e.g. `Black
 <black-toml_>`_, `Isort <isort-toml_>`_, `Pylint <pylint-toml_>`_, `Pytest
 <pytest-toml_>`_, `Setuptools-SCM <setuptools-scm-toml_>`_) can be configured
 in this file. This reduces clutter in your project directory and makes it
-possible to do all configuration using a `single file format <TOML_>`_.
+possible to do all configuration using a single file format.
 
-.. _Black-TOML: https://github.com/psf/black#pyprojecttoml
-.. _Isort-TOML: https://pycqa.github.io/isort/docs/configuration/config_files/
+.. _Black-TOML:
+   https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html#what-on-earth-is-a-pyproject-toml-file
+.. _Isort-TOML: 
+   https://pycqa.github.io/isort/docs/configuration/config_files.html#pyprojecttoml-preferred-format
 .. _Pylint-TOML:
-   https://pylint.pycqa.org/en/latest/user_guide/run.html#command-line-options
+   https://pylint.pycqa.org/en/latest/user_guide/usage/run.html#command-line-options
 .. _Pytest-TOML:
    https://docs.pytest.org/en/latest/reference/customize.html#pyproject-toml
 .. _Setuptools-SCM-TOML:
    https://github.com/pypa/setuptools_scm#pyprojecttoml-usage
+
+If you wonder what a TOML_ file is, it is a config file format like YAML or
+INI, but with a focus on clarity and simplicity.
+
 .. _TOML: https://toml.io/en/
 
 This is what a minimal :file:`pyproject.toml` file using Setuptools looks like:
@@ -240,11 +276,18 @@ This is what a minimal :file:`pyproject.toml` file using Setuptools looks like:
     requires = ['setuptools', 'wheel']
     build-backend = 'setuptools.build_meta'
 
-And this is a slightly more complex file that also configures a few tools:
+The section ``build-system`` tells Pip how to install our package. The key
+``requires`` gives a list of necessary Python packages. The key
+``build-backend`` points at a Python function that Pip calls to handle the
+rest. Between all of your Python projects, this section will almost never
+change.
+
+And this is a slightly more complex :file:`pyproject.toml`, that also
+configures a few tools. Note that the file would be only about 20 lines long:
 
 .. code-block:: toml
 
-    # Build-time dependencies can have minimum versions and [extras]!
+    # We can require minimum versions and [extras]!
     [build-system]
     requires = [
         'setuptools >= 42',
@@ -253,26 +296,33 @@ And this is a slightly more complex file that also configures a few tools:
     ]
     build-backend = 'setuptools.build_meta'
 
-    # Setuptools-SCM is a bit quirky in that the *presence* of its config
-    # block is enough to activate it.
-    [tool.setuptools_scm]
-
-    # Tell isort to be compatible with the Black formatting style. This is
-    # necessary if you use both tools.
+    # Tell isort to be compatible with the Black formatting style.
+    # This is necessary if you use both tools.
     [tool.isort]
     profile = 'black'
 
-    # As of now, PyTest takes its options in a nested .ini_options table.
-    # Here, we tell it to also run doctests, not just unit tests.
+    # Note that there is no section for Black itself. Normally,
+    # we don't need to configure a tool just to use it!
+
+    # Setuptools-SCM, however, is a bit quirky. The *presence*
+    # of its config block is required to activate it.
+    [tool.setuptools_scm]
+
+    # PyTest takes its options in a nested table
+    # called `.ini_options`. Here, we tell it to also run
+    # doctests, not just unit tests.
     [tool.pytest.ini_options]
     addopts = '--doctest-modules'
 
-    # Pylint splits its configuration across multiple tables. Here, we
-    # disable one warning and minimize their report size.
+    # Pylint splits its configuration across multiple tables.
+    # Here, we disable one warning and minimize their report
+    # size.
     [tool.pylint.reports]
     reports = false
     score = false
 
+    # Note how we quote 'messages control' because it contains
+    # a space character.
     [tool.pylint.'messages control']
     disable = ['similarities']
 
@@ -297,8 +347,8 @@ fill in the blanks. This is what the new requirements look like:
     # setup.py
     REQUIREMENTS: dict = {
         "core": [
-            "cernml.coi ~= 0.4.0",
-            "gym >= 0.11",
+            "cernml.coi ~= 0.8.0",
+            "gym >= 0.21",
             "matplotlib ~= 3.0",
             "numpy ~= 1.0",
             "pyjapc ~= 2.0",
@@ -343,7 +393,7 @@ technically also live without.
 
 Further reading:
 
-- `Packaging of your module`__
+- `Packaging of your module`__ in the Acc-Py Wiki
 - `Setuptools Quickstart`__
 - `Dependency management in Setuptools`__
 - `Setuptools keywords`__
@@ -356,35 +406,37 @@ __ https://setuptools.readthedocs.io/en/latest/references/keywords.html
 Version Requirements (Digression)
 ---------------------------------
 
-When specifying your requirements, you should make sure to put in a reasonable
-version range.
+.. note::
+   This section is purely informative. If it bores you, feel free to skip ahead
+   to :ref:`Interlude: Test Run`.
 
-- Being too lax with your requirements means that one of your dependencies
-  might change and break your code without prior warning.
-- Being too strict with your requirements means that other people will have a
-  harder time making your package work in conjunction with theirs.
+When specifying your requirements, you should make sure to put in a
+*reasonable* version range for two simple reasons:
+
+- Being **too lax** with your requirements means that a package that you use
+  might change something and your code suddenly breaks without warning.
+- Being **too strict** with your requirements means that other people will have
+  a hard time making your package work in conjunction with theirs, even though
+  all the code is correct.
 
 There are two common ways to specify version ranges:
 
-- ``~= 0.4.0`` means: “I am compatible with all versions 0.4.X, but the last
-  part must at least be 0”. This is a good choice if the target adheres to
-  `Semantic Versioning`_. (Not all packages do!)
-- ``>=0.4, <0.5`` means “I am compatible with all versions greater than (or
-  equal to) 0.4.0 but lower than 0.5”. This is a reasonable choice if you know
-  a version of the target that works for you and a version that doesn't.
+- ``~= 0.4.2`` means: “I am compatible with version :samp:`0.4.2` and higher,
+  but **not** with any version :samp:`0.5.{X}`.” This is a good choice if the
+  target adheres to `Semantic Versioning`_. (Not all packages do! NumPy
+  doesn't, for example!)
+- ``>=1.23, <1.49`` means: “I am compatible with version ``1.23`` and higher,
+  but not with version ``1.49`` and beyond.” This is a reasonable choice if you
+  know a version of the target that works for you and a version that doesn't.
 
 .. _Semantic Versioning: https://semver.org/
 
-`Other version specifiers`_ may also make sense if you know that the target
-makes very strong backwards compatibility guarantees (e.g. NumPy or
-Setuptools).
-
-.. _Other version specifiers:
-   https://www.python.org/dev/peps/pep-0440/#version-specifiers
+:pep:`Other version specifiers <440#version-specifiers>` mainly exist for
+strange edge cases. Only use them if you know what you're doing.
 
 Further reading:
 
-- `Dependency and release management`__
+- `Dependency and release management`__ in the Acc-Py Wiki
 
 __ https://wikis.cern.ch/display/ACCPY/Dependency+and+release+management
 
@@ -398,8 +450,8 @@ it a try:
 
     $ pip install .  # "." means "the current directory".
 
-Once this is done, your package is installed in your environment and can be
-imported by other packages without any path hackery:
+Once this is done, your package is installed in your venv and can be imported
+by other packages *without* any path hackery:
 
 .. code-block:: python
 
@@ -408,7 +460,7 @@ imported by other packages without any path hackery:
     '0.0.1'
     >>> import pkg_resources
     >>> pkg_resources.get_distribution('coi-example')
-    coi-example 0.0.1.dev0 (/opt/venvs/coi-example/lib/python3.7/site-packages)
+    coi-example 0.0.1.dev0 (/opt/home/.../venvs/coi-example/lib/python3.9/site-packages)
 
 Of course, you can always remove your package again:
 
@@ -416,18 +468,19 @@ Of course, you can always remove your package again:
 
     $ pip uninstall coi-example
 
-Note that installation puts a *copy* of your package into your venv. This means
-that every time you change the code, you have to reinstall it for the changes
-to become visible.
+.. warning::
+   Installation puts a **copy** of your package into your venv. This means that
+   every time you change the code, you have to reinstall it for the changes to
+   become visible.
 
-There is also the option to link from your venv to your source directory. In
-this case, all changes to the source code become visible immediately. This is
-bad for a production release, but extremely useful during development. This
+There is also the option to sym-link from your venv to your source directory.
+In this case, all changes to the source code become visible *immediately*. This
+is bad for a production release, but extremely useful during development. This
 feature is called an *editable install*:
 
 .. code-block:: shell-session
 
-    $ pip install --editable .
+    $ pip install --editable .  # or `-e .` for short
 
 Further reading:
 
@@ -438,44 +491,46 @@ __ https://stackoverflow.com/questions/35064426
 SDists and Wheels (Digression)
 ------------------------------
 
-Bringing a Python code base into a publishable format is a surprisingly
-complicated topic with a lot of historical baggage. This section skips most of
-the history and explains the terms that are most relevant today.
+.. note::
+   This section is purely informative. If it bores you, feel free to skip ahead
+   to :ref:`Continuous Integration`.
 
-Python is an interpreted language. As such, one *could* think that it's enough
-to have the source code of a program to run it. However, this assumption is
-wrong for a number of reasons:
+The act of bringing Python code into a publishable format has a lot of
+historical baggage. This section skips most of the history and explains the
+terms that are most relevant today.
 
-- some libraries contain :doc:`C extensions <np:index>`;
-- some libraries `generate their own code <PyTZ_>`_ during
-  installation;
-- all libraries must provide :pep:`their metadata <345>` in a certain,
+Python is an interpreted language. As such, one *could* think that there is no
+compilation step, and that the source code of a program is enough in order to
+run it. However, this assumption is wrong for a number of reasons:
+
+- :doc:`some libraries <np:index>` contain extension code written in C or
+  FORTRAN that must be compiled before using them;
+- `some libraries <PyTZ_>`_ generate their own Python code during installation;
+- *all* libraries must provide :pep:`their metadata <345>` in a certain,
   standardized format.
 
 .. _PyTZ: https://launchpad.net/pytz
 
-As such, even Python packages must be built before publication.
+As such, even Python packages must be built to some extent before publication.
 
-The publishable result of the build process is called a `distribution or
-package <distribution package_>`_. Several historical kinds of distributions
-exist, but only two remain relevant today: sdists and wheels.
-
-.. _distribution package:
-   https://packaging.python.org/glossary/#term-Distribution-Package
+The publishable result of the build process is a :term:`pkg:distribution package`
+(confusingly often called *distribution* or *package* for short). There are
+several historical kinds of distribution packages, but only two remain relevant
+today: sdists and wheels.
 
 :term:`Sdists <pkg:Source Distribution (or "sdist")>` contain only the above
-mentioned metadata and all relevant source files. It does not contain files
-that are not packaged by the author (e.g. :file:`.gitignore`). Because it
-contains source code, it it must compile its C extensions (if any). For this
-reason, installation is a bit slower and may run arbitrary code. Sdists are
-created via ``python setup.py sdist``.
+mentioned metadata and all relevant source files. It does not contain project
+files that are not packaged by the author (e.g. :file:`.gitignore` or
+:file:`pyproject.toml`). Because it contains source code, any C extensions must
+be compiled during installation. For this reason, installation is a bit slower
+and may run arbitrary code.
 
 :term:`Wheels <pkg:Wheel>` are a binary distribution format. Under the hood,
-they are zip files with a standardized layout and file name. They are fully
-built and any C extensions are already compiled. This makes them faster to
-install than sdists. The disadvantage is that *if* your project contains C
-extensions, you have to provide one wheel for each supported platform. Wheels
-are created via ``python setup.py bdist_wheel``.
+they are zip files with a certain directory layout and file name. They come
+fully built and any C extensions are already compiled. This makes them faster
+and safer to install than sdists. The disadvantage is that *if* your project
+contains C extensions, you have to provide one wheel for each supported
+platform.
 
 Given that most projects will be written purely in Python, wheels are the
 preferred distribution format. Depending on circumstances, it may make sense to
@@ -490,8 +545,8 @@ supported method at CERN.
 Further reading:
 
 - `What are Python wheels and why should you care?`__
-- `Building wheels for Python packages`__
-- :doc:`Python packaging user guide <pkg:guides/index>`
+- `Building wheels for Python packages`__ on the Acc-Py Wiki
+- :doc:`Python packaging user guides <pkg:guides/index>`
 - `Twisted history of Python packaging`__ (2012)
 
 __ https://realpython.com/python-wheels/
@@ -501,27 +556,24 @@ __ https://www.youtube.com/watch?v=lpBaZKSODFA (2012)
 Continuous Integration
 ----------------------
 
-`Continuous integration`_ is a software development strategy that favors
-frequent merging of features into the main branch of a project to prevent code
-divergence. To facilitate this, websites like Gitlab offer `pipelines <Gitlab
-pipelines_>`_ that automatically build and test code on each commit.
+`Continuous integration`_ is a software development strategy that prefers to
+merge features into a project's main branch frequently to prevent code
+divergence. To facilitate this, websites like Gitlab offer `CI pipelines`_ that
+build and test code on each push *automatically*.
 
 .. _Continuous integration:
    https://en.wikipedia.org/wiki/Continuous_integration
-.. _Gitlab pipelines: https://gitlab.cern.ch/help/ci/quick_start/index.md
+.. _CI pipelines: https://gitlab.cern.ch/help/ci/quick_start/index.md
 
 `Continuous delivery`_ takes the practice a step further and also automates the
-publication of software using the same pipeline. Nowadays, when people talk
-about “CI/CD”, they usually refer to having an automated pipeline of tests and
-publication.
+release of software using the same pipeline. Nowadays, when people talk about
+“CI/CD”, they usually refer to having an automated pipeline of tests and
+releases.
 
 .. _Continuous delivery: https://en.wikipedia.org/wiki/Continuous_delivery
 
-All of this is important to us because Gitlab's CI/CD pipeline is the only
-supported way to publish Python packages on the `Acc-Py package index`_.
-
-.. _Acc-Py package index:
-   https://wikis.cern.ch/pages/viewpage.action?pageId=145493385
+Why do we care about all of this? Because Gitlab's CI/CD pipeline is the *only*
+supported way to put our Python package on the `Acc-Py package index`_.
 
 The Gitlab CI/CD pipeline is configured through a file called
 :file:`.gitlab-ci.yml` at the root of your project. Run the command
@@ -557,7 +609,7 @@ these templates by `having a period in front of their name <hidden jobs_>`_
 
 .. _Acc-Py CI templates:
    https://gitlab.cern.ch/acc-co/devops/python/acc-py-devtools/tree/master/acc_py_devtools/templates/gitlab-ci
-.. _hidden jobs: https://gitlab.cern.ch/help/ci/yaml/README.md#hide-jobs
+.. _hidden jobs: https://gitlab.cern.ch/help/ci/jobs/index.md#hide-jobs
 
 The next block (``variables``) defines Acc-Py-specific variables that configure
 the job templates we just included. They tell Acc-Py which directory contains
@@ -568,7 +620,7 @@ job has a **trigger** (on each commit, on each Git tag, manually, etc.) and a
 **stage** (build → test → deploy). Whenever a trigger fires, all relevant jobs
 are collected into a pipeline and run, one stage after the other.
 
-The jobs in our file all don't actually define of this – they simply reuse the
+The jobs in our file don't actually define all of this – they simply reuse the
 values already set in their respective job template via the ``extends``
 keyword. See `here <dev test_>`_ for an example.
 
@@ -578,7 +630,7 @@ Further reading:
 - `Keyword reference for the .gitlab-ci.yml file`__
 
 __ https://gitlab.cern.ch/help/ci/quick_start/index.md
-__ https://gitlab.cern.ch/help/ci/yaml/README.md
+__ https://gitlab.cern.ch/help/ci/yaml/index.md
 
 Testing Your Package
 --------------------
@@ -586,7 +638,8 @@ Testing Your Package
 As you might have noticed, the :command:`acc-py init` call created a subpackage
 of your package called “tests”. As a dynamically typed language, Python cannot
 rely on compiler type safety to ensure the correctness of your code; unit tests
-will have to carry this weight.
+will have to carry the weight of making sure our code does what we think it
+does.
 
 Acc-Py initializes your :file:`.gitlab-ci.yml` file with two jobs for testing:
 
@@ -600,23 +653,23 @@ Acc-Py initializes your :file:`.gitlab-ci.yml` file with two jobs for testing:
 .. _install test:
    https://gitlab.cern.ch/acc-co/devops/python/acc-py-devtools/-/blob/master/acc_py_devtools/templates/gitlab-ci/install_test.yml
 
-Both you the same program, `Pytest`_, to discover and run your unit tests.
-Click their respective links to find the exact invocations.
+Both use the same program, Pytest_, to discover and run your unit tests. Click
+their respective links to find the exact invocations.
 
 .. _Pytest: https://pytest.org/
 
 The way that Pytest finds your unit tests is simple: It searches for files that
-match the pattern :file:`test_{*}.py` and, inside, searches for functions that
-match :samp:`test_{*}` and classes that match :samp:`Test{*}`. All found
-methods and functions are run. If they finish without raising an exception,
-they are assumed successful, otherwise they have failed.
+match the pattern :file:`test_*.py` and, inside, searches for functions that
+match ``test_*`` and classes that match ``Test*``. All found methods and
+functions are run. If they finish without raising an exception, they are
+assumed successful, otherwise they have failed.
 
 If you have any non-trivial logic in your code – anything that goes beyond
-reading, and setting parameters – it is highly recommended to put them into
+reading, and setting parameters – it is *highly recommended* to put them into
 separate functions. These functions should only depend on their parameters (and
-no global state). This makes it much easier to write tests for them to ensure
-that they work as expected – and most importantly, that future changes won't
-silently break them!
+*no global state*). This makes it *much* easier to write tests for them to
+ensure that they work as expected – and most importantly, that future changes
+won't silently break them!
 
 If you're writing a COI optimization problem that does not depend on JAPC or
 LSA, there is one easy test case you can always add: run the COI checker with
@@ -639,9 +692,9 @@ Further reading:
 
 - :mod:`std:unittest.mock` standard library module
 - :mod:`std:doctest`  standard library module
-- `Tests as part of application code`__
-- `GUI testing`__
-- `PAPC – a pure Python PyJapc offline simulator`__
+- `Tests as part of application code`__ on the Acc-Py Wiki
+- `GUI testing`__ on the Acc-Py Wiki
+- `PAPC – a pure Python PyJapc offline simulator`__ on the Acc-Py Wiki
 - `Example CI setup to test projects that rely on Java`__
 
 __ https://docs.pytest.org/en/latest/explanation/goodpractices.html#tests-as-part-of-application-code
@@ -653,18 +706,17 @@ Releasing a Package via CI
 --------------------------
 
 Once CI has been set up and tests have been written (or disabled), your package
-is ready for publication! Normally, `Twine`_ is the command of choice to upload
-a package to the package index, but Acc-Py is already taking over this job for
-us.
+is ready for publication! Outside of CERN, Twine_ is the command of choice to
+upload a package to PyPI_, but Acc-Py already does this job for us.
 
 .. _Twine: https://twine.readthedocs.io/en/latest/
+.. _PyPI: https://pypi.org/
 
 .. warning::
-   Publishing a package is permanent! Once your code has been uploaded to the
-   index, it is almost impossible to remove it again. And once a project name
-   has been claimed on the package index, it usually cannot be transferred to
-   another project. Make double- and triple-sure that everything is correct
-   before following the next steps.
+   Publishing a package is **permanent**! Once your code has been uploaded to
+   the index, you *cannot* remove it again. And once a project name has been
+   claimed, it usually cannot be transferred to another project. Be doubly and
+   triply sure that everything is correct before following the next steps!
 
 If your project is not in a Git repository yet, this is the time to check it
 in:
@@ -674,15 +726,18 @@ in:
     $ git init
     $ git add --all
     $ git commit --message="Initial commit."
-    $ git remote add origin ...  # Clone URL of your repo on Gitlab
+    $ git remote add origin ...  # The clone URL of your Gitlab repo
     $ git push --set-upstream origin master
 
 Then, all that is necessary to publish the next (or first) version of your
-package is to create a Git tag and upload it to Gitlab.
+package is to create a `Git tag`_ and upload it to Gitlab.
+
+.. _Git tag: https://git-scm.com/book/en/v2/Git-Basics-Tagging
 
 .. code-block:: shell-session
 
-    $ # The tag name doesn't actually matter, but let's stay consistent.
+    $ # The tag name doesn't actually matter,
+    $ # but let's stay consistent.
     $ git tag v0.0.1.dev0
     $ git push --tags
 
@@ -699,37 +754,35 @@ available anywhere inside CERN:
     $ cd ~
     $ pip install coi-example
 
-.. note::
-   The version of your package is determined by setup.py, not by the tag name
-   you choose. If you tag another commit that declares the same version number,
-   and you push this tag, your pipeline will run and the deploy stage will fail
-   due to the version conflict.
+.. warning::
+   The **version of your package** is determined by :file:`setup.py`, *not* by
+   the **tag name** you choose! If you tag another commit but don't update the
+   version number, and you push this tag, your pipeline will kick off, run
+   through to the deploy stage and then fail due to the version conflict.
 
 Further reading:
 
-- `Python package index/repository`__
-- `Acc-Py repository`__
-
-__ https://wikis.cern.ch/pages/viewpage.action?pageId=145493385
-__ https://acc-py-repo.cern.ch/
+- `Python package index <Acc-Py Package Index_>`_ on the Acc-Py Wiki
 
 Extra Credit: :file:`setup.cfg`
 -------------------------------
 
-This section, like the subsequent ones, gives a little bit more background
-information on Python packaging, but is not necessary to get off the ground.
-Especially if you're a beginner, feel free to stop here.
+.. note::
+   You are done! This section, and the ones after, only give a little bit more
+   background information on Python packaging, but they are not necessary for
+   you to get off the ground. Especially if you're a beginner, feel free to
+   stop here and maybe return later.
 
-While the setup.py is nice and generally gets the work done, there are
+While :file:`setup.py` is nice and generally gets the work done, there are
 several problems with it:
 
-- The logic on top the bare ``setup()`` quickly becomes hard to read.
+- The logic before the bare ``setup()`` call quickly becomes hard to read.
 - It is impossible to extract project metadata without executing arbitrary
   Python code. Security-minded people generally don't like that.
 - Most projects don't *need* to execute arbitrary Python code to declare their
-  package metadata.
+  metadata.
 
-For this reason, setuptools recommends to configure your project using a new
+For this reason, Setuptools recommends to configure your project using a new
 file called :file:`setup.cfg`. It fulfills the same role as :file:`setup.py`,
 but as a configuration file, it can be read without executing Python code.
 Certain patterns that require Python login in :file:`setup.py` can be handled
@@ -822,14 +875,14 @@ Extra Credit: Single-Sourcing Your Version Number
 -------------------------------------------------
 
 Over time, it may become annoying to manually bump your version number every
-time you release a new version of your package. Since Acc-Py already [requires
-us to use Git tags to publish our package](#releasing-a-package-via-ci) (but
-doesn't actually read the tag name), it would be nice if we could co-opt the
-tag name for this purpose.
+time you release a new version of your package. On top of that, Acc-Py
+:ref:`requires us to use Git tags to publish our package <Releasing a Package
+via CI>`, but doesn't actually read the name of the tag! It would be nice if we
+could co-opt the tag name to automatically denote the version number.
 
-`Setuptools-SCM`_ is a plugin for setuptools that takes care of this task. It
-generates your package's version number automatically based on your Git tags
-and feeds it directly into setuptools. The minimal setup looks as follows:
+`Setuptools-SCM`_ is a plugin for Setuptools that does precisely that. It
+generates your version number automatically based on your Git tags and feeds it
+directly into Setuptools. The minimal setup looks as follows:
 
 .. _Setuptools-SCM: https://github.com/pypa/setuptools_scm
 
@@ -837,7 +890,11 @@ and feeds it directly into setuptools. The minimal setup looks as follows:
 
     # pyproject.toml
     [build-system]
-    requires = ['setuptools>=42', 'wheel', 'setuptools_scm[toml]>=3.4']
+    requires = [
+        'setuptools>=45',
+        'wheel',
+        'setuptools_scm[toml]>=6.2',
+    ]
 
     # Add an empty tool section to enable version inference.
     [tool.setuptools_scm]
@@ -851,10 +908,10 @@ and feeds it directly into setuptools. The minimal setup looks as follows:
     # version = automatically generated
     ...
 
-You can also add a ``write_to`` line to your configuration to automatically
-generate *during installation* a source file in your package that contains the
-version number. This way, your package can expose its version in a
-``__version__`` variable:
+You can also add a key ``write_to`` to your :file:`pyproject.toml` to
+automatically generate – *during installation!* – a source file in your package
+that contains the version number. This way, your package can expose its version
+in a ``__version__`` variable:
 
 .. code-block:: toml
 
@@ -869,37 +926,33 @@ version number. This way, your package can expose its version in a
     ...
 
 .. warning::
-   The practice of adding a ``__version__`` variable to your package is
-   :pep:`deprecated <396#pep-rejection>`. In new code, you should fetch other
-   packages' version through the :mod:`std:importlib.metadata` standard library
-   package (Python 3.8+) or its `backport <importlib.metadata backport>`_
-   (Python 3.6+).
+   Adding a ``__version__`` variable to your package is :pep:`deprecated
+   <396#pep-rejection>`! You should not do this in packages. A much more
+   reliable way to fetch a package's version is through the
+   :mod:`std:importlib.metadata` standard library package (Python 3.8+) or its
+   :doc:`backport <importlib_metadata:index>` (Python 3.6+).
 
-.. _importlib.metadata backport: https://importlib_metadata.readthedocs.io/
+Here are some solutions that people come up with that are broken for various
+reasons. *Don't* follow these!
 
-Some solutions that are **not** recommended:
-
-1. Importing your own package in setup.py and passing
-   :samp:`{my_package}.__version__` to the ``setup()`` call. This breaks as
-   soon as your package imports any of its dependencies (e.g. Numpy) because
-   Pip hasn't had a chance to install your dependencies yet.
+1. Importing your own package in :file:`setup.py` and passing
+   :samp:`{my_package}.__version__` to ``setup()``. This breaks as
+   soon as your package imports any of its dependencies, simply because
+   Pip hasn't had *a chance* to install your dependencies yet.
 2. Specify :samp:`version = attr: {my_package}.__version__` in
    :file:`setup.cfg`: On setuptools before version 46.4, this does the same as
    the first option – and so has the same problems.
 3. Specify :samp:`version = attr: {my_package}.__version__` in
    :file:`setup.cfg` *and* require ``setuptools>=46.4`` in
    :file:`pyproject.toml`: New versions of setuptools textually analyze your
-   package to find ``__version__`` without running your code. If this fails,
+   code and try to find ``__version__`` without running it. If this fails,
    however, setuptools will fall back to importing your package and break
    again.
 
 Further reading:
 
-- `Single-sourcing the package version`__
-- `Zest.releaser`__
-
-__ https://packaging.python.org/guides/single-sourcing-package-version/
-__ https://zestreleaser.readthedocs.io/en/latest/
+- :doc:`pkg:guides/single-sourcing-package-version`
+- `Zest.releaser <https://zestreleaser.readthedocs.io/en/latest/>`_
 
 Extra Credit: Automatic Code Formatting
 ---------------------------------------
@@ -911,31 +964,30 @@ formatting has two undeniable advantages:
 - it makes it easier for other people to read your code – if they're familiar
   with the formatting style.
 
-At the same time, it requires effort to pick, follow and enforce a particular
-style guide. Ideally, code formatting would be consistent, automatic and
-require as little human input as possible.
+At the same time, it requires a lot of pointless effort to pick, follow and
+enforce a particular style guide. Ideally, code formatting would be consistent,
+automatic and require as little human input as possible.
 
-`Black`_ qualifies for all of these:
+:doc:`Black <black:index>` does all of these:
 
-.. _Black: https://github.com/psf/black
-
-- It is an automatic formatter. That means you don't have to follow its style
-  yourself. You run it over your code base and it edits your files in place to
-  be uniformly formatted.
-- `Most IDEs support it <Black editor integration>`_. This means you can run it
-  automatically on every file save or Git commit. With this, you can stop
-  thinking about formatting (almost) entirely.
-- It is almost unconfigurable. This obviates pointless style discussions, as
+- It is an *automatic* formatter. That means you can write your code however
+  messy as you want. You simply let it run over your code base and it edits
+  your files in place to be uniformly formatted.
+- :doc:`Most IDEs support it <black:integrations/editors>`. This means you can
+  configure your IDE such that it runs Black automatically on every save or Git
+  commit. With this, you will stop thinking about formatting (almost) entirely.
+- It is almost unconfigurable. This obviates pointless style discussions as
   they are known in the C++ world.
 
+.. _Black: https://github.com/psf/black
 .. _Black editor integration:
    https://black.readthedocs.io/en/stable/editor_integration.html
 
-On top of it, you may also want to run `Isort`_ to sort your import statements
+On top of it, you may also want to run ISort_ to sort your import statements
 for you. To make it compatible with Black, add these lines to your
 configuration:
 
-.. _Isort TOML: https://pycqa.github.io/isort/
+.. _ISort: https://pycqa.github.io/isort/
 
 .. code-block:: python
 
@@ -945,9 +997,7 @@ configuration:
 
 Further reading:
 
-- `The Black code style`__
-
-__ https://github.com/psf/black/blob/master/docs/the_black_code_style.md
+- :doc:`black:the_black_code_style/current_style`
 
 Extra Credit: Linting
 ---------------------
@@ -957,9 +1007,9 @@ type-checking compiler to verify that your code does what you expect it to do.
 Instead, Python developers must rely on *linters*, i.e. static-analysis tools,
 to find bugs and anti-patterns.
 
-The simplest choice for beginners `Pylint`_. It is a general-purpose linter
-that catches style and complexity issues as well as outright bugs. In contrast
-to Black, Pylint is extremely configurable and encourages users to enable or
+The simplest choice for beginners Pylint_. It is a general-purpose linter that
+catches style and complexity issues as well as outright bugs. In contrast to
+Black, Pylint is extremely configurable and encourages users to enable or
 disable lints as necessary. Here is an example configuration:
 
 .. _Pylint:
@@ -1018,8 +1068,8 @@ Gitlab:
         - if [[ pylint_exit+black_exit+isort_exit -gt 0 ]]; then false; fi
 
 If you write Python code that is used by other people, you might also want to
-add :pep:`type annotations <483>` and use a type checker like `Mypy`_ or
-`PyRight`_.
+add :pep:`type annotations <483>` and use a type checker like Mypy_ or
+PyRight_.
 
 .. _MyPy: https://mypy.readthedocs.io/en/latest/getting_started.html
 .. _PyRight:

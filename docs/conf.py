@@ -151,7 +151,7 @@ graphviz_output_format = "svg"
 # -- Options for Intersphinx -------------------------------------------
 
 ACC_PY_DOCS_ROOT = "https://acc-py.web.cern.ch/gitlab/"
-RTD_TEMPLATE = "https://{}.readthedocs.io/en/latest"
+RTD_TEMPLATE = "https://{}.readthedocs.io/en/stable"
 
 intersphinx_mapping = {
     "utils": (
@@ -166,6 +166,7 @@ intersphinx_mapping = {
     "pkg": ("https://packaging.python.org/en/latest/", None),
     "setuptools": (RTD_TEMPLATE.format("setuptools"), None),
     "importlib_metadata": (RTD_TEMPLATE.format("importlib-metadata"), None),
+    "black": (RTD_TEMPLATE.format("black"), None),
 }
 
 # -- Options for Myst-Parser -------------------------------------------
