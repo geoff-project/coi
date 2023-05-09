@@ -109,11 +109,6 @@ intersphinx_mapping = {
     "black": (rtd_link("black"), None),
 }
 
-# -- Options for Myst-Parser -------------------------------------------
-
-myst_enable_extensions = ["deflist"]
-myst_heading_anchors = 3
-
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation
