@@ -98,7 +98,7 @@ choice.
    The :command:`acc-py venv` command is a convenience wrapper around the
    :mod:`std:venv` standard library module. In particular, it passes the
    ``--system-site-packages`` flag. This flag ensures that everything that is
-   preinstalled in the Acc-Py distribution also is available in your new
+   pre-installed in the Acc-Py distribution also is available in your new
    environment. Without it, you would have to install common dependencies such
    as :doc:`NumPy <np:index>`.
 
@@ -309,12 +309,12 @@ configures a few tools. Note that the file would be only about 20 lines long:
     [tool.setuptools_scm]
 
     # PyTest takes its options in a nested table
-    # called `.ini_options`. Here, we tell it to also run
+    # called `ini_options`. Here, we tell it to also run
     # doctests, not just unit tests.
     [tool.pytest.ini_options]
     addopts = '--doctest-modules'
 
-    # Pylint splits its configuration across multiple tables.
+    # PyLint splits its configuration across multiple tables.
     # Here, we disable one warning and minimize their report
     # size.
     [tool.pylint.reports]
@@ -473,7 +473,7 @@ Of course, you can always remove your package again:
    every time you change the code, you have to reinstall it for the changes to
    become visible.
 
-There is also the option to sym-link from your venv to your source directory.
+There is also the option to symlink from your venv to your source directory.
 In this case, all changes to the source code become visible *immediately*. This
 is bad for a production release, but extremely useful during development. This
 feature is called an *editable install*:
@@ -556,10 +556,10 @@ __ https://www.youtube.com/watch?v=lpBaZKSODFA (2012)
 Continuous Integration
 ----------------------
 
-`Continuous integration`_ is a software development strategy that prefers to
-merge features into a project's main branch frequently to prevent code
-divergence. To facilitate this, websites like Gitlab offer `CI pipelines`_ that
-build and test code on each push *automatically*.
+`Continuous integration`_ is a strategy that prefers to merge features into the
+main development branch frequently and early. This avoids code divergence and
+hard-to-resolve merge conflicts. To facilitate this, websites like Gitlab offer
+`CI pipelines`_ that build and test code on each push *automatically*.
 
 .. _Continuous integration:
    https://en.wikipedia.org/wiki/Continuous_integration
@@ -582,24 +582,41 @@ file added to your project. It should look somewhat like this:
 
 .. code-block:: yaml
 
+    # Use the acc-py CI templates documented at
+    # https://acc-py.web.cern.ch/gitlab-mono/acc-co/devops/python/acc-py-gitlab-ci-templates/docs/templates/master/
     include:
-      - project: acc-co/devops/python/acc-py-devtools
-        file: acc_py_devtools/templates/gitlab-ci/python.yml
-
+      - project: acc-co/devops/python/acc-py-gitlab-ci-templates
+        file: v2/python.gitlab-ci.yml
     variables:
       project_name: coi_example
-      PY_VERSION: '3.7'
+      # The PY_VERSION and ACC_PY_BASE_IMAGE_TAG variables control the
+      # default Python and Acc-Py versions used by Acc-Py jobs. It is
+      # recommended to keep the two values consistent. More details
+      # https://acc-py.web.cern.ch/gitlab-mono/acc-co/devops/python/acc-py-gitlab-ci-templates/docs/templates/master/generated/v2.html#global-variables.
+      PY_VERSION: '3.9'
+      ACC_PY_BASE_IMAGE_TAG: '2021.12'
 
+    # Build a source distribution for foo.
+    build_sdist:
+      extends: .acc_py_build_sdist
+
+    # Build a wheel for foo.
     build_wheel:
       extends: .acc_py_build_wheel
 
-    test_install:
-      extends: .acc_py_full_test
+    # A development installation of foo tested with pytest.
+    test_dev:
+      extends: .acc_py_dev_test
 
-    release_wheel:
-      extends: .acc_py_release_wheel
+    # A full installation of foo (as a wheel) tested with pytest on an
+    # Acc-Py image.
+    test_wheel:
+      extends: .acc_py_wheel_test
 
-    # More jobs …
+    # Release the source distribution and the wheel to the acc-py
+    # package index, only on git tag.
+    publish:
+      extends: .acc_py_publish
 
 The first block (``include``) textually includes a lot of `pre-defined job
 templates from Acc-Py <Acc-Py CI templates_>`_. These templates tell Gitlab how
@@ -635,11 +652,11 @@ __ https://gitlab.cern.ch/help/ci/yaml/index.md
 Testing Your Package
 --------------------
 
-As you might have noticed, the :command:`acc-py init` call created a subpackage
-of your package called “tests”. As a dynamically typed language, Python cannot
-rely on compiler type safety to ensure the correctness of your code; unit tests
-will have to carry the weight of making sure our code does what we think it
-does.
+As you might have noticed, the :command:`acc-py init` call created a
+sub-package of your package called “tests”. As a dynamically typed language,
+Python cannot rely on compiler type safety to ensure the correctness of your
+code; unit tests will have to carry the weight of making sure our code does
+what we think it does.
 
 Acc-Py initializes your :file:`.gitlab-ci.yml` file with two jobs for testing:
 
@@ -658,7 +675,7 @@ their respective links to find the exact invocations.
 
 .. _Pytest: https://pytest.org/
 
-The way that Pytest finds your unit tests is simple: It searches for files that
+The way that PyTest finds your unit tests is simple: It searches for files that
 match the pattern :file:`test_*.py` and, inside, searches for functions that
 match ``test_*`` and classes that match ``Test*``. All found methods and
 functions are run. If they finish without raising an exception, they are
@@ -794,7 +811,8 @@ For example, this setup script:
 
     # setup.py
     from pathlib import Path
-    from setuptools import setup, find_packages
+
+    from setuptools import find_packages, setup
 
     PROJECT_ROOT = Path(__file__).parent.absolute()
     PKG_DIR = PROJECT_ROOT / "my_package"
@@ -858,7 +876,7 @@ If you manage to put all your data into :file:`setup.cfg`, your
     from setuptools import setup
     setup()
 
-If you use setuptools version 40.9 or later (which should be specified :ref:`in
+If you use Setuptools version 40.9 or later (which should be specified :ref:`in
 your pyproject.toml file <adding :file:\`pyproject.toml\` (optional)>`), you
 can completely remove the :file:`setup.py` file in this case.
 
@@ -940,13 +958,13 @@ reasons. *Don't* follow these!
    soon as your package imports any of its dependencies, simply because
    Pip hasn't had *a chance* to install your dependencies yet.
 2. Specify :samp:`version = attr: {my_package}.__version__` in
-   :file:`setup.cfg`: On setuptools before version 46.4, this does the same as
+   :file:`setup.cfg`: On Setuptools before version 46.4, this does the same as
    the first option – and so has the same problems.
 3. Specify :samp:`version = attr: {my_package}.__version__` in
    :file:`setup.cfg` *and* require ``setuptools>=46.4`` in
-   :file:`pyproject.toml`: New versions of setuptools textually analyze your
+   :file:`pyproject.toml`: New versions of Setuptools textually analyze your
    code and try to find ``__version__`` without running it. If this fails,
-   however, setuptools will fall back to importing your package and break
+   however, Setuptools will fall back to importing your package and break
    again.
 
 Further reading:
@@ -1009,7 +1027,7 @@ to find bugs and anti-patterns.
 
 The simplest choice for beginners Pylint_. It is a general-purpose linter that
 catches style and complexity issues as well as outright bugs. In contrast to
-Black, Pylint is extremely configurable and encourages users to enable or
+Black, PyLint is extremely configurable and encourages users to enable or
 disable lints as necessary. Here is an example configuration:
 
 .. _Pylint:
@@ -1032,7 +1050,7 @@ disable lints as necessary. Here is an example configuration:
         'bad-continuation',
     ]
 
-Sometimes, Pylint gives you a warning that you find generally useful, but
+Sometimes, PyLint gives you a warning that you find generally useful, but
 shouldn't apply to an individual piece of code. In this case you can add a
 comment like this to suppress the warning:
 
@@ -1044,7 +1062,7 @@ These comments respect scoping. If you put them within a function, they apply
 to only that function. If you put them at the end of a line, they only apply to
 that line.
 
-You can prevent bugs from silently sneaking into your code by running Pylint in
+You can prevent bugs from silently sneaking into your code by running PyLint in
 your :ref:`CI/CD pipeline <continuous integration>` every time you push code to
 Gitlab:
 
