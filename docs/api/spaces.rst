@@ -1,7 +1,7 @@
 Gym Spaces
 ==========
 
-.. class:: gym.spaces.Space(shape=None, dtype=None)
+.. class:: gym.spaces.Space
    :canonical: gym.spaces.space.Space
 
     Bases: `object`
@@ -22,14 +22,16 @@ Gym Spaces
         custom spaces properly. Use custom spaces with care.
 
     .. method:: contains(x)
+        :abstractmethod:
 
-        Return boolean specifying if *x* is a valid member of this space
+        Return boolean specifying if *x* is a valid member of this space.
 
-    .. method:: from_jsonable(sample_n)
+    .. method:: __contains__(x)
 
-        Convert a JSONable data type to a batch of samples from this space.
+        Instead of ``space.contains(x)``, you can also write ``x in space``.
 
     .. method:: sample()
+        :abstractmethod:
 
         Randomly sample an element of this space. Can be uniform or non-uniform
         sampling based on boundedness of space.
@@ -41,6 +43,10 @@ Gym Spaces
     .. method:: to_jsonable(sample_n)
 
         Convert a batch of samples from this space to a JSONable data type.
+
+    .. method:: from_jsonable(sample_n)
+
+        Convert a JSONable data type to a batch of samples from this space.
 
     .. property:: np_random
 
