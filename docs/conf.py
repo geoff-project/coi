@@ -8,12 +8,15 @@ https://www.sphinx-doc.org/en/master/usage/configuration.html
 # pylint: disable = import-outside-toplevel
 # pylint: disable = invalid-name
 # pylint: disable = redefined-builtin
+# pylint: disable = too-many-arguments
+# pylint: disable = unused-argument
 
 # -- Path setup --------------------------------------------------------
 
 from __future__ import annotations
 
 import datetime
+import enum
 import importlib
 import inspect
 import pathlib
@@ -187,17 +190,18 @@ replace_modname("cernml.coi.checkers")
 replace_modname("cernml.coi")
 
 
-def _handle_typevar_references(
+def _link_typevars_to_stdlib(
     app: Sphinx, env: BuildEnvironment, node: nodes.Inline, contnode: nodes.Inline
 ) -> t.Optional[nodes.Element]:
-    if node["reftarget"].rpartition('.')[-1] != 'T':
+    if node["reftarget"].rpartition(".")[-1] != "T":
         return None
     from sphinx.ext import intersphinx
 
     node["reftarget"] = "std:typing.TypeVar"
     return intersphinx.missing_reference(app, env, node, contnode)
 
-def _handle_type_aliases(
+
+def _resolve_config_values_xref(
     app: Sphinx, env: BuildEnvironment, node: nodes.Inline, contnode: nodes.Inline
 ) -> t.Optional[nodes.Element]:
     if node["reftarget"] != "cernml.coi.ConfigValues":
@@ -216,7 +220,27 @@ def _handle_type_aliases(
         contnode,
     )
 
+
+def _hide_enum_init_args(
+    app: Sphinx,
+    what: str,
+    name: str,
+    obj: t.Any,
+    options: t.Dict[str, bool],
+    signature: str,
+    return_annotation: str,
+) -> t.Optional[t.Tuple[str, str]]:
+    if what != "class":
+        return None
+    if not issubclass(obj, enum.Enum):
+        return None
+    args = signature.strip("()").split(", ")
+    signature = f"({args[0]!s}: str)"
+    return signature, return_annotation
+
+
 def setup(app: Sphinx) -> None:
     """Set up hooks into Sphinx."""
-    app.connect("missing-reference", _handle_typevar_references)
-    app.connect("missing-reference", _handle_type_aliases)
+    app.connect("missing-reference", _link_typevars_to_stdlib)
+    app.connect("missing-reference", _resolve_config_values_xref)
+    app.connect("autodoc-process-signature", _hide_enum_init_args)
