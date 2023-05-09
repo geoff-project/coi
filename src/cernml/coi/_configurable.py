@@ -1,6 +1,8 @@
 """Provide `Configurable`, an interface for GUI compatibility."""
 
-import typing as t
+from __future__ import annotations
+
+import typing
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from dataclasses import dataclass
@@ -8,7 +10,7 @@ from types import SimpleNamespace
 
 from ._abc_helpers import check_methods as _check_methods
 
-T = t.TypeVar("T")  # pylint: disable = invalid-name
+T = typing.TypeVar("T")  # pylint: disable = invalid-name
 T.__module__ = ""
 
 ConfigValues = SimpleNamespace
@@ -96,7 +98,7 @@ class Config:
     """
 
     @dataclass(frozen=True)
-    class Field(t.Generic[T]):
+    class Field(typing.Generic[T]):
         """A single configurable field.
 
         This class is created exclusively via
@@ -118,11 +120,11 @@ class Config:
         dest: str
         value: T
         label: str
-        help: t.Optional[str]
-        type: t.Optional[t.Callable[[str], T]]  # /python/mypy/issues/9489
-        range: t.Optional[t.Tuple[T, T]]
-        choices: t.Optional[t.List[T]]
-        default: t.Optional[T]
+        help: typing.Optional[str]
+        type: typing.Optional[typing.Callable[[str], T]]  # /python/mypy/issues/9489
+        range: typing.Optional[typing.Tuple[T, T]]
+        choices: typing.Optional[typing.List[T]]
+        default: typing.Optional[T]
 
         def validate(self, text_repr: str) -> T:
             """Validate a user-chosen value.
@@ -140,7 +142,7 @@ class Config:
                 # Workaround for the following Mypy issue:
                 # https://github.com/python/mypy/issues/9489
                 assert self.type is not None
-                value: t.Any = self.type(text_repr)
+                value: typing.Any = self.type(text_repr)
                 if self.range is not None:
                     low, high = self.range
                     if not low <= value <= high:
@@ -155,16 +157,16 @@ class Config:
             return value
 
     def __init__(self) -> None:
-        self._fields: t.Dict[str, Config.Field] = OrderedDict()
+        self._fields: typing.Dict[str, Config.Field] = OrderedDict()
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__}: {list(self._fields)}>"
 
-    def fields(self) -> t.Iterable[Field]:
+    def fields(self) -> typing.Iterable[Field]:
         """Return a read-only view of all declared fields."""
         return self._fields.values()
 
-    def get_field_values(self) -> t.Dict[str, t.Any]:
+    def get_field_values(self) -> typing.Dict[str, typing.Any]:
         """Return a `dict` of the pre-configured field values.
 
         Note that this is not quite the expected input to
@@ -204,12 +206,12 @@ class Config:
         dest: str,
         value: "T",
         *,
-        label: t.Optional[str] = None,
-        help: t.Optional[str] = None,
-        type: t.Optional[t.Callable[[str], "T"]] = None,
-        range: t.Optional[t.Tuple["T", "T"]] = None,
-        choices: t.Optional[t.Sequence["T"]] = None,
-        default: t.Optional["T"] = None,
+        label: typing.Optional[str] = None,
+        help: typing.Optional[str] = None,
+        type: typing.Optional[typing.Callable[[str], "T"]] = None,
+        range: typing.Optional[typing.Tuple["T", "T"]] = None,
+        choices: typing.Optional[typing.Sequence["T"]] = None,
+        default: typing.Optional["T"] = None,
     ) -> "Config":
         """Add a new config field.
 
@@ -301,7 +303,7 @@ class Config:
         self._fields.update(other._fields)
         return self
 
-    def validate(self, name: str, text_repr: str) -> t.Any:
+    def validate(self, name: str, text_repr: str) -> typing.Any:
         """Validate a user-chosen value.
 
         Args:
@@ -317,7 +319,7 @@ class Config:
         """
         return self._fields[name].validate(text_repr)
 
-    def validate_all(self, values: t.Mapping[str, str]) -> "ConfigValues":
+    def validate_all(self, values: typing.Mapping[str, str]) -> "ConfigValues":
         """Validate user-chosen set of configurations.
 
         Args:
@@ -447,7 +449,7 @@ class Configurable(metaclass=ABCMeta):
         """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
+    def __subclasshook__(cls, other: type) -> typing.Any:
         if cls is Configurable:
             return _check_methods(other, "get_config", "apply_config")
         return NotImplemented

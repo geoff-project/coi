@@ -81,6 +81,9 @@ default_role = "py:obj"
 
 autodoc_member_order = "groupwise"
 autodoc_typehints = "signature"
+autodoc_type_aliases = {
+    "ConfigValues": "~cernml.coi.ConfigValues",
+}
 
 napoleon_google_docstring = True
 napoleon_numpy_docstring = False
@@ -194,6 +197,26 @@ def _handle_typevar_references(
     node["reftarget"] = "std:typing.TypeVar"
     return intersphinx.missing_reference(app, env, node, contnode)
 
+def _handle_type_aliases(
+    app: Sphinx, env: BuildEnvironment, node: nodes.Inline, contnode: nodes.Inline
+) -> t.Optional[nodes.Element]:
+    if node["reftarget"] != "cernml.coi.ConfigValues":
+        return None
+    node["reftype"] = "obj"
+    domain = env.domains[node["refdomain"]]
+    builder = app.builder
+    fromdocname = node["refdoc"]
+    return domain.resolve_xref(
+        env,
+        fromdocname,
+        builder,
+        node["reftype"],
+        node["reftarget"],
+        node,
+        contnode,
+    )
+
 def setup(app: Sphinx) -> None:
     """Set up hooks into Sphinx."""
     app.connect("missing-reference", _handle_typevar_references)
+    app.connect("missing-reference", _handle_type_aliases)
