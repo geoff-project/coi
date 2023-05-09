@@ -24,7 +24,7 @@ def is_bool(value: t.Any) -> bool:
 
     This accepts `bool`, :class:`np.bool_` and possible subclasses, but
     it rejects integers. (This is nontrivial because Python booleans
-    _are_ integers.)
+    *are* integers.)
 
     Example:
 

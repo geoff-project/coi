@@ -44,7 +44,7 @@ class Machine(Enum):
         >>> get_proper_value_for(Machine.ISOLDE)
         0.0
 
-    Of course, if there is _no_ reasonable default for an unknown
+    Of course, if there is *no* reasonable default for an unknown
     machine, raising an exception may still be your best bet.
     """
 

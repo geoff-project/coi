@@ -25,12 +25,12 @@ Several problems in accelerator control can be solved both using reinforcement
 learning (RL) and numerical optimization. However, both approaches usually
 slightly differ in their expected input and output:
 
-- Optimizers pick certain _points_ in the phase space of modifiable parameters
+- Optimizers pick certain *points* in the phase space of modifiable parameters
   and evaluate the loss of these parameters. They minimize this loss through
   multiple evaluations and ultimately yield the optimal parameters.
 - RL agents assume that the problem has a certain state, which usually contains
   the values of all modifiable parameters. They receive an observation (which
-  is usually higher-dimensional than the loss) and calculate a _correction_ of
+  is usually higher-dimensional than the loss) and calculate a *correction* of
   the parameters. This correction yields a certain reward to them. Their goal
   is to optimize the parameters incrementally by optimzing their corrections
   for maximal *cumulative* reward.
@@ -47,7 +47,7 @@ This package provides interfaces to implement for problems that should be
 compatible both with numerical optimizers and RL agents. It is based on the
 [Gym][] environment API and enhances it with the `SingleOptimizable` interface.
 
-In addition, the output and metadata of the environments is _restricted_ to
+In addition, the output and metadata of the environments is *restricted* to
 make the behavior of environments more uniform and compatible to make them more
 easily visualizable and integrable into a generic machine-optimization
 application.

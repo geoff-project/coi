@@ -177,7 +177,7 @@ problem if it is cancellable:
                     obs, _reward, done, _info = env.step(action)
         except cancellation.CancelledError:
             # Because the env gets closed at the end of this thread, we
-            # can _definitely_ reuse the cancellation token source.
+            # can *definitely* reuse the cancellation token source.
             token.complete_cancellation()
         finally:
             env.close()  # Never forget this!

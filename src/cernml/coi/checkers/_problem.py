@@ -254,5 +254,5 @@ def _warn_flag_to_enable_init_arg(
 
 
 def _get_blocked_modes(*, headless: bool = True) -> t.Sequence[str]:
-    """Return a list of render modes that should _not_ be executed."""
+    """Return a list of render modes that should *not* be executed."""
     return ("human",) if headless else ()
