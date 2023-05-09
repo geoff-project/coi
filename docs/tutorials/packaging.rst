@@ -557,28 +557,28 @@ Continuous Integration
 ----------------------
 
 `Continuous integration`_ is a strategy that prefers to merge features into the
-main development branch frequently and early. This avoids code divergence and
-hard-to-resolve merge conflicts. To facilitate this, websites like Gitlab offer
-`CI pipelines`_ that build and test code on each push *automatically*.
+main development branch frequently and early. This ensures that different
+branches never diverge too much from each other. To facilitate this, websites
+like Gitlab offer `CI pipelines`_ that build and test code on each push
+*automatically*.
 
 .. _Continuous integration:
    https://en.wikipedia.org/wiki/Continuous_integration
 .. _CI pipelines: https://gitlab.cern.ch/help/ci/quick_start/index.md
 
-`Continuous delivery`_ takes the practice a step further and also automates the
-release of software using the same pipeline. Nowadays, when people talk about
-“CI/CD”, they usually refer to having an automated pipeline of tests and
-releases.
+`Continuous delivery`_ takes this a step further and also automates the release
+of software. When people talk about “CI/CD”, they usually refer to having an
+automated pipeline of tests and releases.
 
 .. _Continuous delivery: https://en.wikipedia.org/wiki/Continuous_delivery
 
 Why do we care about all of this? Because Gitlab's CI/CD pipeline is the *only*
 supported way to put our Python package on the `Acc-Py package index`_.
 
-The Gitlab CI/CD pipeline is configured through a file called
-:file:`.gitlab-ci.yml` at the root of your project. Run the command
-:command:`acc-py init-ci` to have an automatically generated version of this
-file added to your project. It should look somewhat like this:
+You configure the pipeline with a file called :file:`.gitlab-ci.yml` at the
+root of your project. Run the command :command:`acc-py init-ci` to have a
+template of this file generated in your project directory. It should look
+somewhat like this:
 
 .. code-block:: yaml
 
@@ -618,28 +618,54 @@ file added to your project. It should look somewhat like this:
     publish:
       extends: .acc_py_publish
 
-The first block (``include``) textually includes a lot of `pre-defined job
-templates from Acc-Py <Acc-Py CI templates_>`_. These templates tell Gitlab how
-to test or publish a Python package, so you don't have to. You can recognize
-these templates by `having a period in front of their name <hidden jobs_>`_
-(``.``).
+Let's see what these pieces do.
+
+``include``
+    The first block makes a number of `Acc-Py CI templates`_ available to you.
+    These templates are a pre-bundled set of configurations that make it easier
+    for us to define our pipeline in a bit. You can distinguish job templates
+    from regular jobs by because their names `start with a period <hidden
+    jobs_>`_ (``.``).
 
 .. _Acc-Py CI templates:
-   https://gitlab.cern.ch/acc-co/devops/python/acc-py-devtools/tree/master/acc_py_devtools/templates/gitlab-ci
+   https://acc-py.web.cern.ch/gitlab-mono/acc-co/devops/python/acc-py-gitlab-ci-templates/docs/templates/master/
 .. _hidden jobs: https://gitlab.cern.ch/help/ci/jobs/index.md#hide-jobs
 
-The next block (``variables``) defines Acc-Py-specific variables that configure
-the job templates we just included. They tell Acc-Py which directory contains
-your Python code and which Python version should be used for testing.
+``variables``
+    The next block defines a set of variables that we can use in our job
+    definitions with the syntax :samp:`${variable-name}`. The variables defined
+    here are not special on their own, but the `Acc-Py CI templates`_ happen to
+    use them to fill some blanks, such as which Python version you want to use.
 
-Each subsequent block defines a **job** that is run on the Gitlab servers. Each
-job has a **trigger** (on each commit, on each Git tag, manually, etc.) and a
-**stage** (build → test → deploy). Whenever a trigger fires, all relevant jobs
-are collected into a pipeline and run, one stage after the other.
+``build_sdist``
+    This is our first **job definition**. The name has no special meaning; in
+    principle, you can name your jobs whatever you want (though you should
+    obviously pick something descriptive).
 
-The jobs in our file don't actually define all of this – they simply reuse the
-values already set in their respective job template via the ``extends``
-keyword. See `here <dev test_>`_ for an example.
+    Each job has a **trigger**, i.e. the conditions under which it runs.
+    Examples are: on every push to the server, on every pushed Git tag, on
+    every push to the ``master`` branch, or only when triggered manually.
+
+    Each job also and a **stage** that determines at which point in the
+    pipeline it will run. Though you can define and order stages as you like,
+    the default is: build → test → deploy. Whenever a trigger fires, all
+    relevant jobs are collected into a pipeline and run, one stage after the
+    other.
+
+In our case, each job contains only one line; it tells us that our job
+**extends** a template. This means that it takes over all properties from that
+template. If you define any further attributes for this job, they will
+generally override the same properties of the template.
+
+See `here <CI job code example_>`_ for an example of what these templates look
+like. This gives you an idea of the keys you can and might want to override.
+Note that a job can extend multiple other jobs; the `merge details`_ for how
+this works are documented on Gitlab.
+
+.. _cI job code example:
+   https://gitlab.cern.ch/acc-co/devops/python/acc-py-gitlab-ci-templates/-/blob/d515d27c/v2/python.gitlab-ci.yml#L156-177
+.. _Merge details:
+   https://gitlab.cern.ch/help/ci/yaml/yaml_optimization.md#merge-details
 
 Further reading:
 
@@ -653,40 +679,37 @@ Testing Your Package
 --------------------
 
 As you might have noticed, the :command:`acc-py init` call created a
-sub-package of your package called “tests”. As a dynamically typed language,
-Python cannot rely on compiler type safety to ensure the correctness of your
-code; unit tests will have to carry the weight of making sure our code does
-what we think it does.
+sub-package of your package called “tests”. This package is meant for *unit
+tests*, small functions that you can write to ensure the data transformation
+logic that you wrote does what you think it does.
 
 Acc-Py initializes your :file:`.gitlab-ci.yml` file with two jobs for testing:
 
 - a `dev test`_ that runs the tests directly in your source directory,
-- an `install test`_ that installs your package and runs the tests in the
+- a `wheel test`_ that installs your package and runs the tests in the
   installed copy. This is particularly important, as it ensures that your
   package will work not just for you, but also for your users.
 
 .. _dev test:
-   https://gitlab.cern.ch/acc-co/devops/python/acc-py-devtools/-/blob/master/acc_py_devtools/templates/gitlab-ci/dev_testing.yml
-.. _install test:
-   https://gitlab.cern.ch/acc-co/devops/python/acc-py-devtools/-/blob/master/acc_py_devtools/templates/gitlab-ci/install_test.yml
+   https://acc-py.web.cern.ch/gitlab-mono/acc-co/devops/python/acc-py-gitlab-ci-templates/docs/templates/master/generated/v2.html#acc-py-dev-test
+.. _wheel test:
+   https://acc-py.web.cern.ch/gitlab-mono/acc-co/devops/python/acc-py-gitlab-ci-templates/docs/templates/master/generated/v2.html#acc-py-wheel-test
 
-Both use the same program, Pytest_, to discover and run your unit tests. Click
-their respective links to find the exact invocations.
+Both use the same program, PyTest_, to discover and run your unit tests. The
+way it does that PyTest is simple: It searches for files that match the pattern
+:file:`test_*.py` and, inside, searches for functions that match ``test_*``.
+All functions that it finds are run without arguments. As long as they don't
+raise an exception, PyTest assumes they succeeded. :ref:`std:assert` should be
+used liberally in your unit tests to verify your assumptions.
 
 .. _Pytest: https://pytest.org/
 
-The way that PyTest finds your unit tests is simple: It searches for files that
-match the pattern :file:`test_*.py` and, inside, searches for functions that
-match ``test_*`` and classes that match ``Test*``. All found methods and
-functions are run. If they finish without raising an exception, they are
-assumed successful, otherwise they have failed.
-
-If you have any non-trivial logic in your code – anything that goes beyond
-reading, and setting parameters – it is *highly recommended* to put them into
-separate functions. These functions should only depend on their parameters (and
-*no global state*). This makes it *much* easier to write tests for them to
-ensure that they work as expected – and most importantly, that future changes
-won't silently break them!
+If you have any non-trivial logic in your code – anything beyond getting and
+setting parameters – *strongly* recommend to put it into separate functions.
+These functions should only depend on their parameters and no global state.
+This way, it becomes *much* easier to write unit tests to ensure that they work
+as expected. And most importantly: that future changes that you make won't
+silently break them!
 
 If you're writing a COI optimization problem that does not depend on JAPC or
 LSA, there is one easy test case you can always add: run the COI checker with
