@@ -19,12 +19,19 @@ import inspect
 import pathlib
 import typing as t
 
+from docutils import nodes
+
 try:
     import importlib_metadata
 except ImportError:
     # Starting with Python 3.10 (see pyproject.toml).
     # pylint: disable = ungrouped-imports
     import importlib.metadata as importlib_metadata  # type: ignore
+
+if t.TYPE_CHECKING:
+    # pylint: disable = unused-import
+    from sphinx.application import Sphinx
+    from sphinx.environment import BuildEnvironment
 
 ROOTDIR = pathlib.Path(__file__).absolute().parent.parent
 
@@ -175,3 +182,18 @@ def _is_true_prefix(prefix: str, full: str) -> bool:
 # Do submodules first so that `coi.check()` is correctly assigned.
 replace_modname("cernml.coi.checkers")
 replace_modname("cernml.coi")
+
+
+def _handle_typevar_references(
+    app: Sphinx, env: BuildEnvironment, node: nodes.Inline, contnode: nodes.Inline
+) -> t.Optional[nodes.Element]:
+    if node["reftarget"].rpartition('.')[-1] != 'T':
+        return None
+    from sphinx.ext import intersphinx
+
+    node["reftarget"] = "std:typing.TypeVar"
+    return intersphinx.missing_reference(app, env, node, contnode)
+
+def setup(app: Sphinx) -> None:
+    """Set up hooks into Sphinx."""
+    app.connect("missing-reference", _handle_typevar_references)
