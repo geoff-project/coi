@@ -1027,37 +1027,39 @@ Further reading:
 Extra Credit: Automatic Code Formatting
 ---------------------------------------
 
-Although a lot of programmers have needlessly strong opinions on it, good code
-formatting has two undeniable advantages:
+Although a lot of programmers have needlessly strong opinions on it, consistent
+code formatting has two undeniable advantages:
 
-- it makes it easier to spot typos and related bugs;
-- it makes it easier for other people to read your code – if they're familiar
-  with the formatting style.
+1. it makes it easier to spot typos and related bugs;
+2. it makes it easier for other people to read your code.
 
-At the same time, it requires a lot of pointless effort to pick, follow and
-enforce a particular style guide. Ideally, code formatting would be consistent,
-automatic and require as little human input as possible.
+At the same time, it requires a lot of pointless effort to:
 
-:doc:`Black <black:index>` does all of these:
+- pick,
+- follow
+- and enforce
 
-- It is an *automatic* formatter. That means you can write your code however
-  messy as you want. You simply let it run over your code base and it edits
-  your files in place to be uniformly formatted.
-- :doc:`Most IDEs support it <black:integrations/editors>`. This means you can
-  configure your IDE such that it runs Black automatically on every save or Git
-  commit. With this, you will stop thinking about formatting (almost) entirely.
-- It is almost unconfigurable. This obviates pointless style discussions as
-  they are known in the C++ world.
+a particular style guide.
 
-.. _Black: https://github.com/psf/black
-.. _Black editor integration:
-   https://black.readthedocs.io/en/stable/editor_integration.html
+Ideally, code formatting would be consistent, automatic and require as little
+human input as possible. Luckily, :doc:`Black <black:index>` does all of these:
 
-On top of it, you may also want to run ISort_ to sort your import statements
-for you. To make it compatible with Black, add these lines to your
-configuration:
+- It is :doc:`automatic
+  <black:usage_and_configuration/file_collection_and_discovery>`. You write
+  your code however messily as you want. You simply run ``black .`` at the end
+  and it adjusts your files in-place to be formatted completely uniformly.
+- :doc:`black:integrations/editors` for is is almost universal. No matter which
+  IDE you use, you can configure it such that Black runs every time you save
+  your file or make a Git commit. This way, you can stop thinking about
+  formatting entirely.
+- :doc:`black:the_black_code_style/current_style` has little configurability.
+  This obviates pointless style discussions as they are known in the C++ world
+  and allows people to focus on the discussions that matter.
 
-.. _ISort: https://pycqa.github.io/isort/
+On top of it, you may also want to run ISort_ so that your import statements
+are always grouped correctly and cleaned up. Like Black, it is supported by `a
+large number of editors <ISort Plugins_>`_. To make it compatible with Black,
+add these lines to your configuration:
 
 .. code-block:: python
 
@@ -1065,9 +1067,8 @@ configuration:
     [tool.isort]
     profile = "black"
 
-Further reading:
-
-- :doc:`black:the_black_code_style/current_style`
+.. _ISort: https://pycqa.github.io/isort/
+.. _ISort Plugins: https://github.com/pycqa/isort/wiki/isort-Plugins
 
 Extra Credit: Linting
 ---------------------
