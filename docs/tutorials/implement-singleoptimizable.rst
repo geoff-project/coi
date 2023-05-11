@@ -170,8 +170,8 @@ and the following ones are **optional** (i.e. we'll get to them later):
 - :ref:`the objective range`
 - :ref:`custom rendering output`
 
-Metadata
-^^^^^^^^
+The Metadata
+^^^^^^^^^^^^
 
 Let's start with the boring one, the metadata: Every optimization problem must
 declare a minimal amount of information about itself so that the host
