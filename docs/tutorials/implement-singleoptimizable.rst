@@ -17,8 +17,8 @@ The first step (as always) is to set up your general project structure, declare
 dependencies, etc. We assume that you've already done so. If not, :doc:`the
 previous tutorial <packaging>` will walk you through these steps.
 
-Implementing Interactions with the Machine
-------------------------------------------
+Interactions with the Machine
+-----------------------------
 
 It's time to actually start implementing our problem! We start by adding a new
 module to our package:
@@ -143,13 +143,13 @@ Again, in real Python code, the class attribute ``BPM_ADDRS`` would come
         hor_pos: np.ndarray = bpm_reading["horPos"][pos_ok]
         return np.mean(hor_pos)
 
-Implementing the Interface
---------------------------
+The Interface
+-------------
 
 With this, we have all the primitive operations in place to start implementing
 the optimization-problem interface. We kick this off by editing our class
 definition: Instead of being its own independent class, it now subclasses the
-{class}`~cernml.coi.SingleOptimizable` interface:
+`~cernml.coi.SingleOptimizable` interface:
 
 .. code-block:: diff
 
@@ -157,22 +157,21 @@ definition: Instead of being its own independent class, it now subclasses the
     - class AwakeElectronBeamSteering:
     + class AwakeElectronBeamSteering(coi.SingleOptimizable):
 
-The interface **requires** the following methods and attributes from us:
+The interface **requires** the following information from us:
 
-- :ref:`metadata <Adding Metadata>`
-- :ref:`optimization_space <Defining the Optimization Space>`
-- :ref:`get_initial_params() <implementing \`\`get_initial_params()\`\`>`,
-- :ref:`compute_single_objective() <implementing
-  \`\`compute_single_objective()\`\`>`,
+- :ref:`metadata`
+- :ref:`the optimization space`
+- :ref:`the initial point *x₀*`
+- :ref:`the objective function`
 
 and the following ones are **optional** (i.e. we'll get to them later):
 
-- :ref:`constraints <Adding Constraints>`
-- :ref:`objective_range <Defining the Objective Range>`
-- :ref:`render() <Custom Rendering Output>`.
+- :ref:`constraints`
+- :ref:`the objective range`
+- :ref:`custom rendering output`
 
-Adding Metadata
-^^^^^^^^^^^^^^^
+Metadata
+^^^^^^^^
 
 Let's start with the boring one, the metadata: Every optimization problem must
 declare a minimal amount of information about itself so that the host
@@ -214,8 +213,8 @@ have conventional meaning. The full list is given :attr:`elsewhere
     access. In such a case, our ``__init__()`` method must accept a keyword
     argument *japc* (which it already does).
 
-Defining the Optimization Space
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The Optimization Space
+^^^^^^^^^^^^^^^^^^^^^^
 
 The `~cernml.coi.SingleOptimizable.optimization_space` is a definition of how
 many parameters we are optimizing (the degrees of freedom) and what their valid
@@ -236,8 +235,8 @@ For now, the space must always be a box, its shape must always be a one-tuple
 with the number of degrees of freedom, and the bounds are always −1 and +1.
 These restrictions may be lifted in the future.
 
-Implementing ``get_initial_params()``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The Initial Point *x₀*
+^^^^^^^^^^^^^^^^^^^^^^
 
 Every optimization procedure needs an initial point from where to start
 optimization. The method `~cernml.coi.SingleOptimizable.get_initial_params()`
@@ -275,8 +274,8 @@ range from −1 to 1, but the actual corrector values may not. For now, the
 interface requires us to do this normalization manually. In the future, this
 restriction may be lifted in a backwards-compatible manner.
 
-Implementing ``compute_single_objective()``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The Objective Function
+^^^^^^^^^^^^^^^^^^^^^^
 
 Finally, it's time to write the core of the class: The cost function that an
 optimizer will have to minimize. Note that the interface always assumes a
@@ -297,8 +296,8 @@ from −1 to 1:
             rms = np.sqrt(np.mean(pos ** 2))
             return rms
 
-Registering the Class
-^^^^^^^^^^^^^^^^^^^^^
+Class Registration
+^^^^^^^^^^^^^^^^^^
 
 Once all this is done, we already can use this class in an interactive session.
 However, to use it inside a host application, we must make one more step. We
@@ -322,8 +321,8 @@ Registration is done with a single line at the global scope:
 This line runs once our module is imported and ensures that our problem can be
 found under the given name via the COI *registry*.
 
-Interlude: Test Run #2
-----------------------
+Optimization Test Run
+---------------------
 
 With all of these pieces in place, we can finally run our optimization problem.
 Fire up an interactive interpreter session, load an optimizer and our class,
@@ -365,15 +364,15 @@ AWAKE itself. If we were able to, this class would already be usable.
     :alt: Screenshot of the generic optimization GUI with the beam-steering
         optimization problem loaded
 
-Implementing the Details (Optional)
------------------------------------
+The Details (Optional)
+----------------------
 
 This section contains details on some portions of the interface that only a
 minority of authors will have to deal with. They are here for completeness'
 sake, but feel free to skip this part.
 
-Defining the Objective Range
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The Objective Range
+^^^^^^^^^^^^^^^^^^^
 
 Similar to how the `~cernml.coi.SingleOptimizable.optimization_space` declares
 the range of possible inputs to the cost function,
@@ -386,8 +385,8 @@ narrow this down, be sure to pick the correct limits: the cost function is not
 allowed to return values outside of this range and `~cernml.coi.check()`
 verifies that this is true.
 
-Adding Constraints
-^^^^^^^^^^^^^^^^^^
+Constraints
+^^^^^^^^^^^
 
 Some optimization algorithms (such as COBYLA_) have a concept of *constraints*,
 i.e. linear or nonlinear functions whose value must be kept within certain
@@ -445,7 +444,7 @@ plotting facilities for your optimization problem. This is provided through the
 
 .. _Gym: https://github.com/openai/gym/
 
-The mechanics
+The Mechanics
 ^^^^^^^^^^^^^
 
 The way it works is that every time the `~cernml.coi.Problem.render()`
@@ -473,8 +472,8 @@ steps:
    `~cernml.coi.Problem.metadata`.
 2. Override the `Problem.render() <cernml.coi.Problem.render()>` method.
 
-Implementing ``render("human")``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Rendering for Humans
+^^^^^^^^^^^^^^^^^^^^
 
 We start out by modifying a few lines of code we've already written:
 
@@ -573,8 +572,8 @@ supposed to do.
 .. image:: ./render-human.png
     :alt: Screenshot of the graphic produced by ``render()``
 
-Implementing ``render("matplotlib_figures")``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Rendering for the App
+^^^^^^^^^^^^^^^^^^^^^
 
 The human render mode is useful for quick debugging, but it would not work when
 embedding our optimization problem into a GUI. Most crucially, ``pyplot.show()``
