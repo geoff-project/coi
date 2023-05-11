@@ -14,12 +14,13 @@ work with version 0.6.1, but may break with version 0.7.0.
 Unreleased
 ----------
 
-No changes yet!
+- FIX: Improve cross-linking in the docs.
+- FIX: Update packaging tutorial to latest version of tools.
 
 v0.8.9
 ------
 
-- ADD: :meth:`cernml.coi.FunctionOptimizable.override_skeleton_points()` for optimization problems that need to customize the way skeleton points are selected by the user.
+- ADD: :meth:`~cernml.coi.FunctionOptimizable.override_skeleton_points()` for optimization problems that need to customize the way skeleton points are selected by the user.
 - OTHER: The online docs are now built with Python 3.9. Consequently, type annotations like ``Union[str, List[str]]`` and ``Optional[str]`` now use the new `type union syntax`_ added in Python 3.10, and so look like ``str | List[str]`` and ``str | None`` respectively.
 
 .. _type union syntax:
