@@ -81,7 +81,9 @@ test_wheel:
   # Override `script` to adjust the pytest arguments.
   script:
     - mkdir -p ~/not-the-source-dir && cd ~/not-the-source-dir
-    - python -m pytest --pyargs ${project_name} --doctest-modules
+    - python -m pytest
+      -c ${CI_PROJECT_DIR}/pyproject.toml
+      --pyargs ${project_name}
 
 build_docs:
   extends:
