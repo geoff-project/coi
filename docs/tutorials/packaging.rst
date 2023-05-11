@@ -64,7 +64,7 @@ __ https://wikis.cern.ch/display/ACCPY/Interactive+environment
 .. [#profile] See `here <https://unix.stackexchange.com/questions/45684/>`_ for
    the difference between :file:`.bash_profile` and :file:`.profile`.
 
-Creating a virtual environment
+Creating a Virtual Environment
 ------------------------------
 
 Virtual environments (or :doc:`venvs <std:library/venv>` for short) separate
@@ -176,7 +176,7 @@ __ https://wikis.cern.ch/display/ACCPY/Project+layout
 __ https://wikis.cern.ch/display/ACCPY/Creating+a+Python+package+from+a+directory+of+scripts
 
 Adding :file:`.gitignore` (Optional)
-------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The :file:`.gitignore` file tells Git which files to ignore. Ignored files will
 never show up as untracked or modified if you run :command:`git status`. This
@@ -225,7 +225,7 @@ __ https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository
 __ https://git-scm.com/docs/git-check-ignore
 
 Adding :file:`pyproject.toml` (Optional)
-----------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `Setuptools`_ is still the most common tool used to build and install Python
 packages. Traditionally, it expects project data (name, version,
@@ -336,7 +336,7 @@ __ https://snarky.ca/what-the-heck-is-pyproject-toml/
 __ https://www.python.org/dev/peps/pep-0518/
 __ https://github.com/carlosperate/awesome-pyproject
 
-Adding dependencies
+Adding Dependencies
 -------------------
 
 Once this is done, we can edit the :file:`setup.py` file created for us and
@@ -408,7 +408,7 @@ Version Requirements (Digression)
 
 .. note::
    This section is purely informative. If it bores you, feel free to skip ahead
-   to :ref:`Interlude: Test Run`.
+   to :ref:`Test run`.
 
 When specifying your requirements, you should make sure to put in a
 *reasonable* version range for two simple reasons:
@@ -440,8 +440,8 @@ Further reading:
 
 __ https://wikis.cern.ch/display/ACCPY/Dependency+and+release+management
 
-Interlude: Test Run
--------------------
+Test Run
+--------
 
 With this minimum in place, your package already can be installed via Pip! Give
 it a try:
@@ -804,14 +804,16 @@ Further reading:
 
 - `Python package index <Acc-Py Package Index_>`_ on the Acc-Py Wiki
 
-Extra Credit: Getting rid of :file:`setup.py`
----------------------------------------------
+Extra Credit
+------------
 
-.. note::
-   You are done! This section, and the ones after, only give a little bit more
-   background information on Python packaging, but they are not necessary for
-   you to get off the ground. Especially if you're a beginner, feel free to
-   stop here and maybe return later.
+You are done! The following sections give only a little bit more background
+information on Python packaging, but they are not necessary for you to get off
+the ground. Especially if you're a beginner, feel free to stop here and maybe
+return later.
+
+Getting Rid of :file:`setup.py`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 While it is the standard that Acc-Py generates for us, there are several
 problems with putting all your project metadata into :file:`setup.py`:
@@ -925,8 +927,8 @@ Further reading:
 
 __ https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html
 
-Extra Credit: Single-Sourcing Your Version Number
--------------------------------------------------
+Single-Sourcing Your Version Number
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Over time, it becomes annoying to increase your version number every time you
 release a new version of your package. On top of that, Acc-Py :ref:`requires us
@@ -1024,8 +1026,8 @@ Further reading:
   guide
 - `Zest.releaser <https://zestreleaser.readthedocs.io/en/latest/>`_
 
-Extra Credit: Automatic Code Formatting
----------------------------------------
+Automatic Code Formatting
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Although a lot of programmers have needlessly strong opinions on it, consistent
 code formatting has two undeniable advantages:
@@ -1070,8 +1072,8 @@ add these lines to your configuration:
 .. _ISort: https://pycqa.github.io/isort/
 .. _ISort Plugins: https://github.com/pycqa/isort/wiki/isort-Plugins
 
-Extra Credit: Linting
----------------------
+Linting
+^^^^^^^
 
 With Python being the dynamically typed scripting language that it is, it is
 much easier to put accidental bugs into your code. Just a small typo and you
@@ -1091,7 +1093,7 @@ that catches, among other things:
 .. _Pylint:
    http://pylint.pycqa.org/
 
-In contrast to :ref:`Black <Extra Credit: Automatic Code Formatting>`, PyLint
+In contrast to :ref:`Black <Automatic Code Formatting>`, PyLint
 is *extremely* configurable and encourages users to enable or disable lints as
 necessary. Here is an example configuration:
 
