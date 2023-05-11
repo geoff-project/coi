@@ -928,11 +928,12 @@ __ https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html
 Extra Credit: Single-Sourcing Your Version Number
 -------------------------------------------------
 
-Over time, it may become annoying to manually bump your version number every
-time you release a new version of your package. On top of that, Acc-Py
-:ref:`requires us to use Git tags to publish our package <Releasing a Package
-via CI>`, but doesn't actually read the name of the tag! It would be nice if we
-could co-opt the tag name to automatically denote the version number.
+Over time, it becomes annoying to increase your version number every time you
+release a new version of your package. On top of that, Acc-Py :ref:`requires us
+to use Git tags to publish our package <Releasing a Package via CI>`, but
+doesn't actually use the name of the tag at all. It would be nice if we could
+just make the tag name our version number and read that into our project
+metadata.
 
 `Setuptools-SCM`_ is a plugin for Setuptools that does precisely that. It
 generates your version number automatically based on your Git tags and feeds it
@@ -946,26 +947,21 @@ directly into Setuptools. The minimal setup looks as follows:
     [build-system]
     requires = [
         'setuptools>=45',
-        'wheel',
         'setuptools_scm[toml]>=6.2',
     ]
 
-    # Add an empty tool section to enable version inference.
+    # Warn Setuptools that the version key is
+    # generated dynamically.
+    [project]
+    dynamic = ['version']
+
+    # This section is ALWAYS necessary, even
+    # if it's empty.
     [tool.setuptools_scm]
 
-.. code-block:: cfg
-
-    # setup.cfg
-    [metadata]
-    name = my_package
-    # No version declaration at all!
-    # version = automatically generated
-    ...
-
-You can also add a key ``write_to`` to your :file:`pyproject.toml` to
-automatically generate – *during installation!* – a source file in your package
-that contains the version number. This way, your package can expose its version
-in a ``__version__`` variable:
+You can also add a key ``write_to`` to the configuration section in
+:file:`pyproject.toml` to automatically generate – *during installation!* – a
+source file in your package that contains the version number:
 
 .. code-block:: toml
 
@@ -980,32 +976,52 @@ in a ``__version__`` variable:
     ...
 
 .. warning::
-   Adding a ``__version__`` variable to your package is :pep:`deprecated
-   <396#pep-rejection>`! You should not do this in packages. A much more
-   reliable way to fetch a package's version is through the
-   :mod:`std:importlib.metadata` standard library package (Python 3.8+) or its
-   :doc:`backport <importlib_metadata:index>` (Python 3.6+).
+    Don't do this! Adding a ``__version__`` variable to your package is
+    :pep:`deprecated <396#pep-rejection>`. If you need to gather a package's
+    version programmatically, do this:
 
-Here are some solutions that people come up with that are broken for various
-reasons. *Don't* follow these!
+    .. code-block:: python
 
-1. Importing your own package in :file:`setup.py` and passing
-   :samp:`{my_package}.__version__` to ``setup()``. This breaks as
-   soon as your package imports any of its dependencies, simply because
-   Pip hasn't had *a chance* to install your dependencies yet.
-2. Specify :samp:`version = attr: {my_package}.__version__` in
-   :file:`setup.cfg`: On Setuptools before version 46.4, this does the same as
-   the first option – and so has the same problems.
-3. Specify :samp:`version = attr: {my_package}.__version__` in
-   :file:`setup.cfg` *and* require ``setuptools>=46.4`` in
-   :file:`pyproject.toml`: New versions of Setuptools textually analyze your
-   code and try to find ``__version__`` without running it. If this fails,
-   however, Setuptools will fall back to importing your package and break
-   again.
+        # Use backport on older Python versions.
+        try:
+            from importlib import metadata
+        except ImportError:
+            import importlib_metadata as metadata
+
+        version = metadata.version("name-you-gave-to-pip-install")
+
+    which is provided by the :mod:`std:importlib.metadata` standard library
+    package (Python 3.8+) or its :doc:`backport <importlib_metadata:index>`
+    (Python 3.6+).
+
+Here are some very clever solutions that people come up every now and then with
+that are all broken for one reason or another:
+
+Passing :samp:`{my_package}.__version__` to ``setup()`` in :file:`setup.py`
+    This requires you to import your own package while you're trying to install
+    it. As soon as you try to import one of your dependencies, this will break
+    because Pip hasn't had *a chance* to install your dependencies yet.
+
+Specify :samp:`version = attr: {my_package}.__version__` in :file:`setup.cfg`
+    On Setuptools before version 46.4, this does the same as the first option.
+    It unconditionally attempts to import the package before it is installed.
+    Thus it also has the same problems.
+
+    If you don't know what :file:`setup.cfg` is, don't worry about it; it was
+    an intermediate format before :file:`pyproject.toml` became popular.
+
+As above, *but* require ``setuptools>=46.4`` in :file:`pyproject.toml`:
+    New versions of Setuptools textually analyze your code and try to find
+    ``__version__`` without executing any of your code. If this fails, however,
+    it still falls back to importing your package and break again.
+
+Specify :samp:`attr = '{my_package}.__version__'` in :file:`pyproject.toml`
+    This is in fact exactly identical to the previous approach.
 
 Further reading:
 
-- :doc:`pkg:guides/single-sourcing-package-version`
+- :doc:`pkg:guides/single-sourcing-package-version` in the Setuptools user
+  guide
 - `Zest.releaser <https://zestreleaser.readthedocs.io/en/latest/>`_
 
 Extra Credit: Automatic Code Formatting
