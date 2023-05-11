@@ -1073,39 +1073,55 @@ add these lines to your configuration:
 Extra Credit: Linting
 ---------------------
 
-As an interpreted and dynamically typed language, Python cannot rely on a
-type-checking compiler to verify that your code does what you expect it to do.
-Instead, Python developers must rely on *linters*, i.e. static-analysis tools,
-to find bugs and anti-patterns.
+With Python being the dynamically typed scripting language that it is, it is
+much easier to put accidental bugs into your code. Just a small typo and you
+can spend half an hour wondering why a variable doesn't get updated.
 
-The simplest choice for beginners Pylint_. It is a general-purpose linter that
-catches style and complexity issues as well as outright bugs. In contrast to
-Black, PyLint is extremely configurable and encourages users to enable or
-disable lints as necessary. Here is an example configuration:
+Static analysis tools that scan your code for bugs and anti-patterns are often
+called *linters* as they work like a lint trap in a clothes dryer. For
+Python beginners, the most comprehensive choice is
+Pylint_. It's a general-purpose linter
+that catches, among other things:
+
+- style issues (line too long),
+- excessive complexity (too many lines per function),
+- suspicious patterns (unused variables),
+- outright bugs (undefined variable).
 
 .. _Pylint:
    http://pylint.pycqa.org/
+
+In contrast to :ref:`Black <Extra Credit: Automatic Code Formatting>`, PyLint
+is *extremely* configurable and encourages users to enable or disable lints as
+necessary. Here is an example configuration:
 
 .. code-block:: python
 
     # pyproject.toml
     [tool.pylint.format]
-    max-line-length=88  # Compatibility with Black.
-    ignore-long-lines = '<?https?://\S+>?$'  # Ignore long URLs.
+    # Compatibility with Black.
+    max-line-length=88
+    # Lines with URLs shouldn't be marked as too long.
+    ignore-long-lines = '<?https?://\S+>?$'
 
     [tool.pylint.reports]
-    # Don't show a summary, just print the errors, one per line.
+    # Don't show a summary, just print the errors.
     reports = false
     score = false
 
+    # TOML quirk: because of the space in "messages control",
+    # we need quotes here.
     [tool.pylint.'messages control']
+    # Every Pylint warning has a name that you can put in this
+    # list to turn it off for the entire package.
     disable = [
-        'bad-continuation',
+        'duplicate-code',
+        'unbalanced-tuple-unpacking',
     ]
 
-Sometimes, PyLint gives you a warning that you find generally useful, but
-shouldn't apply to an individual piece of code. In this case you can add a
-comment like this to suppress the warning:
+Sometimes, PyLint gives you a warning that you find *generally* useful, but
+*just this time*, you think it shouldn't apply and the code is actually
+correct. In this case you can add a comment like this to suppress the warning:
 
 .. code-block:: python
 
@@ -1126,13 +1142,12 @@ Gitlab:
       extends: .acc_py_base
       stage: test
       before_script:
-        # Pin the version number and only update it manually. This avoids
-        # spontaneous failure.
-        - python -m pip install pylint==2.8.2 black==21.5b0 isort==5.8.0
+        - python -m pip install pylint black isort
         - python -m pip install -e .
       script:
-        # Run each linter, but don't abort on error. Only abort at the end
-        # if any linter failed. This way, you get all warnings at once.
+        # Run each linter, but don't abort on error. Only abort
+        # at the end if any linter failed. This way, you get all
+        # warnings at once.
         - pylint ${project_name} || pylint_exit=$?
         - black --check . || black_exit=$?
         - isort --check . || isort_exit=$?
