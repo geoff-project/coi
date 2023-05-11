@@ -28,6 +28,8 @@ Please see the dedicated :doc:`guide<utils:guide/japc_utils>` for more
 information.
 
 .. code-block:: python
+    :linenos:
+    :emphasize-lines: 6-7
 
     from pyjapc import PyJapc
     from cernml.japc_utils import subscribe_stream
@@ -60,6 +62,8 @@ This sounds complicated, but luckily, :ref:`parameter streams
 <Synchronization>` already support cancellation tokens:
 
 .. code-block:: python
+    :linenos:
+    :emphasize-lines: 17-19, 33, 43
 
     from cernml.coi
     # Requires `pip install cernml-coi-utils`.
@@ -87,20 +91,22 @@ This sounds complicated, but luckily, :ref:`parameter streams
         def compute_single_objective(self, params):
             self.japc.setParam("...", param)
             try:
-                # This may block for a long time, depending on how fast the
-                # data arrives and whether the data is valid. However, if
-                # the user sends a cancellation request via the token,
-                # `wait_next()` will unblock and raise an exception.
+                # This may block for a long time, depending on how fast
+                # the data arrives and whether the data is valid.
+                # However, if the user clicks Cancel, the token
+                # receives this signal, `wait_next()` will immediately
+                # unblock and raise an exception.
                 while True:
                     value, header = self.bpm_readings.wait_next()
                     if self.is_data_good(value):
                         return self.compute_loss(value)
             except coi.cancellation.CancelledError:
-                # Our environment has the nice property that even after a
-                # cancellation, it will still work. Our caller could call
-                # `compute_single_objective()` again and everything would
-                # behave the same. We let the outside world know that this
-                # is the case by marking the cancellation as "completed".
+                # Our environment has the nice property that even after
+                # a cancellation, it will still work. Our caller could
+                # call `compute_single_objective()` again and everything
+                # would behave the same. We let the outside world know
+                # that this is the case by marking the cancellation as
+                # "completed".
                 self.token.complete_cancellation()
                 raise
             return value
@@ -110,6 +116,8 @@ regularly calling
 `~cernml.coi.cancellation.Token.raise_if_cancellation_requested()` on it:
 
 .. code-block:: python
+    :linenos:
+    :emphasize-lines: 9
 
     from time import sleep
 
@@ -127,11 +135,14 @@ regularly calling
 
         ...
 
-If you write a host application yourself, you will usually want to create a
+If you are writing a **host application** (i.e. something that runs other
+people's optimization problems), you will usually want to create a
 `~cernml.coi.cancellation.TokenSource` and pass its token to the optimization
 problem if it is cancellable:
 
 .. code-block:: python
+    :linenos:
+    :emphasize-lines: 7, 30-32, 51
 
     from threading import Thread
     from cernml import coi
@@ -145,7 +156,10 @@ problem if it is cancellable:
             env_name = self.env_name
             agent = self.agent
             token = self.source.token
-            self.worker = Thread(target=run, args=(env_name, agent, token))
+            self.worker = Thread(
+                target=worker,
+                args=(env_name, agent, token),
+            )
             self.worker.start()
 
         def on_stop(self):
@@ -156,7 +170,7 @@ problem if it is cancellable:
 
         ...
 
-    def run(env_name, agent, token):
+    def worker(env_name, agent, token):
         kwargs = {}
         metadata = coi.spec(env_name).metadata
         if metadata.get("cern.cancellable", False):
