@@ -2,8 +2,7 @@
 
 from typing import Any
 
-
-__all__ = ['check_methods']
+__all__ = ["check_methods"]
 
 
 def check_methods(C: type, *methods: str) -> Any:
