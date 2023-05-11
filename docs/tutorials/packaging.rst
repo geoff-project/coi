@@ -273,7 +273,7 @@ This is what a minimal :file:`pyproject.toml` file using Setuptools looks like:
 
     # pyproject.toml
     [build-system]
-    requires = ['setuptools', 'wheel']
+    requires = ['setuptools']
     build-backend = 'setuptools.build_meta'
 
 The section ``build-system`` tells Pip how to install our package. The key
@@ -804,8 +804,8 @@ Further reading:
 
 - `Python package index <Acc-Py Package Index_>`_ on the Acc-Py Wiki
 
-Extra Credit: :file:`setup.cfg`
--------------------------------
+Extra Credit: Getting rid of :file:`setup.py`
+---------------------------------------------
 
 .. note::
    You are done! This section, and the ones after, only give a little bit more
@@ -813,22 +813,22 @@ Extra Credit: :file:`setup.cfg`
    you to get off the ground. Especially if you're a beginner, feel free to
    stop here and maybe return later.
 
-While :file:`setup.py` is nice and generally gets the work done, there are
-several problems with it:
+While it is the standard that Acc-Py generates for us, there are several
+problems with putting all your project metadata into :file:`setup.py`:
 
-- The logic before the bare ``setup()`` call quickly becomes hard to read.
-- It is impossible to extract project metadata without executing arbitrary
-  Python code. Security-minded people generally don't like that.
-- Most projects don't *need* to execute arbitrary Python code to declare their
-  metadata.
+- No tools other than Setuptools can read the format.
+- It's impossible to extract metadata without executing arbitrary, possibly
+  untrusted Python code.
+- The logic before the ``setup()`` call quickly becomes hard to read.
+- Most projects don't need the full flexibility of arbitrary Python to declare
+  their metadata.
 
-For this reason, Setuptools recommends to configure your project using a new
-file called :file:`setup.cfg`. It fulfills the same role as :file:`setup.py`,
-but as a configuration file, it can be read without executing Python code.
-Certain patterns that require Python login in :file:`setup.py` can be handled
-via special value types.
+For this reason, Setuptools recommends to put all your metadata into
+:file:`pyproject.toml`, like you already do for most other Python tools.
+The most important programming patterns you know from :file:`setup.py` can be
+easily replicated there using dedicates keys or values.
 
-For example, this setup script:
+Take for example this setup script:
 
 .. code-block:: python
 
@@ -837,9 +837,11 @@ For example, this setup script:
 
     from setuptools import find_packages, setup
 
+    # Find the source code of our package.
     PROJECT_ROOT = Path(__file__).parent.absolute()
     PKG_DIR = PROJECT_ROOT / "my_package"
 
+    # Find the version string without actually executing our package.
     with open(PKG_DIR / "__init__.py", encoding="utf-8") as infile:
         for line in infile:
             name, equals, version = line.partition("=")
@@ -851,47 +853,63 @@ For example, this setup script:
         else:
             raise ValueError("no version number found")
 
+    # Read our long description out of the README file.
     with open(PROJECT_ROOT / "README.rst", encoding="utf-8") as infile:
         readme = infile.read()
 
     setup(
-        name="py_package",
+        name="my_package",
         version=version,
+        author="My Name",
+        author_email="my.name@cern.ch",
         long_description=readme,
         packages=find_packages(),
         install_requires=[
             "requests",
-            "importlib; python_version == 2.6",
+            "importlib_metadata; python_version < 3.8",
         ]
         extras_require={
-            "pdf": ["ReportLab>=1.2; RXP"],
-            "rest": ["docutils>=0.3; pack == 1.1, == 1.3"],
+            "pdf": ["ReportLab>=1.2", "RXP"],
+            "rest": ["docutils>=0.3", "pack == 1.1, == 1.3"],
         },
     )
 
 does the same as this configuration file:
 
-.. code-block:: cfg
+.. code-block:: toml
 
-    # setup.cfg
-    [metadata]
-    name = my_package
-    version = attr: src.VERSION  # Does not import your package in most cases.
-    long_description = file: README.rst  # Reads the entire file as a string.
+    # pyproject.toml
+    [build-system]
+    requires = ['setuptools']
+    build-backend = 'setuptools.build_meta'
+    # ^^^ same as before ^^^
 
-    [options]
-    packages = find:  # Same as the `find_packages()` function.
-    install_requires =  # Lists of strings use hanging indent.
-        requests
-        importlib; python_version == "2.6"
+    [project]
+    name = 'my_package'
+    readme = { file = 'README.rst' }
+    dynamic = ['version']
+    authors = [
+        { name = 'My Name', email = 'my.name@cernch'},
+        # More than one author supported now!
+    ]
+    dependencies = [
+        'requests',
+        'importlib_metadata; python_version < "3.8"' # String inside string!
+    ]
 
-    # Complex options are put into separate sections.
-    [options.extras_require]
-    pdf = ReportLab>=1.2; RXP
-    rest = docutils>=0.3; pack ==1.1, ==1.3
+    [project.optional-dependencies]
+    pdf = ['ReportLab>=1.2', 'RXP']
+    rest = ['docutils>=0.3', 'pack ==1.1, ==1.3']
 
-If you manage to put all your data into :file:`setup.cfg`, your
-:file:`setup.py` file can become as simple as:
+    [tool.setuptools.dynamic]
+    version = { attr = 'my_package.VERSION' }
+
+    # [tool.setuptools.packages.find]
+    # ^^^ Not needed, Setuptools does the right thing automatically!
+
+And with Setuptools version 40.9 or higher (released in 2019), you
+can completely remove the :file:`setup.py` file after this change. With old
+versions, you would still need this stub file:
 
 .. code-block:: python
 
@@ -899,18 +917,13 @@ If you manage to put all your data into :file:`setup.cfg`, your
     from setuptools import setup
     setup()
 
-If you use Setuptools version 40.9 or later (which should be specified :ref:`in
-your pyproject.toml file <adding :file:\`pyproject.toml\` (optional)>`), you
-can completely remove the :file:`setup.py` file in this case.
-
 Further reading:
 
-- `What's the difference between setup.py and setup.cfg in python projects`__
 - :doc:`Setuptools quickstart <setuptools:userguide/quickstart>`
-- :doc:`setuptools:userguide/declarative_config`
-- :doc:`Setuptools keywords <setuptools:references/keywords>`
+- :doc:`setuptools:userguide/pyproject_config`
+- `Why you shouldn't invoke setup.py directly`__
 
-__ https://stackoverflow.com/questions/39484863/
+__ https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html
 
 Extra Credit: Single-Sourcing Your Version Number
 -------------------------------------------------
