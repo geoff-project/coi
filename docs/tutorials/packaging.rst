@@ -1,3 +1,10 @@
+..
+    SPDX-FileCopyrightText: 2020-2023 CERN
+    SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+    SPDX-FileNotice: All rights not expressly granted are reserved.
+
+    SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
+
 Packaging Crash Course
 ======================
 
@@ -185,7 +192,7 @@ is ideal for caches, temporary files and build artifacts. Without
 useless.
 
 While you can create this file yourself, we recommend you download
-Python.gitignore_; it is comprehensive and universally used. 
+Python.gitignore_; it is comprehensive and universally used.
 
 .. _Python.gitignore:
    https://github.com/github/gitignore/blob/master/Python.gitignore
@@ -253,7 +260,7 @@ possible to do all configuration using a single file format.
 
 .. _Black-TOML:
    https://black.readthedocs.io/en/stable/usage_and_configuration/the_basics.html#what-on-earth-is-a-pyproject-toml-file
-.. _Isort-TOML: 
+.. _Isort-TOML:
    https://pycqa.github.io/isort/docs/configuration/config_files.html#pyprojecttoml-preferred-format
 .. _Pylint-TOML:
    https://pylint.pycqa.org/en/latest/user_guide/usage/run.html#command-line-options

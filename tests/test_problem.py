@@ -1,5 +1,14 @@
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
+
+# pylint: disable = missing-class-docstring
+# pylint: disable = missing-function-docstring
+# pylint: disable = redefined-outer-name
+
 """Test that `Problem` does not require direct inheritance."""
-# pylint: disable = missing-class-docstring, missing-function-docstring
 
 import typing as t
 

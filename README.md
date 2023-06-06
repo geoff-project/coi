@@ -1,3 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2020-2023 CERN
+SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+SPDX-FileNotice: All rights not expressly granted are reserved.
+
+SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
+-->
+
 Common Optimization Interfaces
 ==============================
 
@@ -156,3 +164,18 @@ documentation is provided through extensive Python docstrings.
 [acc-py-docs]: https://acc-py.web.cern.ch/gitlab/geoff/cernml-coi/
 [pages-docs]: https://cernml-coi.docs.cern.ch/
 [pages-howto]: https://how-to.docs.cern.ch/
+For full authorship information, see the version control history.
+
+License
+-------
+
+Except as otherwise noted, this work is licensed under either of [GNU Public
+License, Version 3.0 or later](LICENSES/GPL-3.0-or-later.txt), or [European
+Union Public License, Version 1.2 or later](LICENSES/EUPL-1.2.txt), at your
+option. See [COPYING](COPYING) for details.
+
+Unless You explicitly state otherwise, any contribution intentionally submitted
+by You for inclusion in this Work (the Covered Work) shall be dual-licensed as
+above, without any additional terms or conditions.
+
+For full authorship information, see the version control history.

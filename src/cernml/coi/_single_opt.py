@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
+
 """An interface that supports RL and numerical optimization."""
 
 # pylint: disable = abstract-method, too-few-public-methods
@@ -12,7 +18,7 @@ from ._problem import Problem
 
 if t.TYPE_CHECKING:  # pragma: no cover
     # pylint: disable = unused-import
-    import scipy.optimize
+    import scipy.optimize  # noqa: F401
 
 Constraint = t.Union[
     "scipy.optimize.LinearConstraint", "scipy.optimize.NonlinearConstraint"

@@ -1,8 +1,14 @@
-"""Test the registration module."""
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
 # pylint: disable = missing-class-docstring
 # pylint: disable = missing-function-docstring
 # pylint: disable = redefined-outer-name
+
+"""Test the registration module."""
 
 import typing
 from unittest.mock import Mock, patch

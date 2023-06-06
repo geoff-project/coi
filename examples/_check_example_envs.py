@@ -1,13 +1,20 @@
 #!/usr/bin/env python
-"""Run the environment checkers over the example environments."""
+
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
 # pylint: disable = unused-import
 
-import configurable
-import parabola
+"""Run the environment checkers over the example environments."""
 
 from cernml import coi
 from cernml.coi import cancellation
+
+for plugin in ["configurable", "parabola"]:
+    __import__(plugin)
 
 if not coi.registry.all():
     raise AssertionError("no environments registered")

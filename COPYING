@@ -1,0 +1,14 @@
+Except as otherwise noted (below and/or in individual files), this work is
+licensed under either of GNU Public License, Version 3.0 or later
+<LICENSES/GPL-3.0-or-later.txt>, or European Union Public License, Version 1.2
+or later <LICENSES/EUPL-1.2.txt>, at your option.
+
+Unless You explicitly state otherwise, any contribution intentionally submitted
+by You for inclusion in this Work (the Covered Work) shall be dual-licensed as
+above, without any additional terms or conditions.
+
+For full authorship information, see the version control history.
+
+* The documentation of Gym classes, located in docs/api/coi.rst, is
+  Copyright (c) 2016 OpenAI (https://openai.com) and licensed under the MIT
+  License <LICENSES/MIT.txt>.

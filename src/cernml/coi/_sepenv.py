@@ -1,6 +1,13 @@
-"""An interface that splits calculations into reusable parts."""
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = abstract-method, too-few-public-methods
+# pylint: disable = abstract-method
+# pylint: disable = too-few-public-methods
+
+"""An interface that splits calculations into reusable parts."""
 
 import typing as t
 
@@ -8,7 +15,8 @@ import gym
 import numpy as np
 
 InfoDict = t.Dict[str, t.Any]
-GoalObs = t.Dict[str, np.ndarray]  # TODO: Use t.TypedDict with Python 3.8.
+# TODO: Use t.TypedDict with Python 3.8.
+GoalObs = t.Dict[str, np.ndarray]
 
 
 class SeparableEnv(gym.Env):

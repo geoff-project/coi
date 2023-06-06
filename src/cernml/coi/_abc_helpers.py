@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
+
 """Provides `check_methods()`, a helper function for ABCs."""
 
 from typing import Any
@@ -51,6 +57,10 @@ def check_methods(C: type, *methods: str) -> Any:
     # pylint: disable = invalid-name
     # Original implementation:
     # https://github.com/python/cpython/blob/v3.7.0/Lib/_collections_abc.py#L72
+    # See also the more general solution:
+    # https://github.com/python/cpython/blob/v3.7.0/Lib/typing.py#L1100
+    # TODO Switch to using `typing.Protocol` once we no longer support
+    # Python 3.7.
     mro = C.__mro__
     for method in methods:
         for B in mro:

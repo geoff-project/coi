@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
+
 [build-system]
 requires = [
     'pip >= 22',
@@ -15,7 +21,7 @@ authors = [
 ]
 description = 'Common optimization interfaces for RL/num. optimization'
 readme = 'README.md'
-license = {text='Other/Proprietary License'}
+license = {file='COPYING'}
 requires-python = '>=3.7'
 dependencies = [
     # Temporary hack: Gym 0.22 removes GoalEnv and puts it into a new
@@ -35,7 +41,6 @@ dependencies = [
 classifiers = [
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Science/Research',
-    'License :: Other/Proprietary License',
     'Natural Language :: English',
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 3 :: Only',
@@ -64,9 +69,10 @@ all = [
     'cernml-coi[matplotlib]',
 ]
 dev = [
-    'black ~= 23.1.0',
+    'black',
+    'flake8',
+    'flake8-length',
     'mypy ~= 1.0',
-    'pycodestyle ~= 2.10.0',
     'pylint ~= 2.17.0',
     'PyQt5-stubs ~= 5.0',
 ]
@@ -104,8 +110,14 @@ doctest_optionflags = ['IGNORE_EXCEPTION_DETAIL']
 
 [tool.pylint]
 master = {extension-pkg-whitelist = 'PyQt5'}
-format = {ignore-long-lines = '<?https?://\S+>?$'}
-'messages control' = {disable = ['fixme', 'similarities', 'unpacking-non-sequence']}
+
+[tool.pylint.'messages control']
+disable = [
+    'fixme',
+    'line-too-long',
+    'similarities',
+    'unpacking-non-sequence',
+]
 
 [tool.mypy]
 disallow_untyped_defs = true

@@ -1,3 +1,9 @@
+# SPDX-FileCopyrightText: 2020-2023 CERN
+# SPDX-FileCopyrightText: 2023 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileNotice: All rights not expressly granted are reserved.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
+
 """Provide `Problem`, the most fundamental API of this package."""
 
 from abc import ABCMeta
@@ -67,12 +73,9 @@ class Problem(metaclass=ABCMeta):
             reserved for future use.
     """
 
-    # PyLint requires SCREAMING_SNAKE_CASE for class variables. Since
-    # the name has been chosen by Gym, not by us, we cannot change it.
-    metadata: ClassVar[Mapping[str, Any]]  # pylint: disable = invalid-name
     # Subclasses should make `metadata` just a regular dict. This is a
     # mapping proxy to prevent accidental mutation through inheritance.
-    metadata = MappingProxyType(
+    metadata: ClassVar[Mapping[str, Any]] = MappingProxyType(
         {
             "render.modes": [],
             "cern.machine": Machine.NO_MACHINE,
