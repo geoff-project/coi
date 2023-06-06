@@ -16,6 +16,8 @@ Unreleased
 
 - FIX: Improve cross-linking in the docs.
 - FIX: Update packaging tutorial to latest version of tools.
+- FIX: General small rewrite of the docs.
+- OTHER: Documentation previously written in Markdown is now consistently written in ReST.
 
 v0.8.9
 ------
