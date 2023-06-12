@@ -31,13 +31,8 @@ isort --check . || exit_code=$((exit_code | $?))
 
 flake8 src/ examples/ tests/ || exit_code=$((exit_code | $?))
 
-# Split out src/ checking to prevent error "Source file found twice under
-# different module names" when using editable installs.
-mypy src/ || exit_code=$((exit_code | $?))
-mypy examples/ tests/ || exit_code=$((exit_code | $?))
+mypy examples/*.py tests/*.py src/ || exit_code=$((exit_code | $?))
 
-pylint --reports=no --score=no src/ || exit_code=$((exit_code | $?))
-pylint --reports=no --score=no tests/*.py || exit_code=$((exit_code | $?))
-pylint --reports=no --score=no examples/*.py || exit_code=$((exit_code | $?))
+pylint --reports=no --score=no examples/*.py src/ tests/*.py || exit_code=$((exit_code | $?))
 
 exit $exit_code
