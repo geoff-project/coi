@@ -68,15 +68,6 @@ matplotlib = [
 all = [
     'cernml-coi[matplotlib]',
 ]
-dev = [
-    'black',
-    'flake8',
-    'flake8-length',
-    'mypy ~= 1.0',
-    'pylint ~= 2.17.0',
-    'PyQt5-stubs ~= 5.0',
-    'reuse',
-]
 doc = [
     'sphinx >= 4.0',
 ]
@@ -90,7 +81,6 @@ test = [
     'pytest >= 6.0',
     'pytest-cov',
 ]
-lint = ['cernml-coi[dev,examples,test]']
 
 [tool.setuptools]
 zip-safe = true

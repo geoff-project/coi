@@ -35,19 +35,13 @@ build_wheel:
 
 # Test: Run linters and unit tests. Run tests both in-tree and out-of-tree.
 
-test_lint:
-  extends:
-    - .acc_py_run_on_manylinux_py_version
-    - .acc_py_run_on_all_currently_supported
-    - .coi_use_pyqt_image
-  stage: test
+test_pre-commit:
+  variables:
+    PY_VERSION: "3.11"
+  extends: .acc_py_pre-commit
   before_script:
-    - !reference [.acc_py_run_on_manylinux_py_version, before_script]
-    - python -m pip install
-      -e ${project_root}[lint]
-  script:
-    - cd ${project_root}
-    - ./run_linters.sh --print-versions
+    - !reference [.acc_py_pre-commit, before_script]
+    - python -m pip install pylint .[doc,examples,test]
 
 test_dev:
   extends:
