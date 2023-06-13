@@ -12,6 +12,7 @@
 
 if [[ "$*" ]]; then
   if [[ "$*" == --print-versions ]]; then
+    reuse --version
     black --version
     isort --version
     pycodestyle --version
@@ -24,6 +25,8 @@ if [[ "$*" ]]; then
 fi
 
 exit_code=0
+
+reuse lint || exit_code=$((exit_code | $?))
 
 black --check . || exit_code=$((exit_code | $?))
 
