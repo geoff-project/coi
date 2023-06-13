@@ -47,7 +47,6 @@ test_dev:
   extends:
     - .acc_py_dev_test
     - .acc_py_run_on_all_currently_supported
-  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   # Override `script` to change the precise pytest-cov arguments.
   script:
     - cd ${project_root}
