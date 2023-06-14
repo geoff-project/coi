@@ -111,9 +111,6 @@ build_docs:
 
 # Deploy: Publish the wheel on acc-py-repo.cern.ch.
 
-publish:
-  extends: .acc_py_publish
-
 build_docs_on_tag:
   extends:
     - .acc_py_build_docs_on_tag
@@ -121,6 +118,10 @@ build_docs_on_tag:
   before_script:
     - yum -y install graphviz
     - !reference [.acc_py_build_docs_on_tag, before_script]
+
+publish:
+  extends: .acc_py_publish
+  needs: [build_docs_on_tag]
 
 # Release: Show the code to the world.
 
