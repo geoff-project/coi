@@ -23,10 +23,15 @@ Unreleased
 
 No changes yet!
 
+v0.8.12
+-------
+
+- FIX: Bad CI configuration that prevented the package from being released.
+
 v0.8.11
 -------
 
-- FIX: bad CI configuration that prevented docs from being built.
+- FIX: Bad CI configuration that prevented docs from being built.
 
 v0.8.10
 -------

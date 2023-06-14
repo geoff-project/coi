@@ -111,6 +111,9 @@ build_docs:
 
 # Deploy: Publish the wheel on acc-py-repo.cern.ch.
 
+publish:
+  extends: .acc_py_publish
+
 build_docs_on_tag:
   variables:
     PY_VERSION: "3.11" # required for inspect.getmembers_static
@@ -121,10 +124,6 @@ build_docs_on_tag:
   before_script:
     - yum -y install graphviz
     - !reference [.acc_py_build_docs_on_tag, before_script]
-
-publish:
-  extends: .acc_py_publish
-  needs: [build_docs_on_tag]
 
 # Release: Show the code to the world.
 
