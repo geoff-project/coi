@@ -23,6 +23,11 @@ Unreleased
 
 No changes yet!
 
+v0.8.11
+-------
+
+- FIX: bad CI configuration that prevented docs from being built.
+
 v0.8.10
 -------
 
