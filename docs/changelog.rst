@@ -13,13 +13,18 @@ Changelog
 This package uses a variant of `Semantic Versioning`_ that makes additional
 promises during the initial development (major version 0): whenever breaking
 changes to the public API are published, the first non-zero version number will
-increase. This means that code that uses COI version 0.6.0 will continue to
-work with version 0.6.1, but may break with version 0.7.0.
+increase. This means that code that uses COI version 0.8.10 will continue to
+work with version 0.8.11, but may break with version 0.9.0.
 
 .. _Semantic Versioning: https://semver.org/
 
 Unreleased
 ----------
+
+No changes yet!
+
+v0.8.10
+-------
 
 - FIX: Improve cross-linking in the docs.
 - FIX: Update packaging tutorial to latest version of tools.
