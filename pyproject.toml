@@ -26,15 +26,19 @@ requires-python = '>=3.7'
 dependencies = [
     # Temporary hack: Gym 0.22 removes GoalEnv and puts it into a new
     # gym-robotics package. We'll have to address that.
-    'gym >= 0.11, <0.22',
+    'gym >= 0.11, < 0.22',
     # Note: on Python 3.9, we still can't use `importlib.metadata`
     # from the stdlib because we use the SelectableEntryPoints API,
     # which was only added in importlib_metadata 3.6/Python 3.10.
-    # Note further that we are stuck on importlib_metadata<5 until
-    # we no longer need Gym 0.21. This depends on Stable Baselines 3
-    # adding support for Gym 0.22+. This will most likely materialize
-    # as support for Gymnasium 0.26+.
-    'importlib-metadata >=3.6, <5; python_version<"3.10"',
+    'importlib-metadata >= 3.6, < 7; python_version<"3.10"',
+    # On Python 3.7, we are stuck with importlib_metadata 4.* until
+    # we no longer need Gym 0.21 because it uses the old Entry Points API
+    # removed in importlib_metadata 5.0. On Python 3.8, they use the stdlib
+    # `importlib.metadata`, which still supports that API.
+    # Removing this hack depends on Stable Baselines 3 adding support for Gym
+    # 0.22+. This will most likely materialize in stable-baselines3 2.0 as
+    # support for Gymnasium 0.26+.
+    'importlib-metadata < 5; python_version<"3.8"',
     'numpy ~= 1.10',
     'scipy ~= 1.1',
 ]

@@ -23,6 +23,11 @@ Unreleased
 
 No changes yet!
 
+v0.8.13
+-------
+
+- FIX: Add compatibility with :doc:`importlib-metadata<importlib_metadata:index>` 5 and 6 *if* we're on Python 3.8+. On Python 3.7 (Acc-Py 2020.11), we are still forced to use importlib-metadata 4.
+
 v0.8.12
 -------
 
