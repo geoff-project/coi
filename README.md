@@ -164,7 +164,6 @@ documentation is provided through extensive Python docstrings.
 [acc-py-docs]: https://acc-py.web.cern.ch/gitlab/geoff/cernml-coi/
 [pages-docs]: https://cernml-coi.docs.cern.ch/
 [pages-howto]: https://how-to.docs.cern.ch/
-For full authorship information, see the version control history.
 
 License
 -------
