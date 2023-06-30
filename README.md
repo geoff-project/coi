@@ -138,20 +138,6 @@ optimize_in_some_way(problem)
 
 [GeOFF]: https://gitlab.cern.ch/geoff/geoff-app
 
-Stability
----------
-
-This package uses a variant of [Semantic Versioning](https://semver.org/) that
-makes additional promises during the initial development (major version 0):
-whenever breaking changes to the public API are published, the first non-zero
-version number will increase. This means that code that uses COI version 0.6.0
-will continue to work with version 0.6.1, but may break with version 0.7.0.
-
-Changelog
----------
-
-[See here](https://cernml-coi.docs.cern.ch/changelog.html).
-
 Documentation
 -------------
 
@@ -164,6 +150,20 @@ documentation is provided through extensive Python docstrings.
 [acc-py-docs]: https://acc-py.web.cern.ch/gitlab/geoff/cernml-coi/
 [pages-docs]: https://cernml-coi.docs.cern.ch/
 [pages-howto]: https://how-to.docs.cern.ch/
+
+Changelog
+---------
+
+[See here](https://cernml-coi.docs.cern.ch/changelog.html).
+
+Stability
+---------
+
+This package uses a variant of [Semantic Versioning](https://semver.org/) that
+makes additional promises during the initial development (major version 0):
+whenever breaking changes to the public API are published, the first non-zero
+version number will increase. This means that code that uses COI version 0.6.0
+will continue to work with version 0.6.1, but may break with version 0.7.0.
 
 License
 -------
