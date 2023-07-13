@@ -21,7 +21,7 @@ work with version 0.8.11, but may break with version 0.9.0.
 Unreleased
 ----------
 
-No changes yet!
+- FIX: The :doc:`/api/checkers` now run their :func:`isinstance()` checks on the `~cernml.coi.Problem.unwrapped` optimization problem instead of the problem itself. This solves a bug where a `~cernml.coi.SingleOptimizable` inside a `~gym.Wrapper` is mistaken for an `~gym.Env`.
 
 v0.8.13
 -------

@@ -33,12 +33,15 @@ def assert_optimization_space(env: SingleOptimizable) -> None:
 
         >>> class Foo:
         ...     optimization_space = gym.spaces.Box(-1, 1, ())
+        ...     @property
+        ...     def unwrapped(self):
+        ...         return self
         >>> assert_optimization_space(Foo())
     """
     opt_space = env.optimization_space
     assert is_box(opt_space), f"optimization space {opt_space} must be a gym.spaces.Box"
-    if isinstance(env, gym.Env):
-        act_space = env.action_space
+    if isinstance(env.unwrapped, gym.Env):
+        act_space = t.cast(gym.Env, env).action_space
         assert is_box(act_space), f"action space {act_space} must be a gym.spaces.Box"
         assert act_space.shape == opt_space.shape, (
             f"action {act_space.shape} and optimization {opt_space.shape} space "

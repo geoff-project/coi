@@ -18,7 +18,7 @@ from ._generic import assert_range, is_bool, is_box, is_reward
 
 def check_env(env: gym.Env, warn: bool = True) -> None:
     """Check the run-time invariants of the given interface."""
-    assert isinstance(env, gym.Env), f"{type(env)} must inherit from gym.Env"
+    assert isinstance(env.unwrapped, gym.Env), f"{type(env)} must inherit from gym.Env"
     assert_observation_space(env)
     assert_action_space(env)
     assert_range(env.reward_range, "reward")
@@ -43,7 +43,7 @@ def assert_observation_space(env: gym.Env) -> None:
     space = env.observation_space
     if isinstance(space, gym.spaces.Dict):
         assert isinstance(
-            env, gym.GoalEnv
+            env.unwrapped, gym.GoalEnv
         ), f"only GoalEnv can have dict observation space {space}"
         actual_keys = set(space.spaces.keys())
         expected_keys = {"observation", "desired_goal", "achieved_goal"}
@@ -76,6 +76,9 @@ def assert_env_returned_values(env: gym.Env) -> None:
         ...     reward_range = (-1.0, 1.0)
         ...     observation_space = gym.spaces.Box(-1, 1, ())
         ...     action_space = observation_space
+        ...     @property
+        ...     def unwrapped(self):
+        ...         return self
         ...     def reset(self):
         ...         return np.array(0.0, dtype=np.float32)
         ...     def step(self, action):
@@ -87,7 +90,9 @@ def assert_env_returned_values(env: gym.Env) -> None:
         assert (
             obs in env.observation_space
         ), f"observation {obs} outside of space {env.observation_space}"
-        inner_obs = obs["observation"] if isinstance(env, gym.GoalEnv) else obs
+        inner_obs = (
+            obs["observation"] if isinstance(env.unwrapped, gym.GoalEnv) else obs
+        )
         assert isinstance(
             inner_obs, np.ndarray
         ), f"observation {inner_obs} must be NumPy array"
@@ -105,10 +110,10 @@ def assert_env_returned_values(env: gym.Env) -> None:
     assert low <= reward <= high, f"reward is out of range [{low}, {high}]: {reward}"
     assert is_bool(done), f"done signal must be a bool: {done}"
     assert isinstance(info, dict), f"info must be a dictionary: {info}"
-    if isinstance(env, gym.GoalEnv):
+    if isinstance(env.unwrapped, gym.GoalEnv):
         expected = env.compute_reward(obs["achieved_goal"], obs["desired_goal"], info)
         assert reward == expected, f"reward does not match: {reward} != {expected}"
-    elif isinstance(env, SeparableEnv):
+    elif isinstance(env.unwrapped, SeparableEnv):
         expected = env.compute_reward(obs, None, info)
         assert reward == expected, f"reward does not match: {reward} != {expected}"
 
@@ -123,7 +128,7 @@ def assert_env_no_nan(env: gym.Env) -> None:
 
     obs = env.reset()
     for _ in range(10):
-        if isinstance(env, gym.GoalEnv):
+        if isinstance(env.unwrapped, gym.GoalEnv):
             obs = obs["observation"]
         assert _check_val(obs), f"NaN or inf in observation: {obs}"
         obs, reward, _, _ = env.step(env.action_space.sample())
