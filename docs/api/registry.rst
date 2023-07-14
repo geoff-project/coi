@@ -31,22 +31,28 @@ The Problem Registry
    A standard wrapper around `~gym.Env`. If *max_episode_steps* is passed, it
    truncates each episode to this number of steps.
 
-   You can tell whether an
-   episode was truncated or ended naturally by inspecting the *info* dict
-   returned by `~gym.Env.step()`:
+   You can tell whether an episode was truncated or ended naturally by
+   inspecting the *info* dict returned by `~gym.Env.step()`:
 
-   - if it contains a key ``"TimeLimit.truncated"`` whose value is True, the
-     episode was truncated;
-   - if it contains a key ``"TimeLimit.truncated"`` whose value is False, the
-     episode ended naturally at exactly the time limit;
-   - if if does not contain a key ``"TimeLimit.truncated"``, the episode is
-     either still going or ended before reaching the time limit.
+   - if ``info["TimeLimit.truncated"]`` is True, the episode was truncated;
+   - if ``info["TimeLimit.truncated"]`` is False, the episode ended naturally
+     at exactly the time limit;
+   - if ``"TimeLimit.truncated" not in info``, the episode is either still
+     going or ended before reaching the time limit.
 
    Thus, you can check for truncation like this:
 
         >>> obs, reward, done, info = env.step(action)
         >>> if info.get("TimeLimit.truncated"):
         ...     print("truncated!")
+
+.. class:: gym.wrappers.OrderEnforcing(env)
+
+   Bases: `gym.Wrapper`
+
+   A standard wrapper around `~gym.Env`. It simply ensures that
+   `~gym.Env.step()` is not called before `~gym.Env.reset()`. Calling
+   `~gym.Env.step()` first raises an `AssertionError`.
 
 .. autoexception:: gym.error.Error
 

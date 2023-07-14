@@ -19,6 +19,7 @@ def register(
     entry_point: Union[str, Callable],
     nondeterministic: bool = False,
     max_episode_steps: Optional[int] = None,
+    order_enforce: bool = True,
     kwargs: Optional[Mapping[str, Any]] = None,
 ) -> None:
     """Register a new environment in the global registry.
@@ -52,6 +53,10 @@ def register(
             the return value of *entry_point* is wrapped in a
             :class:`gym.wrappers.TimeLimit` upon instantiation.
 
+        order_enforce: If True, the return value of *entry_point* is
+            wrapped in a :class:`gym.wrappers.OrderEnforcing` upon
+            instantiation.
+
         kwargs: Any further arguments that should be passed to
             *entry_point*. This should contain all required arguments so
             that a call ``make(the_id)`` will always succeed.
@@ -69,6 +74,7 @@ def register(
         entry_point=entry_point,
         nondeterministic=nondeterministic,
         max_episode_steps=max_episode_steps,
+        order_enforce=order_enforce,
         kwargs=kwargs,
     )
 

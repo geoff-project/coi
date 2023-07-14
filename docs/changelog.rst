@@ -22,6 +22,7 @@ Unreleased
 ----------
 
 - FIX: The :doc:`/api/checkers` now run their :func:`isinstance()` checks on the `~cernml.coi.Problem.unwrapped` optimization problem instead of the problem itself. This solves a bug where a `~cernml.coi.SingleOptimizable` inside a `~gym.Wrapper` is mistaken for an `~gym.Env`.
+- FIX: Add missing argument *order_enforce* to `~cernml.coi.register()` for compatibility with the equivalent Gym function.
 
 v0.8.13
 -------

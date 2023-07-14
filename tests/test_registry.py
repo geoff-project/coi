@@ -29,12 +29,14 @@ def test_register(mock_registry: Mock) -> None:
     entry_point = Mock()
     nondeterministic = Mock()
     max_episode_steps = Mock()
+    order_enforce = Mock()
     kwargs = Mock()
     coi.register(
         env_name,
         entry_point=entry_point,
         nondeterministic=nondeterministic,
         max_episode_steps=max_episode_steps,
+        order_enforce=order_enforce,
         kwargs=kwargs,
     )
     mock_registry.register.assert_called_once_with(
@@ -42,6 +44,7 @@ def test_register(mock_registry: Mock) -> None:
         entry_point=entry_point,
         nondeterministic=nondeterministic,
         max_episode_steps=max_episode_steps,
+        order_enforce=order_enforce,
         kwargs=kwargs,
     )
 
