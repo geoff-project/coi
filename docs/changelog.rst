@@ -21,6 +21,7 @@ work with version 0.8.11, but may break with version 0.9.0.
 Unreleased
 ----------
 
+- ADD: `Config.add() <cernml.coi.Config.add()>` now has a different default value for the *type* parameter in cases where *value* is a `bool` or `numpy.bool_`. The new value treats most inputs as before, but specifically the string ``"False"`` is converted to the boolean `False` of the correct type. This ensures that bools roundtrip through string conversion and makes config handling in host applications less error-prone.
 - FIX: The :doc:`/api/checkers` now run their :func:`isinstance()` checks on the `~cernml.coi.Problem.unwrapped` optimization problem instead of the problem itself. This solves a bug where a `~cernml.coi.SingleOptimizable` inside a `~gym.Wrapper` is mistaken for an `~gym.Env`.
 - FIX: Add missing argument *order_enforce* to `~cernml.coi.register()` for compatibility with the equivalent Gym function.
 

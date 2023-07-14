@@ -187,10 +187,10 @@ def get_round_tripping_string_repr(value: t.Any) -> str:
     >>> get_round_tripping_string_repr([1, 2, 3])
     '[1, 2, 3]'
     >>> get_round_tripping_string_repr(True)
-    'True'
+    'checked'
     >>> get_round_tripping_string_repr(False)
     ''
     """
     if isinstance(value, (bool, np.bool_)):
-        return "True" if value else ""
+        return "checked" if value else ""
     return str(value)

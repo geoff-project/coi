@@ -116,9 +116,10 @@ def test_int_range_half_open() -> None:
 
 def test_bool() -> None:
     config = Config().add("foo", False)
+    assert config.validate("foo", "True") is True
+    assert config.validate("foo", "False") is False
     assert config.validate("foo", "1000") is True
     assert config.validate("foo", "check") is True
-    assert config.validate("foo", "False") is True
     assert config.validate("foo", "") is False
 
 

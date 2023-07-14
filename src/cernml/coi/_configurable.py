@@ -12,7 +12,10 @@ import typing
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from dataclasses import dataclass
+from functools import singledispatch
 from types import SimpleNamespace
+
+import numpy
 
 from ._abc_helpers import check_methods as _check_methods
 
@@ -127,7 +130,7 @@ class Config:
         value: T
         label: str
         help: typing.Optional[str]
-        type: typing.Optional[typing.Callable[[str], T]]  # /python/mypy/issues/9489
+        type: typing.Callable[[str], T]
         range: typing.Optional[typing.Tuple[T, T]]
         choices: typing.Optional[typing.List[T]]
         default: typing.Optional[T]
@@ -145,13 +148,10 @@ class Config:
                 `BadConfig`: if the value could not be validated.
             """
             try:
-                # Workaround for the following Mypy issue:
-                # https://github.com/python/mypy/issues/9489
-                assert self.type is not None
-                value: typing.Any = self.type(text_repr)
+                value = self.type(text_repr)
                 if self.range is not None:
                     low, high = self.range
-                    if not low <= value <= high:
+                    if not low <= value <= high:  # type: ignore[operator]
                         raise ValueError(f"{value} not in range [{low}, {high}]")
                 if self.choices is not None:
                     if value not in self.choices:
@@ -177,30 +177,23 @@ class Config:
 
         Note that this is not quite the expected input to
         `validate_all()`; the latter expects the dict values to be
-        strings that convert cleanly back to the original field type.
-        This is the case for strings and numbers, but not e.g. for
-        boolean values.
+        strings:
 
-        Example:
-
-            >>> config = Config().add("flag", False).add("count", 10)
-            >>> values = config.get_field_values()
-            >>> values
+            >>> c = Config().add("flag", False).add("count", 10)
+            >>> vars(c.validate_all({"flag": "False", "count": "10"}))
             {'flag': False, 'count': 10}
 
-        Passing this dict to `validate_all()` accidentally works
-        even though the type signature doesn't match:
+        Nonetheless, passing this dict to `validate_all()` may
+        accidentally work, even though the type signatures don't match:
 
-            >>> vars(config.validate_all(config.get_field_values()))
+            >>> vars(c.validate_all(c.get_field_values()))
             {'flag': False, 'count': 10}
 
-        Note that bool values don't allow you to convert everything to
-        strings blindly to make the types match:
-
-            >>> vars(config.validate_all(
-            ...     {k: str(v) for k, v in values.items()}
-            ... ))
-            {'flag': True, 'count': 10}
+        Note:
+            You may have noticed that `validate_all()` converted the
+            string ``"False"`` to the `bool` False, even though
+            ``bool("False") == True``. This is explained in the note of
+            `add()`.
         """
         return {dest: field.value for dest, field in self._fields.items()}
 
@@ -235,8 +228,7 @@ class Config:
             type: A function that type-checks each user input (always a
                 string) and converts it to the same type as *value*. If
                 the given string is not a valid input, this function
-                should raise an exception. If not passed, this is simply
-                the type of *value*, e.g. `int`, `float`, etc.
+                should raise an exception. See also the **note** below.
             range: If passed, must be a tuple (*low*, *high*). A
                 user-chosen value for this field must be within the
                 closed interval described by these values.
@@ -254,6 +246,24 @@ class Config:
             DuplicateConfig: if a config parameter with this *dest*
                 value has already been declared.
             TypeError: if both *range* and *choices* are passed.
+
+        Note:
+            In most cases, the default value for *type* simply is the
+            type of *value*, e.g. `int`, `float`, etc. However, in the
+            specific cases of `bool` and `numpy.bool_`, a special
+            wrapper object is used instead. This wrapper ensures that
+            :samp:`{type}(str({value})) == {value}` works for bools like
+            it works for integers:
+
+                >>> c = Config().add("field", True)
+                >>> vars(c.validate_all({"field": "False"}))
+                {'field': False}
+
+            To opt out of this behavior, you can pass *type* explicitly:
+
+                >>> c = Config().add("field", True, type=bool)
+                >>> vars(c.validate_all({"field": "False"}))
+                {'field': True}
         """
         # pylint: disable = redefined-builtin
         if dest in self._fields:
@@ -261,7 +271,7 @@ class Config:
         if label is None:
             label = dest
         if type is None:
-            type = value.__class__
+            type = deduce_type(value)
         if range is not None and choices is not None:
             raise TypeError("cannot pass both `range` and `choices`")
         if choices is not None:
@@ -459,3 +469,115 @@ class Configurable(metaclass=ABCMeta):
         if cls is Configurable:
             return _check_methods(other, "get_config", "apply_config")
         return NotImplemented
+
+
+AnyBool = typing.TypeVar("AnyBool", bool, numpy.bool_)
+
+
+@singledispatch
+def deduce_type(value: typing.Any) -> typing.Callable[[str], typing.Any]:
+    """For a given `~Field.value`, deduce the correct `~Field.type`.
+
+    In almost all cases, this simply returns :samp:`type(value)`.
+    However, in the case of `bool` and `numpy.bool_`, a special wrapper
+    `StrSafeBool` is returned. This wrapper ensures that
+    :samp:`deduce_type({bool})(str({bool}))` round-trips correctly:
+
+        >>> type_ = deduce_type(numpy.bool_(True))
+        >>> type_  # doctest: +ELLIPSIS
+        <...StrSafeBool(<class 'numpy.bool_'>)>
+        >>> type_(str(True))
+        True
+        >>> type_(str(False))
+        False
+
+    The naive choice would produce the wrong result for `False` because
+    ``bool("False") == True``:
+
+        >>> bool(str(True))
+        True
+        >>> bool(str(False))
+        True
+
+    This function uses `~functools.singledispatch`, so you can add your
+    own special-cases:
+
+        >>> class Point:
+        ...     def __init__(self, x, y):
+        ...         self.x, self.y = x, y
+        ...     def __repr__(self):
+        ...         return f"({self.x}; {self.y})"
+        ...     @classmethod
+        ...     def fromstr(cls, s):
+        ...         if (s[0], s[-1]) != ("(", ")"):
+        ...             raise ValueError(f"not a point: {s!r}")
+        ...         s = s[1:-1]
+        ...         coords = map(float, map(str.strip, s.split(";")))
+        ...         return cls(*coords)
+        >>> @deduce_type.register(Point)
+        ... def _(p):
+        ...     return type(p).fromstr
+        >>> p = Point(1.0, 2.0)
+        >>> deduce_type(p)(str(p))
+        (1.0; 2.0)
+    """
+    return type(value)
+
+
+@deduce_type.register(bool)
+@deduce_type.register(numpy.bool_)
+def _(value: AnyBool) -> typing.Callable[[str], AnyBool]:
+    return StrSafeBool(type(value))
+
+
+class StrSafeBool(typing.Generic[AnyBool]):
+    """String-safe wrapper around Boolean types.
+
+    Integers round-trip through string conversion:
+
+        >>> int(str(123))
+        123
+
+    Booleans, however, do not:
+
+        >>> bool(str(True))
+        True
+        >>> bool(str(False))
+        True
+
+    This wrapper special-cases the strings ``"True"`` and ``"False"``
+    and replaces them with the built-in Boolean values `True` and
+    `False`:
+
+        >>> StrSafeBool(bool)  # doctest: +ELLIPSIS
+        <...StrSafeBool(<class 'bool'>)>
+        >>> b = StrSafeBool(repr)
+        >>> b('1')
+        "'1'"
+        >>> b('yes')
+        "'yes'"
+        >>> b('true')
+        "'true'"
+        >>> b('True')
+        'True'
+
+    You usually don't interact with this wrapper directly. It is used
+    internally by `Field` as a default value for the *type* attribute in
+    case the *value* is a Boolean.
+    """
+
+    __slots__ = ("base_type",)
+
+    def __init__(self, base_type: typing.Type[AnyBool]) -> None:
+        self.base_type: typing.Type[AnyBool] = base_type
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__module__}.{type(self).__name__}({self.base_type!r})>"
+
+    def __call__(self, text_repr: str) -> AnyBool:
+        if isinstance(text_repr, str):
+            if text_repr == "True":
+                return self.base_type(True)
+            if text_repr == "False":
+                return self.base_type(False)
+        return self.base_type(text_repr)
