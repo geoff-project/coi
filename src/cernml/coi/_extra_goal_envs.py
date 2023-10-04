@@ -79,7 +79,7 @@ class SeparableGoalEnv(GoalEnv, Env[GoalObs[ObsType, GoalType], ActType]):
         This calls in turn the three new abstract methods:
         `compute_observation()`, `~gym.GoalEnv.compute_reward()`,
         `compute_terminated()` and `compute_truncated()`.
-        """
+        """  # noqa: D402
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
         achieved_goal = obs["achieved_goal"]
@@ -109,7 +109,7 @@ class SeparableGoalEnv(GoalEnv, Env[GoalObs[ObsType, GoalType], ActType]):
         Returns:
             The next observation to be returned by `step()`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class OptGoalEnv(

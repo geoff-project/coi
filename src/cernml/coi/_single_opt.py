@@ -17,7 +17,7 @@ from ._problem import BaseProblem, Problem
 
 if t.TYPE_CHECKING:
     # pylint: disable = unused-import
-    import scipy.optimize  # noqa: F401
+    import scipy.optimize  # noqa: F401, RUF100
 
 __all__ = (
     "Constraint",
@@ -91,11 +91,11 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
 
     optimization_space: gym.spaces.Space[ParamType]
     objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    constraints: list[Constraint] = []
+    constraints: t.Sequence[Constraint] = []
 
     objective_name: str = ""
-    param_names: list[str] = []
-    constraint_names: list[str] = []
+    param_names: t.Sequence[str] = ()
+    constraint_names: t.Sequence[str] = ()
 
     # TODO: Add optional `seed` and `options` arguments.
     @abstractmethod
@@ -110,7 +110,7 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
         always return the same value; or to skip certain calculations,
         in the case of problems that are expensive to evalaute.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
@@ -134,7 +134,7 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
             The loss associated with these parameters. Numerical
             optimizers may want to minimize that loss.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 @SingleOptimizable.register
@@ -168,20 +168,20 @@ class BaseSingleOptimizable(BaseProblem, t.Generic[ParamType]):
 
     optimization_space: gym.spaces.Space[ParamType]
     objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    constraints: list[Constraint] = []
+    constraints: t.Sequence[Constraint] = []
 
     objective_name: str = ""
-    param_names: list[str] = []
-    constraint_names: list[str] = []
+    param_names: t.Sequence[str] = []
+    constraint_names: t.Sequence[str] = []
 
     # TODO: If `get_initial_params()` gains new arguments, those should
     # be used by default in this method.
     @abstractmethod
     def get_initial_params(self) -> ParamType:
         """See `SingleOptimizable.get_initial_params()`."""  # noqa: D402
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
         """See `SingleOptimizable.compute_single_objective()`."""  # noqa: D402
-        raise NotImplementedError()
+        raise NotImplementedError

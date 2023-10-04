@@ -4,15 +4,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = abstract-method
-# pylint: disable = missing-class-docstring
-# pylint: disable = missing-function-docstring
-# pylint: disable = redefined-outer-name
-
 """Test the inheritance chain of the package."""
 
+from collections.abc import Sequence
 from types import new_class
-from typing import Sequence, Type
+from typing import Type
 
 import gymnasium as gym
 import pytest
@@ -180,10 +176,10 @@ def test_failures() -> None:
 )
 def test_subclasses_arent_magic(cls: Type[coi.Problem]) -> None:
     # pylint: disable = too-few-public-methods
-    class Subclass(cls):  # type: ignore
+    class Subclass(cls):  # type: ignore[misc, valid-type]
         pass
 
-    class ImplementsProtocol(*cls.__bases__):  # type: ignore
+    class ImplementsProtocol(*cls.__bases__):  # type: ignore[misc]
         reset = ...
         step = ...
         get_initial_params = ...

@@ -35,11 +35,11 @@ class Policy(t.Protocol):
     @abstractmethod
     def predict(
         self,
-        observation: t.Union[np.ndarray, t.Dict[str, np.ndarray]],
-        state: t.Optional[t.Tuple[np.ndarray, ...]] = None,
-        episode_start: t.Optional[np.ndarray] = None,
+        observation: np.ndarray | dict[str, np.ndarray],
+        state: tuple[np.ndarray, ...] | None = None,
+        episode_start: np.ndarray | None = None,
         deterministic: bool = False,
-    ) -> t.Tuple[np.ndarray, t.Optional[t.Tuple[np.ndarray, ...]]]:
+    ) -> tuple[np.ndarray, tuple[np.ndarray, ...] | None]:
         """Get the policy action from an observation (and hidden state).
 
         Args:
@@ -106,7 +106,7 @@ class CustomPolicyProvider(AttrCheckProtocol, t.Protocol):
 
     @classmethod
     @abstractmethod
-    def get_policy_names(cls) -> t.List[str]:
+    def get_policy_names(cls) -> list[str]:
         """Return a list of all available policies.
 
         How this list is acquired is left to the implementation.

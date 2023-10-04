@@ -21,6 +21,13 @@ work with version 0.8.11, but may break with version 0.9.0.
 Unreleased
 ----------
 
+- ADD: The *warn* parameter of the :doc:`api/checkers` now is an integer instead of a bool. The meaning stays largely the same. Values greater than 2 now represent the *stacklevel* parameter passed to `warnings.warn()` to adjust the reported code location when a warning is issued. Internally, the checkers adjust *warn* so that warnings are never reported within the :doc:`api/checkers` package itself.
+- FIX: For `~cernml.coi.FunctionOptimizable`, the type of the `~cernml.coi.FunctionOptimizable.constraints` attribute has been changed from `~typing.list` to `~typing.Sequence`. It has also been marked as a `~typing.ClassVar` and the default value has been changed from the empty list ``[]`` to the empty tuple ``()``.
+
+  The same has been done in `~cernml.coi.SingleOptimizable` for its attributes `~cernml.coi.SingleOptimizable.param_names`, `~cernml.coi.SingleOptimizable.constraints`, and `~cernml.coi.SingleOptimizable.constraint_names`
+
+  This prevents bugs where the default values are modified on accident. A similar strategy has long been used for the `~cernml.coi.Problem.metadata` attribute.
+
 v0.8.16
 -------
 

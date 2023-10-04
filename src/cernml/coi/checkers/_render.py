@@ -11,7 +11,7 @@ import typing as t
 
 import numpy as np
 
-from . import _generic
+from ._generic import is_iterable
 
 try:
     from matplotlib.figure import Figure
@@ -94,7 +94,7 @@ def assert_matplotlib_figures(result: t.Any) -> None:
         return assert_unmanaged_figure(result)
     if hasattr(result, "items"):
         return assert_mpl_figures_dict(t.cast(dict, result))
-    if _generic.is_iterable(result) and not isinstance(result, str):
+    if is_iterable(result) and not isinstance(result, str):
         return assert_mpl_figures_iterable(t.cast(t.Iterable, result))
     raise AssertionError(
         f"render('matplotlib_figures') returns {result}, "
@@ -122,9 +122,7 @@ def assert_mpl_figures_iterable(result: t.Iterable) -> None:
     """Assert that *result* is an iterable of figures and titles."""
     for item in t.cast(t.Iterable, result):
         title, figure = (
-            t.cast(t.Tuple[t.Any, t.Any], item)
-            if _generic.is_iterable(item)
-            else ("", item)
+            t.cast(t.Tuple[t.Any, t.Any], item) if is_iterable(item) else ("", item)
         )
         _assert_mpl_figures_item(title, figure)
 

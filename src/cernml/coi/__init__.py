@@ -52,16 +52,18 @@ from ._configurable import (
 )
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._custom_policy_provider import CustomPolicyProvider, Policy
-from ._extra_envs import OptEnv, SeparableEnv, SeparableOptEnv
+from ._extra_envs import InfoDict, OptEnv, SeparableEnv, SeparableOptEnv
 from ._extra_goal_envs import OptGoalEnv, SeparableGoalEnv, SeparableOptGoalEnv
 from ._func_opt import BaseFunctionOptimizable, FunctionOptimizable
 from ._goalenv import GoalEnv
 from ._machine import Machine
 from ._problem import BaseProblem, HasNpRandom, Problem
 from ._registration import make, register, registry, spec
-from ._single_opt import BaseSingleOptimizable, Constraint, SingleOptimizable
+from ._single_opt import BaseSingleOptimizable, Constraint, ParamType, SingleOptimizable
 from ._typeguards import (
     AnyOptimizable,
+    is_configurable,
+    is_configurable_class,
     is_function_optimizable,
     is_function_optimizable_class,
     is_optimizable,
@@ -89,10 +91,12 @@ __all__ = [
     "FunctionOptimizable",
     "GoalEnv",
     "HasNpRandom",
+    "InfoDict",
     "Machine",
     "OptEnv",
     "OptGoalEnv",
     "Policy",
+    "ParamType",
     "Problem",
     "SeparableEnv",
     "SeparableGoalEnv",
@@ -101,6 +105,8 @@ __all__ = [
     "SingleOptimizable",
     "check",
     "checkers",
+    "is_configurable",
+    "is_configurable_class",
     "is_function_optimizable",
     "is_function_optimizable_class",
     "is_optimizable",

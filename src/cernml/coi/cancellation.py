@@ -356,13 +356,13 @@ class TokenSource:
             False
         """
         if self._token._state == _State.CANCELLING:
-            raise CannotReset()
+            raise CannotReset
         self._token._state = _State.READY
 
     def __enter__(self) -> "Token":
         return self.token
 
-    def __exit__(self, *args: t.Any) -> None:
+    def __exit__(self, *args: object) -> None:
         self.cancel()
 
 
@@ -391,6 +391,7 @@ class Token:
 
     __slots__ = ("_state", "_wait_handle", "_source")
 
+    # TODO: Mark this argument as kwarg-only
     def __init__(self, cancelled: bool = False) -> None:
         self._wait_handle: t.Optional[threading.Condition] = None
         self._state = _State.CANCELLED if cancelled else _State.READY
@@ -454,7 +455,7 @@ class Token:
                 by an overly broad :keyword:`except` clause.
         """
         if self.cancellation_requested:
-            raise CancelledError()
+            raise CancelledError
 
     def complete_cancellation(self) -> None:
         """Mark an ongoing cancellation as completed.

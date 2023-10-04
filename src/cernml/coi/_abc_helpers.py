@@ -123,9 +123,8 @@ def _attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
             if is_classmethod:
                 if not isinstance(val, classmethod):
                     return False
-            else:
-                if val is None and attr not in _non_callable_proto_members(proto):
-                    return False
+            elif val is None and attr not in _non_callable_proto_members(proto):
+                return False
     return True
 
 

@@ -17,7 +17,7 @@ from .._typeguards import is_single_optimizable
 from ._generic import assert_range, is_box, is_reward
 
 
-def check_single_optimizable(opt: SingleOptimizable, warn: bool = True) -> None:
+def check_single_optimizable(opt: SingleOptimizable, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
     _ = warn  # Flag is currently unused, keep it for forward compatibility.
     assert is_single_optimizable(
@@ -53,7 +53,7 @@ def assert_optimization_space(env: SingleOptimizable) -> None:
         )
 
 
-def assert_constraints(constraints: t.List[Constraint]) -> None:
+def assert_constraints(constraints: t.Sequence[Constraint]) -> None:
     """Check that the list of constraints contains only constraints."""
     allowed_types = (LinearConstraint, NonlinearConstraint)
     for constraint in constraints:

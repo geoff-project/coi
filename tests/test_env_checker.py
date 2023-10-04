@@ -4,10 +4,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = missing-class-docstring
-# pylint: disable = missing-function-docstring
-# pylint: disable = redefined-outer-name
-
 """Test the check() function."""
 
 import typing as t
@@ -33,7 +29,7 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
     optimization_space = gym.spaces.Box(-2, 2, (2,), dtype=float)
     reward_range = (-np.sqrt(16.0), 0.0)
     objective_range = (0.0, np.sqrt(18.0))
-    metadata = {
+    metadata: t.ClassVar[t.Mapping[str, t.Any]] = {
         "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
         "cern.japc": False,
@@ -125,7 +121,7 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
 
 class FunctionParabola(coi.FunctionOptimizable):
     objective_range = (0.0, np.sqrt(18.0))
-    metadata = {
+    metadata: t.ClassVar[t.Mapping[str, t.Any]] = {
         "render.modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
         "cern.japc": False,

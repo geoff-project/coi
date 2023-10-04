@@ -11,6 +11,7 @@ This only is used if `gymnasium-robotics` isn't installed.
 """
 
 from abc import abstractmethod
+from contextlib import suppress
 from typing import Any, Optional, SupportsFloat
 
 import gymnasium as gym
@@ -177,9 +178,7 @@ class GoalEnv(gym.Env):
         raise NotImplementedError
 
 
-try:
-    from gymnasium_robotics import (  # type: ignore[no-redef, import-not-found]  # noqa: LN002
+with suppress(ImportError):
+    from gymnasium_robotics import (  # type: ignore[no-redef, import-not-found] # noqa: F811
         GoalEnv,
     )
-except ImportError:
-    pass

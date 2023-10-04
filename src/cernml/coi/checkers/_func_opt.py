@@ -14,7 +14,7 @@ from .._func_opt import Constraint, FunctionOptimizable
 from ._generic import assert_range, is_box
 
 
-def check_function_optimizable(opt: FunctionOptimizable, warn: bool = True) -> None:
+def check_function_optimizable(opt: FunctionOptimizable, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
     _ = warn  # Flag is currently unused, keep it for forward compatibility.
     assert_optimization_space(opt)
@@ -28,7 +28,7 @@ def assert_optimization_space(env: FunctionOptimizable) -> None:
     assert is_box(opt_space), f"optimization space {opt_space} must be a gym.spaces.Box"
 
 
-def assert_constraints(constraints: t.List[Constraint]) -> None:
+def assert_constraints(constraints: t.Sequence[Constraint]) -> None:
     """Check that the list of constraints contains only constraints."""
     allowed_types = (LinearConstraint, NonlinearConstraint)
     for constraint in constraints:

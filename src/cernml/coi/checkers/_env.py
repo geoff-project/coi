@@ -13,10 +13,10 @@ import numpy as np
 from gymnasium import Env, spaces
 
 from .._typeguards import is_env, is_goal_env, is_separable_env
-from ._generic import assert_range, is_bool, is_box, is_reward
+from ._generic import assert_range, bump_warn_arg, is_bool, is_box, is_reward
 
 
-def check_env(env: Env, warn: bool = True) -> None:
+def check_env(env: Env, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
     assert is_env(env), f"{type(env)} must inherit from gymnasium.Env"
     assert_observation_space(env)
@@ -25,22 +25,10 @@ def check_env(env: Env, warn: bool = True) -> None:
     assert_env_returned_values(env)
     assert_env_no_nan(env)
     if warn:
-        obs_space = env.observation_space
-        if is_box(obs_space):
-            warn_observation_space(obs_space)
-        else:
-            assert isinstance(obs_space, spaces.Dict), (
-                f"for now, observation spaces must be Box or "
-                f"(for GoalEnv) Dict, not {obs_space!r}"
-            )
-            nested_obs_space = obs_space.get("observation")
-            assert (
-                nested_obs_space is not None
-            ), f"Dict space is missing required key 'observation': {obs_space!r}"
-            assert is_box(
-                nested_obs_space
-            ), f"observation_space['observation'] is not a Box: {nested_obs_space!r}"
-            warn_observation_space(nested_obs_space)
+        warn_observation_space(
+            env.observation_space,
+            warn=bump_warn_arg(warn),
+        )
 
 
 def assert_observation_space(env: Env) -> None:
@@ -60,9 +48,9 @@ def assert_observation_space(env: Env) -> None:
             f"GoalEnv observation space must have keys {expected_keys}, "
             f"not {actual_keys}"
         )
-        assert is_box(space["observation"]), (
-            f'observation space {space["observation"]} must be a ' "gym.spaces.Box"
-        )
+        assert is_box(
+            space["observation"]
+        ), f'observation space {space["observation"]} must be a gym.spaces.Box'
     else:
         assert is_box(space), f"observation space {space} must be a gym.spaces.Box"
 
@@ -154,7 +142,7 @@ def assert_env_no_nan(env: Env) -> None:
         assert _check_val(reward), f"NaN or inf in reward: {reward}"
 
 
-def warn_observation_space(space: spaces.Space) -> None:
+def warn_observation_space(space: spaces.Space, warn: int = True) -> None:
     """Check that the observation space has the right shape.
 
     For a regular `.Env`, the space must be a `Box` with either a flat
@@ -166,8 +154,9 @@ def warn_observation_space(space: spaces.Space) -> None:
     by the API. The ``"observation"`` sub-space must be a `Box` with the
     same requirements as above.
     """
+    warn = bump_warn_arg(warn)
     if is_box(space):
-        warn_observation_space(space)
+        warn_observation_space(space, warn=warn)
         return
     assert isinstance(space, spaces.Dict), (
         f"for now, observation spaces must be Box or "
@@ -180,10 +169,10 @@ def warn_observation_space(space: spaces.Space) -> None:
     assert is_box(
         nested_space
     ), f"observation_space['observation'] is not a Box: {nested_space!r}"
-    warn_observation_space(nested_space)
+    warn_observation_space(nested_space, warn=warn)
 
 
-def warn_flat_observation_space(space: spaces.Box) -> None:
+def warn_flat_observation_space(space: spaces.Box, warn: int = True) -> None:
     """Check that the observation space is either flat or an image.
 
     Examples:
@@ -210,26 +199,32 @@ def warn_flat_observation_space(space: spaces.Box) -> None:
         UserWarning: ... at least a resolution of 36x36 pixels
         >>> warn_observation_space(Box(0, 255, (36, 36, 10), np.uint8))
     """
+    if not warn:
+        return
     ndims = len(space.shape)
     if ndims == 3:
         if space.dtype != np.uint8:
             warnings.warn(
                 "a 3D tensor observation should be either an image "
-                "(and have dtype uint8), or be flattened into 1D"
+                "(and have dtype uint8), or be flattened into 1D",
+                stacklevel=max(2, warn),
             )
         if np.any(space.low != 0) or np.any(space.high != 255):
             warnings.warn(
                 "a 3D tensor observation should be either an image "
-                "(and have bounds [0, 255]), or be flattened into 1D"
+                "(and have bounds [0, 255]), or be flattened into 1D",
+                stacklevel=max(2, warn),
             )
         width, height, _ = space.shape
         if width < 36 or height < 36:
             warnings.warn(
                 "an image observation should have at least a "
-                "resolution of 36x36 pixels"
+                "resolution of 36x36 pixels",
+                stacklevel=max(2, warn),
             )
     elif ndims != 1:
         warnings.warn(
             "the observation space has an unconventional shape "
-            "(neither an image nor a 1D vector)"
+            "(neither an image nor a 1D vector)",
+            stacklevel=max(2, warn),
         )

@@ -48,7 +48,7 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
     """
 
     objective_range: tuple[float, float] = (-np.inf, np.inf)
-    constraints: list[Constraint] = []
+    constraints: t.Sequence[Constraint] = []
 
     @abstractmethod
     def get_optimization_space(self, cycle_time: float) -> gym.spaces.Space[ParamType]:
@@ -63,7 +63,7 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         allowed values in the flat bottom is smaller than at the flat
         top.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def get_initial_params(self, cycle_time: float) -> ParamType:
@@ -90,7 +90,7 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         Returns:
             The initial parameters.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     # TODO: Add optional `seed` and `options` arguments.
     @abstractmethod
@@ -132,7 +132,7 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
             The loss associated with these parameters. Numerical
             optimizers may want to minimize that loss.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_objective_function_name(self) -> t.Optional[str]:
         """Return the name of the objective function.
@@ -216,19 +216,19 @@ class BaseFunctionOptimizable(BaseProblem, t.Generic[ParamType]):
     """
 
     objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    constraints: list[Constraint] = []
+    constraints: t.Sequence[Constraint] = []
 
     @abstractmethod
     def get_optimization_space(self, cycle_time: float) -> gym.spaces.Space[ParamType]:
         """See `FunctionOptimizable.get_optimization_space()`."""  # noqa: D402
-        raise NotImplementedError()
+        raise NotImplementedError
 
     # TODO: If `get_initial_params()` gains new arguments, those should
     # be used by default in this method.
     @abstractmethod
     def get_initial_params(self, cycle_time: float) -> ParamType:
         """See `FunctionOptimizable.get_initial_params()`."""  # noqa: D402
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
     def compute_function_objective(
@@ -237,6 +237,7 @@ class BaseFunctionOptimizable(BaseProblem, t.Generic[ParamType]):
         params: ParamType,
     ) -> float:
         """See `FunctionOptimizable.compute_function_objective()`."""  # noqa: D402
+        raise NotImplementedError
 
     def get_objective_function_name(self) -> t.Optional[str]:
         """See `FunctionOptimizable.get_objective_function_name()`."""  # noqa: D402

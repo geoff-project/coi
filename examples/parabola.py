@@ -18,8 +18,10 @@ import scipy.optimize
 from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from numpy.typing import NDArray
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.td3 import TD3
+from typing_extensions import override
 
 from cernml import coi
 
@@ -62,7 +64,8 @@ class Parabola(coi.OptEnv):
     objective = -0.05
     max_objective = -0.003
 
-    def __init__(self) -> None:
+    def __init__(self, *, render_mode: t.Optional[str] = None) -> None:
+        self.render_mode = render_mode
         self.pos = np.zeros(2)
         self._train = True
         self.figure: t.Optional[Figure] = None
@@ -76,12 +79,19 @@ class Parabola(coi.OptEnv):
         """
         self._train = train
 
-    def reset(self) -> np.ndarray:
+    @override
+    def reset(
+        self, seed: t.Optional[int] = None, options: t.Optional[coi.InfoDict] = None
+    ) -> tuple[NDArray[np.double], coi.InfoDict]:
+        super().reset(seed=seed)
         # Don't use the full observation space for initial states.
         self.pos = self.action_space.sample()
-        return self.pos.copy()
+        return self.pos.copy(), {}
 
-    def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
+    @override
+    def step(
+        self, action: NDArray[np.double]
+    ) -> tuple[NDArray[np.double], float, bool, bool, coi.InfoDict]:
         next_pos = self.pos + action
         self.pos = np.clip(
             next_pos,
@@ -89,32 +99,36 @@ class Parabola(coi.OptEnv):
             self.observation_space.high,
         )
         reward = -sum(self.pos**2)
-        success = reward > self.objective
-        done = success or next_pos not in self.observation_space
-        info = {"success": success, "objective": self.objective}
-        if self._train and success and self.objective < self.max_objective:
+        terminated = reward > self.objective
+        truncated = next_pos not in self.observation_space
+        # TODO: `success` has become superfluous
+        info = {"success": terminated, "objective": self.objective}
+        if self._train and terminated and self.objective < self.max_objective:
             self.objective *= 0.95
-        return self.pos.copy(), reward, done, info
+        return self.pos.copy(), reward, terminated, truncated, info
 
-    def get_initial_params(self) -> np.ndarray:
-        return self.reset()
+    @override
+    def get_initial_params(self) -> NDArray[np.double]:
+        pos, _ = self.reset()
+        return pos
 
-    def compute_single_objective(self, params: np.ndarray) -> float:
+    @override
+    def compute_single_objective(self, params: NDArray[np.double]) -> float:
         self.pos = np.clip(
             params,
             self.observation_space.low,
             self.observation_space.high,
         )
-        loss = sum(self.pos**2)
-        return loss
+        return sum(self.pos**2)
 
-    def render(self, mode: str = "human") -> t.Any:
-        if mode == "human":
+    @override
+    def render(self) -> t.Any:
+        if self.render_mode == "human":
             pyplot.figure()
             pyplot.scatter(*self.pos)
             pyplot.show()
             return None
-        if mode == "matplotlib_figures":
+        if self.render_mode == "matplotlib_figures":
             if self.figure is None:
                 self.figure = Figure()
                 axes = t.cast(Axes, self.figure.subplots())
@@ -122,28 +136,27 @@ class Parabola(coi.OptEnv):
                 [axes] = self.figure.axes
             axes.scatter(*self.pos)
             return [self.figure]
-        if mode == "ansi":
+        if self.render_mode == "ansi":
             return str(self.pos)
-        return super().render(mode)
-
-    def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
-        return [
-            *self.observation_space.seed(seed),
-            *self.action_space.seed(seed),
-            *self.optimization_space.seed(seed),
-        ]
+        return super().render()
 
 
-coi.register("Parabola-v0", entry_point=Parabola, max_episode_steps=10)
+coi.register(
+    "Parabola-v0",
+    # TODO: This cast should not be necessary.
+    entry_point=t.cast(t.Callable[..., gym.Env], Parabola),
+    max_episode_steps=10,
+)
 
 
 def run_episode(agent: BaseAlgorithm, env: coi.OptEnv) -> bool:
     """Run one episode of ``env`` and return the success flag."""
-    obs = env.reset()
+    obs, _ = env.reset()
     done = False
     while not done:
         action, _ = agent.predict(obs)
-        obs, _, done, info = env.step(action)
+        obs, _, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
     return info.get("success", False)
 
 
@@ -162,7 +175,7 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main_rl(env: coi.OptEnv, num_runs: int) -> t.List[bool]:
+def main_rl(env: Parabola, num_runs: int) -> t.List[bool]:
     """Handler for `rl` mode."""
     agent = TD3("MlpPolicy", env, learning_rate=2e-3)
     agent.learn(total_timesteps=300)
@@ -170,7 +183,7 @@ def main_rl(env: coi.OptEnv, num_runs: int) -> t.List[bool]:
     return [run_episode(agent, env) for _ in range(num_runs)]
 
 
-def main_opt(env: coi.OptEnv, num_runs: int) -> t.List[bool]:
+def main_opt(env: Parabola, num_runs: int) -> t.List[bool]:
     """Handler for `opt` mode."""
     bounds = bounds = scipy.optimize.Bounds(
         env.optimization_space.low,
@@ -191,6 +204,7 @@ def main(argv: t.List[str]) -> None:
     args = get_parser().parse_args(argv)
     env = coi.make("Parabola-v0")
     coi.check(env)
+    assert isinstance(env, Parabola), env
     successes = {"rl": main_rl, "opt": main_opt}[args.mode](env, 100)
     print(f"Success rate: {np.mean(successes):.1%}")
 

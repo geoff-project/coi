@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from functools import singledispatch
 from types import SimpleNamespace
 
-import numpy
+import numpy as np
 
 T = typing.TypeVar("T")  # pylint: disable = invalid-name
 T.__module__ = ""
@@ -151,9 +151,8 @@ class Config:
                     low, high = self.range
                     if not low <= value <= high:  # type: ignore[operator]
                         raise ValueError(f"{value} not in range [{low}, {high}]")
-                if self.choices is not None:
-                    if value not in self.choices:
-                        raise ValueError(f"{value} not in {self.choices!r}")
+                if self.choices is not None and value not in self.choices:
+                    raise ValueError(f"{value} not in {self.choices!r}")
             except Exception as exc:
                 raise BadConfig(
                     f"invalid value for {self.dest}: {text_repr!r}"
@@ -195,6 +194,7 @@ class Config:
         """
         return {dest: field.value for dest, field in self._fields.items()}
 
+    # TODO: Can we fix this mess?
     # Escape the generic parameter `T` here so that Sphinx does not
     # parse it. If it did, this would mess up all references to built-in
     # types in the docs.
@@ -464,7 +464,7 @@ class Configurable(typing.Protocol):
         """
 
 
-AnyBool = typing.TypeVar("AnyBool", bool, numpy.bool_)
+AnyBool = typing.TypeVar("AnyBool", bool, np.bool_)
 
 
 @singledispatch
@@ -476,7 +476,7 @@ def deduce_type(value: typing.Any) -> typing.Callable[[str], typing.Any]:
     `StrSafeBool` is returned. This wrapper ensures that
     :samp:`deduce_type({bool})(str({bool}))` round-trips correctly:
 
-        >>> type_ = deduce_type(numpy.bool_(True))
+        >>> type_ = deduce_type(np.bool_(True))
         >>> type_  # doctest: +ELLIPSIS
         <...StrSafeBool(<class 'numpy.bool_'>)>
         >>> type_(str(True))
@@ -518,7 +518,7 @@ def deduce_type(value: typing.Any) -> typing.Callable[[str], typing.Any]:
 
 
 @deduce_type.register(bool)
-@deduce_type.register(numpy.bool_)
+@deduce_type.register(np.bool_)
 def _(value: AnyBool) -> typing.Callable[[str], AnyBool]:
     return StrSafeBool(type(value))
 

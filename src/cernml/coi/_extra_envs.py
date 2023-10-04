@@ -61,7 +61,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         This calls in turn the four new abstract methods:
         `compute_observation()`, `compute_reward()`,
         `compute_terminated()` and `compute_truncated()`.
-        """
+        """  # noqa: D402
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(obs, None, info)
@@ -87,7 +87,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         Returns:
             The next observation to be returned by `step()`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def compute_reward(
         self, obs: ObsType, goal: None, info: InfoDict
@@ -118,7 +118,7 @@ class SeparableEnv(Env[ObsType, ActType]):
             float: the reward that corresponds to the given observation.
                 This value is returned by `step()`.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def compute_terminated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
@@ -149,7 +149,7 @@ class SeparableEnv(Env[ObsType, ActType]):
             bool: True if the episode has reached a terminal state,
                 False otherwise.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def compute_truncated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
@@ -177,7 +177,7 @@ class SeparableEnv(Env[ObsType, ActType]):
             bool: True if the episode has been terminated by outside
                 forces, False otherwise.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class OptEnv(Env[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCMeta):

@@ -96,6 +96,65 @@ target-version = ['py39', 'py310', 'py311']
 profile = 'black'
 known_first_party = ['cernml.optimizers']
 
+[tool.ruff]
+fix = true
+src = ['examples', 'src', 'test']
+target-version = 'py39'
+
+[tool.ruff.lint]
+# Missing warnings:
+# F822 not raised in __init__.py: https://github.com/astral-sh/ruff/issues/10095
+# D* not raised in _*.py: https://github.com/astral-sh/ruff/issues/9561
+extend-select = [
+    'A', 'ARG', 'ASYNC', 'B', 'C4', 'C90', 'COM818', 'D', 'DTZ', 'EXE', 'FLY',
+    'I', 'ICN', 'ISC', 'NPY', 'PD', 'PERF', 'PGH', 'PIE', 'PLR5501', 'PT',
+    'PTH', 'PYI', 'RET', 'RSE', 'RUF', 'SIM', 'SLOT', 'T10', 'TD003', 'TRY',
+    'UP',
+]
+ignore = [
+    'D105',   # Missing docstring in magic method
+    'D107',   # Missing docstring in __init__
+    'D412',   # No blank lines allowed between a section header and its content
+    'D417',   # Missing argument description in the docstring
+    'ISC001', # Implicit string concatenation, conflicts with autoformat
+    'RUF012', # Mutable class attributes should use `typing.ClassVar`
+              # TODO Waiting for Gymnasium#951 to get fixed.
+    # 'TRY301', # Abstract `raise` to an inner function
+    'TRY003', # Avoid specifying long messages outside the exception class
+    'UP037',  # Remove quotes from type annotation
+]
+flake8-pytest-style.fixture-parentheses = false
+isort.split-on-trailing-comma = true
+isort.known-first-party = ['cernml']
+pycodestyle.max-doc-length = 72
+pydocstyle.convention = 'google'
+pydocstyle.ignore-decorators = ['overload', 'overrides']
+
+[tool.ruff.lint.per-file-ignores]
+'src/cernml/coi/_configurable.py' = ['A']
+'**/{tests,docs}/*' = ['A001', 'ARG', 'D', 'INP']
+
+[tool.pylint]
+main.ignore-patterns = ['.*\.pyi$', 'test_.*\.py$']
+master.extension-pkg-whitelist = 'PyQt5'
+'messages control'.disable = ['all']
+'messages control'.enable = [
+    'F',
+    'bad-inline-option',
+    'cell-var-from-loop',
+    'missing-class-docstring',
+    'missing-function-docstring',
+    'missing-module-docstring',
+    'singledispatch-method',
+    'singledispatchmethod-function',
+    'super-init-not-called',
+    'typevar-double-variance',
+    'typevar-name-incorrect-variance',
+    'typevar-name-mismatch',
+    'unrecognized-inline-option',
+    'unrecognized-option',
+]
+
 [tool.pytest.ini_options]
 addopts = '--doctest-modules'
 testpaths = ['src', 'tests']
@@ -113,21 +172,6 @@ exclude_also = [
     'def __del__',
     'if .*\.TYPE_CHECKING',
     'raise NotImplementedError',
-]
-
-[tool.pylint]
-master = {extension-pkg-whitelist = 'PyQt5'}
-
-[tool.pylint.design]
-max-args = 10
-
-[tool.pylint.'messages control']
-disable = [
-    'fixme',
-    'line-too-long',
-    'similarities',
-    'too-few-public-methods',
-    'unpacking-non-sequence',
 ]
 
 [tool.mypy]

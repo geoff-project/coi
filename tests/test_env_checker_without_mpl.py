@@ -4,11 +4,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = import-outside-toplevel
-# pylint: disable = missing-class-docstring
-# pylint: disable = missing-function-docstring
-# pylint: disable = redefined-outer-name
-
 """Test the check() function if matplotlib is not importable."""
 
 import sys
@@ -20,7 +15,7 @@ import pytest
 
 
 @pytest.fixture
-def no_matplotlib() -> t.Iterator[None]:
+def no_matplotlib() -> t.Iterator[None]:  # noqa: PT004
     backup = sys.modules.copy()
     try:
         # Force reload of cernml packages.
@@ -30,7 +25,7 @@ def no_matplotlib() -> t.Iterator[None]:
         # Forbid (re-)import of matplotlib packages.
         for name in backup:
             if name.startswith("matplotlib"):
-                sys.modules[name] = None  # type: ignore
+                sys.modules[name] = None  # type: ignore[assignment]
         yield
     finally:
         # Never assign to `sys.modules`, manipulate the object that is
@@ -45,7 +40,7 @@ def test_sep_env(no_matplotlib: None) -> None:
         action_space = gym.spaces.Box(-1, 1, (2,))
         observation_space = gym.spaces.Box(-2, 2, (2,))
         reward_range = (-np.sqrt(16.0), 0.0)
-        metadata = {
+        metadata: t.ClassVar[t.Mapping[str, t.Any]] = {
             "render.modes": ["ansi"],
             "cern.machine": coi.Machine.NO_MACHINE,
             "cern.japc": False,

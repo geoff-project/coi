@@ -150,7 +150,6 @@ class Problem(AttrCheckProtocol, t.Protocol):
         - `unwrapped` must continue to behave as expected;
         - calling `close()` again should do nothing.
         """
-        return None
 
     @property
     def unwrapped(self) -> "Problem":
@@ -245,12 +244,12 @@ class Problem(AttrCheckProtocol, t.Protocol):
             of this method.
         """
         # pylint: disable = unused-argument
-        # Hack: Make PyLint realize that this method is not abstract. We
-        # do allow people to not override this method in their subclass.
+        # Make PyLint realize that this method is not abstract. We do
+        # allow people to not override this method in their subclass.
         # However, PyLint thinks that any method that raises
         # NotImplementedError should be overridden.
         assert True
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get_wrapper_attr(self, name: str) -> t.Any:
         """Gets the attribute `name` from the environment."""
@@ -311,7 +310,7 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
         return self
 
     # pylint: disable = useless-return
-    def __exit__(self, *args: t.Any) -> bool | None:
+    def __exit__(self, *args: object) -> bool | None:
         self.close()
         return None
 
@@ -322,7 +321,7 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
 
     def render(self) -> t.Any:
         assert True
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def unwrapped(self) -> Problem:

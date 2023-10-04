@@ -15,6 +15,36 @@ import typing_extensions as tx
 # TODO: Add proper version guards around tx
 
 
+def bump_warn_arg(warn: int) -> int:
+    """Increase the warn argument if it's nonzero.
+
+    If *warn* is False, it is returned unmodified. Otherwise, it's set
+    to at least 2 before being increased by 1 and returned.
+
+    The ``min()`` in the middle ensures that warnings are always
+    reported at least in the caller of our functions.
+
+    The purpose of increasing the argument is so that warnings are
+    always reported outside of this package. This is necessary because
+    `~warnings.warn()` only supports the *skip_file_prefixes* parameter
+    in Python 3.12+.
+
+    Example:
+
+        >>> bump_warn_arg(False)
+        False
+        >>> bump_warn_arg(True)
+        3
+        >>> bump_warn_arg(1)
+        3
+        >>> bump_warn_arg(2)
+        3
+        >>> bump_warn_arg(10)
+        11
+    """
+    return warn and max(warn, 2) + 1
+
+
 def assert_range(reward_range: t.Tuple[float, float], name: str) -> None:
     """Check that the reward range is actually a range."""
     assert len(reward_range) == 2, f"{name} reward range must be tuple `(low, high)`."
