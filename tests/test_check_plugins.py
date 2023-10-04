@@ -20,7 +20,9 @@ from cernml import coi
 
 @pytest.fixture
 def mock_entry_points() -> t.Iterator[MagicMock]:
-    with patch("importlib_metadata.entry_points") as mock:
+    with patch(
+        "cernml.coi.checkers._full_check.importlib_metadata.entry_points"
+    ) as mock:
         yield mock
 
 
