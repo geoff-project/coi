@@ -69,8 +69,11 @@ wiki = 'https://wikis.cern.ch/pages/viewpage.action?pageId=194741479'
 matplotlib = [
     'matplotlib ~= 3.0',
 ]
+optimizers = [
+     'cernml-coi-optimizers  ~= 1.1',
+]
 all = [
-    'cernml-coi[matplotlib]',
+    'cernml-coi[matplotlib,optimizers]',
 ]
 doc = [
     'sphinx >= 4.0',
@@ -97,6 +100,7 @@ target-version = ['py37', 'py38', 'py39']
 
 [tool.isort]
 profile = 'black'
+known_first_party = ['cernml.optimizers']
 
 [tool.pytest.ini_options]
 addopts = '--doctest-modules'

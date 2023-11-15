@@ -50,6 +50,7 @@ from ._configurable import (
     ConfigValues,
     DuplicateConfig,
 )
+from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._func_opt import FunctionOptimizable
 from ._machine import Machine
 from ._problem import Problem
@@ -65,6 +66,7 @@ __all__ = [
     "ConfigValues",
     "Configurable",
     "Constraint",
+    "CustomOptimizerProvider",
     "DuplicateConfig",
     "FunctionOptimizable",
     "Machine",
