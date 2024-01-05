@@ -106,6 +106,9 @@ doctest_optionflags = ['IGNORE_EXCEPTION_DETAIL']
 [tool.pylint]
 master = {extension-pkg-whitelist = 'PyQt5'}
 
+[tool.pylint.design]
+max-args = 10
+
 [tool.pylint.'messages control']
 disable = [
     'fixme',
