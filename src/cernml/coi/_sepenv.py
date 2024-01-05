@@ -73,7 +73,7 @@ class SeparableEnv(gym.Env):
         Returns:
             The next observation to be returned by `step()`.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     def compute_reward(self, obs: np.ndarray, goal: None, info: InfoDict) -> float:
         """Compute the next observation if *action* is taken.
@@ -102,7 +102,7 @@ class SeparableEnv(gym.Env):
             float: the reward that corresponds to the given observation.
                 This value is returned by `step()`.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     def compute_done(self, obs: np.ndarray, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
@@ -127,7 +127,7 @@ class SeparableEnv(gym.Env):
         Returns:
             bool: True if the episode has ended, False otherwise.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
 
 class SeparableGoalEnv(gym.GoalEnv):
@@ -187,7 +187,7 @@ class SeparableGoalEnv(gym.GoalEnv):
         Returns:
             The next observation to be returned by `step()`.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     def compute_done(self, obs: GoalObs, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
@@ -213,4 +213,4 @@ class SeparableGoalEnv(gym.GoalEnv):
         Returns:
             True if the episode has ended, False otherwise.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()

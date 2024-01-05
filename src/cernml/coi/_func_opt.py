@@ -15,7 +15,7 @@ from ._problem import Problem
 from ._single_opt import Constraint
 
 if t.TYPE_CHECKING:
-    from gym import Space  # pragma: no cover
+    from gym import Space
 
 
 class FunctionOptimizable(Problem, metaclass=ABCMeta):
@@ -58,7 +58,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         allowed values in the flat bottom is smaller than at the flat
         top.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     @abstractmethod
     def get_initial_params(self, cycle_time: float) -> np.ndarray:
@@ -85,7 +85,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         Returns:
             The initial parameters.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     @abstractmethod
     def compute_function_objective(
@@ -124,7 +124,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
             The loss associated with these parameters. Numerical
             optimizers may want to minimize that loss.
         """
-        raise NotImplementedError()  # pragma: no cover
+        raise NotImplementedError()
 
     def get_objective_function_name(self) -> t.Optional[str]:
         """Return the name of the objective function.

@@ -103,6 +103,20 @@ addopts = '--doctest-modules'
 testpaths = ['src', 'tests']
 doctest_optionflags = ['IGNORE_EXCEPTION_DETAIL']
 
+[tool.coverage.run]
+source = ['src']
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    '^\s*from .* import',
+    '^\s*import ',
+    '^\s*except ImportError:$',
+    'def __del__',
+    'if .*\.TYPE_CHECKING',
+    'raise NotImplementedError',
+]
+
 [tool.pylint]
 master = {extension-pkg-whitelist = 'PyQt5'}
 

@@ -51,8 +51,7 @@ test_dev:
   script:
     - cd ${project_root}
     - python -m pytest
-      --cov=src
-      --cov-branch
+      --cov
       --cov-report=term
       --cov-report=html:coverage-html
       --cov-report=xml:coverage-report.xml

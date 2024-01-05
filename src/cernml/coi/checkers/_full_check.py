@@ -13,7 +13,7 @@ import gym
 
 try:
     import importlib_metadata
-except ImportError:  # pragma: no cover
+except ImportError:
     # Starting with Python 3.10 (see pyproject.toml).
     import importlib.metadata as importlib_metadata  # type: ignore
 
