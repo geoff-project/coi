@@ -16,6 +16,7 @@ import gym
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.td3 import TD3
@@ -116,7 +117,7 @@ class Parabola(coi.OptEnv):
         if mode == "matplotlib_figures":
             if self.figure is None:
                 self.figure = Figure()
-                axes = self.figure.subplots()
+                axes = t.cast(Axes, self.figure.subplots())
             else:
                 [axes] = self.figure.axes
             axes.scatter(*self.pos)
