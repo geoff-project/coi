@@ -8,7 +8,10 @@
 
 from typing import Any
 
-__all__ = ["check_methods"]
+__all__ = [
+    "check_class_methods",
+    "check_methods",
+]
 
 
 def check_methods(C: type, *methods: str) -> Any:
@@ -66,6 +69,64 @@ def check_methods(C: type, *methods: str) -> Any:
         for B in mro:
             if method in B.__dict__:
                 if B.__dict__[method] is None:
+                    return NotImplemented
+                break
+        else:
+            return NotImplemented
+    return True
+
+
+def check_class_methods(C: type, *methods: str) -> Any:
+    """Like `check_methods()` with additional `classmethod` check.
+
+    Args:
+        C: The class to be checked.
+        methods: The names of methods to be searched for.
+
+    Returns:
+        True if ``C`` implements all given methods, otherwise
+        `NotImplemented`.
+
+    Examples:
+
+        >>> from abc import ABC
+        >>> class Protocol(ABC):
+        ...     def some_method(self) -> str:
+        ...         raise NotImplementedError()
+        ...     @classmethod
+        ...     def __subclasshook__(cls, other: type) -> Any:
+        ...         if cls is Protocol:
+        ...             return check_class_methods(other, "cm")
+        ...         return NotImplemented
+        ...
+        >>> class SatisfiesProtocol:
+        ...     @classmethod
+        ...     def cm(cls):
+        ...         pass
+        >>> issubclass(SatisfiesProtocol, Protocol)
+        True
+        >>> class FailsProtocol:
+        ...     def other_method(self):
+        ...         pass
+        >>> issubclass(FailsProtocol, Protocol)
+        False
+        >>> class OnlyHasInstanceMethod:
+        ...     def cm(self):
+        ...         pass
+        >>> issubclass(FailsProtocol, Protocol)
+        False
+        >>> class DisablesProtocol:
+        ...     cm = None
+        >>> issubclass(DisablesProtocol, Protocol)
+        False
+    """
+    # pylint: disable = invalid-name
+    mro = C.__mro__
+    for method in methods:
+        for B in mro:
+            if method in B.__dict__:
+                obj = B.__dict__[method]
+                if obj is None or not isinstance(obj, classmethod):
                     return NotImplemented
                 break
         else:

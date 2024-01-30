@@ -9,10 +9,10 @@
 import typing as t
 from abc import ABCMeta, abstractmethod
 
-from ._abc_helpers import check_methods as _check_methods
+from ._abc_helpers import check_methods as _check_class_methods
 
 if t.TYPE_CHECKING:
-    from cernml.optimizers import Optimizer
+    import cernml.optimizers
 
 
 class CustomOptimizerProvider(metaclass=ABCMeta):
@@ -20,7 +20,7 @@ class CustomOptimizerProvider(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def get_optimizers(cls) -> t.Mapping[str, "Optimizer"]:
+    def get_optimizers(cls) -> t.Mapping[str, "cernml.optimizers.Optimizer"]:
         """Return the custom optimizers offered by this problem.
 
         The return value is a mapping from optimizer name to optimizer.
@@ -32,5 +32,5 @@ class CustomOptimizerProvider(metaclass=ABCMeta):
     @classmethod
     def __subclasshook__(cls, other: type) -> t.Any:
         if cls is CustomOptimizerProvider:
-            return _check_methods(other, "get_optimizers")
+            return _check_class_methods(other, "get_optimizers")
         return NotImplemented
