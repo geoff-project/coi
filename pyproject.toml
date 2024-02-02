@@ -77,6 +77,7 @@ all = [
 ]
 doc = [
     'sphinx >= 4.0',
+    'sphinx-inline-tabs',
 ]
 examples = [
     'cernml-coi[all]',

@@ -20,3 +20,4 @@ API Reference
     otherenvs
     checkers
     cancellation
+    optproviders

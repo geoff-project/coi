@@ -66,6 +66,7 @@ extensions = [
     "sphinx.ext.graphviz",
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
+    "sphinx_inline_tabs",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -117,6 +118,7 @@ def rtd_link(name: str, branch: str = "stable") -> str:
 
 intersphinx_mapping = {
     "utils": (acc_py_docs_link("geoff/cernml-coi-utils"), None),
+    "optimizers": (acc_py_docs_link("geoff/cernml-coi-optimizers"), None),
     "japc": (acc_py_docs_link("scripting-tools/pyjapc"), None),
     "mpl": ("https://matplotlib.org/stable/", None),
     "np": ("https://numpy.org/doc/stable/", None),
