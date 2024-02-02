@@ -21,6 +21,12 @@ work with version 0.8.11, but may break with version 0.9.0.
 Unreleased
 ----------
 
+v0.8.15
+-------
+
+- ADD: `~cernml.coi.CustomOptimizerProvider` and a :ref:`user guide section <CustomOptimizerProvider>` about it.
+- ADD: A :ref:`user guide section <Configurable>` on the `~cernml.coi.Configurable` API.
+
 v0.8.14
 -------
 
