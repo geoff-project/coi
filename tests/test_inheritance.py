@@ -14,7 +14,7 @@
 from types import new_class
 from typing import Sequence, Type
 
-import gym
+import gymnasium as gym
 import pytest
 
 from cernml import coi
@@ -28,7 +28,7 @@ class ConcreteOptEnv(coi.OptEnv):
     pass
 
 
-class ConcreteGoalEnv(gym.GoalEnv):
+class ConcreteGoalEnv(coi.GoalEnv):
     pass
 
 
@@ -54,7 +54,7 @@ class ConcreteSeparableOptGoalEnv(coi.SeparableOptGoalEnv):
 
 def _assert_env_subclass(subclass: type, superclasses: Sequence[type]) -> None:
     all_superclasses = (
-        gym.GoalEnv,
+        coi.GoalEnv,
         coi.SingleOptimizable,
         coi.OptEnv,
         coi.OptGoalEnv,
@@ -64,7 +64,10 @@ def _assert_env_subclass(subclass: type, superclasses: Sequence[type]) -> None:
         coi.SeparableOptGoalEnv,
     )
     for superclass in all_superclasses:
-        assert (superclass in superclasses) == issubclass(subclass, superclass)
+        assert (superclass in superclasses) == issubclass(subclass, superclass), (
+            f"{subclass.__name__} < {superclass.__name__} "
+            f"(bases: {', '.join([base.__name__ for base in subclass.__mro__])})"
+        )
 
 
 def _is_abstract_base_class(abc: type, env_class: Type[gym.Env]) -> bool:
@@ -81,7 +84,7 @@ def test_optenv_is_abstract() -> None:
 
 
 def test_optgoalenv_is_abstract() -> None:
-    assert _is_abstract_base_class(coi.OptGoalEnv, gym.GoalEnv)
+    assert _is_abstract_base_class(coi.OptGoalEnv, coi.GoalEnv)
 
 
 def test_sepoptenv_is_abstract() -> None:
@@ -104,13 +107,13 @@ def test_optenv() -> None:
 
 
 def test_goalenv() -> None:
-    _assert_env_subclass(ConcreteGoalEnv, [gym.Env, gym.GoalEnv])
+    _assert_env_subclass(ConcreteGoalEnv, [gym.Env, coi.GoalEnv])
 
 
 def test_optgoalenv() -> None:
     _assert_env_subclass(
         ConcreteOptGoalEnv,
-        [gym.Env, gym.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
+        [gym.Env, coi.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
     )
 
 
@@ -139,7 +142,7 @@ def test_sepgoalenv() -> None:
     # methods are semantically different.
     _assert_env_subclass(
         ConcreteSeparableGoalEnv,
-        [gym.Env, gym.GoalEnv, coi.SeparableGoalEnv],
+        [gym.Env, coi.GoalEnv, coi.SeparableGoalEnv],
     )
 
 
@@ -150,7 +153,7 @@ def test_sepoptgoalenv() -> None:
         ConcreteSeparableOptGoalEnv,
         [
             gym.Env,
-            gym.GoalEnv,
+            coi.GoalEnv,
             coi.SingleOptimizable,
             coi.OptEnv,
             coi.OptGoalEnv,
@@ -162,7 +165,7 @@ def test_sepoptgoalenv() -> None:
 
 def test_failures() -> None:
     assert not issubclass(int, gym.Env)
-    assert not issubclass(int, gym.GoalEnv)
+    assert not issubclass(int, coi.GoalEnv)
     assert not issubclass(int, coi.SingleOptimizable)
     assert not issubclass(int, coi.OptEnv)
     assert not issubclass(int, coi.OptGoalEnv)

@@ -6,15 +6,46 @@
 
 """Provide `Problem`, the most fundamental API of this package."""
 
-from abc import ABCMeta
+import typing as t
 from types import MappingProxyType
-from typing import Any, ClassVar, Mapping
 
-from ._abc_helpers import check_methods as _check_methods
+import numpy as np
+from gymnasium.envs.registration import EnvSpec
+from gymnasium.utils import seeding
+
+from ._abc_helpers import AttrCheckProtocol
 from ._machine import Machine
 
+__all__ = (
+    "HasNpRandom",
+    "Problem",
+)
 
-class Problem(metaclass=ABCMeta):
+
+class HasNpRandom:
+    _np_random: np.random.Generator | None = None
+
+    @property
+    def np_random(self) -> np.random.Generator:
+        """Returns the environment's internal :attr:`_np_random`.
+
+        if `_np_random` is not set yet, this will initialize it with
+        a random seed.
+
+        Returns:
+            Instances of `np.random.Generator`
+        """
+        if self._np_random is None:
+            self._np_random, _ = seeding.np_random()
+        return self._np_random
+
+    @np_random.setter
+    def np_random(self, value: np.random.Generator) -> None:
+        self._np_random = value
+
+
+@t.runtime_checkable
+class Problem(AttrCheckProtocol, t.Protocol):
     """Abstract base class of all problems.
 
     You should not derive from this class. Instead, derive from one of
@@ -73,16 +104,23 @@ class Problem(metaclass=ABCMeta):
             reserved for future use.
     """
 
-    # Subclasses should make `metadata` just a regular dict. This is a
-    # mapping proxy to prevent accidental mutation through inheritance.
-    metadata: ClassVar[Mapping[str, Any]] = MappingProxyType(
-        {
-            "render.modes": [],
-            "cern.machine": Machine.NO_MACHINE,
-            "cern.japc": False,
-            "cern.cancellable": False,
-        }
+    # Subclasses should make `metadata` just a regular dict. This is
+    # a mapping proxy here to prevent accidental mutation through
+    # inheritance.
+    metadata: dict[str, t.Any] = t.cast(
+        dict[str, t.Any],
+        MappingProxyType(
+            {
+                "render.modes": [],
+                "cern.machine": Machine.NO_MACHINE,
+                "cern.japc": False,
+                "cern.cancellable": False,
+            }
+        ),
     )
+
+    render_mode: str | None = None
+    spec: EnvSpec | None = None
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -96,7 +134,9 @@ class Problem(metaclass=ABCMeta):
         called on the problem, with the following exceptions:
 
         - `unwrapped` must continue to behave as expected;
-        - calling `close()` again should do nothing."""
+        - calling `close()` again should do nothing.
+        """
+        return None
 
     @property
     def unwrapped(self) -> "Problem":
@@ -128,7 +168,7 @@ class Problem(metaclass=ABCMeta):
         """
         return self
 
-    def render(self, mode: str = "human") -> Any:
+    def render(self) -> t.Any:
         """Render the environment.
 
         Args:
@@ -198,8 +238,10 @@ class Problem(metaclass=ABCMeta):
         assert True
         raise NotImplementedError()
 
+    def get_wrapper_attr(self, name: str) -> t.Any:
+        """Gets the attribute `name` from the environment."""
+        return getattr(self, name)
+
     @classmethod
-    def __subclasshook__(cls, other: type) -> Any:
-        if cls is Problem:
-            return _check_methods(other, "close", "metadata", "render", "unwrapped")
-        return NotImplemented
+    def __subclasshook__(cls, other: type) -> t.Any:
+        return super().__subclasshook__(other)

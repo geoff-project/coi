@@ -12,7 +12,7 @@
 import typing as t
 from abc import ABCMeta
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 from ._single_opt import SingleOptimizable

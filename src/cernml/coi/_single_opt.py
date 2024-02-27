@@ -9,10 +9,9 @@
 # pylint: disable = abstract-method, too-few-public-methods
 
 import typing as t
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
-import gym
-import numpy
+import gymnasium as gym
 
 from ._problem import Problem
 
@@ -20,12 +19,21 @@ if t.TYPE_CHECKING:
     # pylint: disable = unused-import
     import scipy.optimize  # noqa: F401
 
+__all__ = (
+    "Constraint",
+    "ParamType",
+    "SingleOptimizable",
+)
+
 Constraint = t.Union[
     "scipy.optimize.LinearConstraint", "scipy.optimize.NonlinearConstraint"
 ]
 
+ParamType = t.TypeVar("ParamType")  # pylint: disable = invalid-name
 
-class SingleOptimizable(Problem, metaclass=ABCMeta):
+
+@t.runtime_checkable
+class SingleOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
     """Interface for single-objective numerical optimization.
 
     Fundamentally, an environment (described by `gym.Env`) contains a
@@ -81,15 +89,16 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             is not to attach any meaning to the constraints.
     """
 
-    optimization_space: gym.spaces.Space = None
-    objective_range: t.Tuple[float, float] = (-float("inf"), float("inf"))
+    optimization_space: gym.spaces.Space[ParamType]
+    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
+    constraints: list[Constraint] = []
+
     objective_name: str = ""
-    param_names: t.List[str] = []
-    constraints: t.List[Constraint] = []
-    constraint_names: t.List[str] = []
+    param_names: list[str] = []
+    constraint_names: list[str] = []
 
     @abstractmethod
-    def get_initial_params(self) -> numpy.ndarray:
+    def get_initial_params(self) -> ParamType:
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space,
@@ -103,7 +112,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def compute_single_objective(self, params: numpy.ndarray) -> float:
+    def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
         """Perform an optimization step.
 
         This function is similar to `~gym.Env.step()`, but it accepts
@@ -125,3 +134,7 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             optimizers may want to minimize that loss.
         """
         raise NotImplementedError()
+
+    @classmethod
+    def __subclasshook__(cls, other: type) -> t.Any:
+        return super().__subclasshook__(other)

@@ -13,7 +13,7 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from ._abc_helpers import check_class_methods, check_methods
+from ._abc_helpers import AttrCheckProtocol, check_methods
 
 
 class Policy(metaclass=ABCMeta):
@@ -71,7 +71,8 @@ class Policy(metaclass=ABCMeta):
         return NotImplemented
 
 
-class CustomPolicyProvider(metaclass=ABCMeta):
+@t.runtime_checkable
+class CustomPolicyProvider(AttrCheckProtocol, t.Protocol):
     """Interface for optimization problems with custom RL algorithms.
 
     This protocol gives subclasses of `~gym.Env` the opportunity to
@@ -135,10 +136,4 @@ class CustomPolicyProvider(metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is CustomPolicyProvider:
-            # Mind the return value, it could be `NotImplemented`!
-            class_match = check_class_methods(other, "get_policy_names")
-            if class_match is not True:
-                return class_match
-            return check_methods(other, "load_policy")
-        return NotImplemented
+        return super().__subclasshook__(other)

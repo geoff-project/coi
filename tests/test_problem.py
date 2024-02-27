@@ -10,6 +10,7 @@
 
 """Test that `Problem` does not require direct inheritance."""
 
+import collections.abc
 import typing as t
 
 import pytest
@@ -20,6 +21,8 @@ from cernml import coi
 def test_problem_is_abstract() -> None:
     class NonInheritingProblem:
         metadata: t.Dict[str, t.Any] = {"render.modes": []}
+        render_mode = None
+        spec = None
 
         def close(self) -> None:
             pass
@@ -27,8 +30,12 @@ def test_problem_is_abstract() -> None:
         def render(self, mode: str = "human") -> t.Any:
             raise NotImplementedError()
 
+        @property
         def unwrapped(self) -> "NonInheritingProblem":
             return self
+
+        def get_wrapper_attr(self, name: str) -> t.Any:
+            return getattr(self, name)
 
     assert issubclass(NonInheritingProblem, coi.Problem)
 

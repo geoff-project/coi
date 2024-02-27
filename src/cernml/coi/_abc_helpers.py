@@ -6,12 +6,70 @@
 
 """Provides `check_methods()`, a helper function for ABCs."""
 
-from typing import Any
+from collections.abc import Mapping
+from typing import _get_protocol_attrs  # type: ignore[attr-defined]
+from typing import Any, Protocol, _ProtocolMeta
 
-__all__ = [
-    "check_class_methods",
-    "check_methods",
-]
+__all__ = (
+    "AttrCheckProtocolMeta",
+    "AttrCheckProtocol",
+)
+
+
+class AttrCheckProtocolMeta(_ProtocolMeta):
+    def __instancecheck__(cls, instance: Any) -> bool:
+        is_protocol: bool = getattr(cls, "_is_protocol", False)
+        if not is_protocol and issubclass(instance.__class__, cls):
+            return True
+        if is_protocol:
+            if all(
+                hasattr(instance, attr)
+                and attr_matches(
+                    proto_attr=getattr(cls, attr, None),
+                    test_attr=getattr(instance, attr),
+                )
+                for attr in _get_protocol_attrs(cls)
+            ):
+                return True
+        return super().__instancecheck__(instance)
+
+
+class AttrCheckProtocol(Protocol, metaclass=AttrCheckProtocolMeta):
+    @classmethod
+    def __subclasshook__(cls, other: type) -> Any:
+        # pylint: disable = protected-access
+        if not cls.__dict__.get("_is_protocol", False):
+            return NotImplemented
+        if not isinstance(other, type):
+            # Same error message as for issubclass(1, int).
+            raise TypeError("issubclass() arg 1 must be a class")
+        for attr in _get_protocol_attrs(cls):
+            for base in other.__mro__:
+                # Check if the members appears in the class dictionary...
+                if attr in base.__dict__:
+                    if not attr_matches(
+                        proto_attr=getattr(cls, attr, None),
+                        test_attr=base.__dict__[attr],
+                    ):
+                        return NotImplemented
+                    break
+
+                # ...or in annotations, if it is a sub-protocol.
+                annotations = getattr(base, "__annotations__", {})
+                if isinstance(annotations, Mapping) and attr in annotations:
+                    break
+            else:
+                return NotImplemented
+        return True
+
+
+def attr_matches(proto_attr: Any, test_attr: Any) -> bool:
+    # All *methods* can be blocked by setting them to None.
+    return not callable(proto_attr) or (
+        isinstance(test_attr, classmethod)
+        if isinstance(proto_attr, classmethod)
+        else test_attr is not None
+    )
 
 
 def check_methods(C: type, *methods: str) -> Any:

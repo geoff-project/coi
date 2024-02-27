@@ -7,18 +7,23 @@
 """Definition of the interface for temporal optimization."""
 
 import typing as t
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
+import gymnasium as gym
 import numpy as np
 
 from ._problem import Problem
-from ._single_opt import Constraint
+from ._single_opt import Constraint, ParamType
 
-if t.TYPE_CHECKING:
-    from gym import Space
+__all__ = (
+    "Constraint",
+    "FunctionOptimizable",
+    "ParamType",
+)
 
 
-class FunctionOptimizable(Problem, metaclass=ABCMeta):
+@t.runtime_checkable
+class FunctionOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
     """Interface for problems that optimize functions over time.
 
     An optimization problem in which the target is a function over time
@@ -42,11 +47,11 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
             to allow more optimization algorithms.
     """
 
-    objective_range: t.Tuple[float, float] = (-np.inf, np.inf)
-    constraints: t.List[Constraint] = []
+    objective_range: tuple[float, float] = (-np.inf, np.inf)
+    constraints: list[Constraint] = []
 
     @abstractmethod
-    def get_optimization_space(self, cycle_time: float) -> "Space":
+    def get_optimization_space(self, cycle_time: float) -> gym.spaces.Space[ParamType]:
         """Return the optimization space for a given point in time.
 
         This should return a `~gym.spaces.Space` instance that describes
@@ -61,7 +66,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         raise NotImplementedError()
 
     @abstractmethod
-    def get_initial_params(self, cycle_time: float) -> np.ndarray:
+    def get_initial_params(self, cycle_time: float) -> ParamType:
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space
@@ -89,7 +94,9 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
 
     @abstractmethod
     def compute_function_objective(
-        self, cycle_time: float, params: np.ndarray
+        self,
+        cycle_time: float,
+        params: ParamType,
     ) -> float:
         """Perform an optimization step at the given point in time.
 
@@ -137,7 +144,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         """
         return None
 
-    def get_param_function_names(self) -> t.List[str]:
+    def get_param_function_names(self) -> list[str]:
         """Return the names of the functions being modified.
 
         By default, this method returns an empty list. If the list is
@@ -151,7 +158,7 @@ class FunctionOptimizable(Problem, metaclass=ABCMeta):
         """
         return []
 
-    def override_skeleton_points(self) -> t.Optional[t.List[float]]:
+    def override_skeleton_points(self) -> list[float] | None:
         """Hook to let the problem choose the skeleton points.
 
         You should only override this method if your problem cannot be

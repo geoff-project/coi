@@ -7,15 +7,16 @@
 """Definition of the `CustomOptimizerProvider` interface."""
 
 import typing as t
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
-from ._abc_helpers import check_methods as _check_class_methods
+from ._abc_helpers import AttrCheckProtocol
 
 if t.TYPE_CHECKING:
     import cernml.optimizers
 
 
-class CustomOptimizerProvider(metaclass=ABCMeta):
+@t.runtime_checkable
+class CustomOptimizerProvider(AttrCheckProtocol, t.Protocol):
     """Interface for optimization problems with custom optimizers.
 
     This protocol gives subclasses of `SingleOptimizable` and
@@ -70,6 +71,4 @@ class CustomOptimizerProvider(metaclass=ABCMeta):
 
     @classmethod
     def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is CustomOptimizerProvider:
-            return _check_class_methods(other, "get_optimizers")
-        return NotImplemented
+        return super().__subclasshook__(other)
