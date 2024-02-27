@@ -13,7 +13,7 @@ from abc import abstractmethod
 
 import gymnasium as gym
 
-from ._problem import Problem
+from ._problem import BaseProblem, Problem
 
 if t.TYPE_CHECKING:
     # pylint: disable = unused-import
@@ -33,7 +33,7 @@ ParamType = t.TypeVar("ParamType")  # pylint: disable = invalid-name
 
 
 @t.runtime_checkable
-class SingleOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
+class SingleOptimizable(Problem, t.Protocol[ParamType]):
     """Interface for single-objective numerical optimization.
 
     Fundamentally, an environment (described by `gym.Env`) contains a
@@ -97,6 +97,7 @@ class SingleOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
     param_names: list[str] = []
     constraint_names: list[str] = []
 
+    # TODO: Add optional `seed` and `options` arguments.
     @abstractmethod
     def get_initial_params(self) -> ParamType:
         """Return an initial set of parameters for optimization.
@@ -137,4 +138,59 @@ class SingleOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
 
     @classmethod
     def __subclasshook__(cls, other: type) -> t.Any:
+        return super().__subclasshook__(other)
+
+
+class BaseSingleOptimizable(BaseProblem, t.Generic[ParamType]):
+    """ABC that implements the `SingleOptimizable` protocol.
+
+    Subclassing this :term:`abstract base class`  instead of
+    `SingleOptimizable` directly comes with a few advantages for
+    convenience:
+
+    - an `~object.__init__()` method that ensures that the `render_mode`
+      attribute is set correctly;
+    - :term:`context manager` methods that ensure that `close()` is
+      called when using the problem in a :keyword:`with` statement;
+    - the attribute `~HasNpRandom.np_random` as an exclusive and
+      seedable `~numpy.random` number generator;
+    - a `SingleOptimizable.compute_single_objective()` method that
+      automatically calls `~Problem.render()` if in render mode
+      ``human``.
+
+    To check whether an object satisfies the `SingleOptimizable`
+    protocol, use the dedicated function `is_single_optimizable()`.
+    Alternatively, you may also call ``isinstance(obj.unwrapped,
+    SingleOptimizable)``. Do not use this class for such checks!
+
+    Equivalent base classes also exist for the other interfaces.
+
+    See Also:
+        `BaseFunctionOptimizable`, `BaseProblem`, `Env`
+    """
+
+    optimization_space: gym.spaces.Space[ParamType]
+    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
+    constraints: list[Constraint] = []
+
+    objective_name: str = ""
+    param_names: list[str] = []
+    constraint_names: list[str] = []
+
+    # TODO: If `get_initial_params()` gains new arguments, those should
+    # be used by default in this method.
+    @abstractmethod
+    def get_initial_params(self) -> ParamType:
+        """See `SingleOptimizable.get_initial_params()`."""  # noqa: D402
+        raise NotImplementedError()
+
+    @abstractmethod
+    def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
+        """See `SingleOptimizable.compute_single_objective()`."""  # noqa: D402
+        raise NotImplementedError()
+
+    @classmethod
+    def __subclasshook__(cls, other: type) -> t.Any:
+        if issubclass(other, SingleOptimizable):  # type: ignore[misc]
+            return True
         return super().__subclasshook__(other)

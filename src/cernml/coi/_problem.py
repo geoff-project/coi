@@ -7,6 +7,7 @@
 """Provide `Problem`, the most fundamental API of this package."""
 
 import typing as t
+from abc import ABCMeta
 from types import MappingProxyType
 
 import numpy as np
@@ -16,13 +17,24 @@ from gymnasium.utils import seeding
 from ._abc_helpers import AttrCheckProtocol
 from ._machine import Machine
 
+if t.TYPE_CHECKING:
+    from typing_extensions import Self
+
 __all__ = (
+    "BaseProblem",
     "HasNpRandom",
     "Problem",
 )
 
 
-class HasNpRandom:
+class HasNpRandom(t.Protocol):
+    """Protocol for classes that manage their own RNG.
+
+    This abstracts out the `gymnasium.Env.np_random` property. The
+    `Problem` protocol does not depend on it, but the :term:`abstract
+    base class` `BaseProblem` subclasses it as a mixin for convenience.
+    """
+
     _np_random: np.random.Generator | None = None
 
     @property
@@ -46,24 +58,24 @@ class HasNpRandom:
 
 @t.runtime_checkable
 class Problem(AttrCheckProtocol, t.Protocol):
-    """Abstract base class of all problems.
+    """Root protocol for all optimization problems.
 
-    You should not derive from this class. Instead, derive from one of
-    its subclasses like `~gym.Env` or `SingleOptimizable`. This class
+    Do not not directly subclass this protocol. Instead, derive from one
+    of its subclasses like `~gym.Env` or `SingleOptimizable`. This class
     exists for two purposes:
 
     - define which parts of the interfaces are common to all of them;
     - provide an easy way to test whether an interface is compatible
       with the generic optimization framework.
 
-    This is an :term:`std:abstract base class`. This means even classes
-    that don't inherit from it may be considered a subclass. To be
-    considered a subclass, a class must merely:
+    This is a `~typing.Protocol`. This means even classes that don't
+    inherit from it may be considered a subclass. To be considered
+    a subclass, a class must merely:
 
-    - provide a method `render()`,
-    - provide a method `close()`,
-    - provide a property `unwrapped`,
-    - provide a dict `metadata` as a class attribute.
+    - provide the methods `render()`, `close()` and
+      `get_wrapper_attr()`;
+    - provide a dynamic property `unwrapped`;
+    - provide the attributes `render_mode` and `spec`.
 
     Attributes:
         metadata: Capabilities and behavior of this problem.
@@ -102,6 +114,8 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
             Additionally, all keys that start with ``"cern."`` are
             reserved for future use.
+        render_mode: TODO
+        spec: TODO
     """
 
     # Subclasses should make `metadata` just a regular dict. This is
@@ -244,4 +258,81 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
     @classmethod
     def __subclasshook__(cls, other: type) -> t.Any:
+        return super().__subclasshook__(other)
+
+
+class BaseProblem(HasNpRandom, metaclass=ABCMeta):
+    """ABC that implements the `Problem` protocol.
+
+    Subclassing this :term:`abstract base class` instead of `Problem`
+    directly comes with a few advantages for convenience:
+
+    - an `~object.__init__()` method that ensures that the `render_mode`
+      attribute is set correctly;
+    - :term:`context manager` methods that ensure that `close()` is
+      called when using the problem in a :keyword:`with` statement;
+    - the attribute `~HasNpRandom.np_random` as an exclusive and
+      seedable `~numpy.random` number generator.
+
+    To check whether an object satisfies the `Problem` protocol, use the
+    dedicated function `is_problem()`. Alternatively, you may also call
+    ``isinstance(obj.unwrapped, Problem)``. Do not use this class for
+    such checks!
+
+    Equivalent base classes also exist for the other interfaces.
+
+    See Also:
+        `BaseFunctionOptimizable`, `BaseSingleOptimizable`, `Env`
+    """
+
+    # pylint: disable = missing-function-docstring
+    metadata: dict[str, t.Any] = t.cast(
+        dict[str, t.Any],
+        MappingProxyType(
+            {
+                "render.modes": [],
+                "cern.machine": Machine.NO_MACHINE,
+                "cern.japc": False,
+                "cern.cancellable": False,
+            }
+        ),
+    )
+    render_mode: str | None = None
+    spec: EnvSpec | None = None
+
+    def __init__(self, render_mode: str | None = None) -> None:
+        if render_mode is not None:
+            modes = self.metadata.get("render.modes", ())
+            if render_mode not in modes:
+                raise ValueError(
+                    f"invalid render mode: expected one of {modes}, "
+                    f"got {render_mode!r}"
+                )
+        self.render_mode = render_mode
+
+    def __enter__(self) -> "Self":
+        return self
+
+    def __exit__(self, *args: t.Any) -> bool | None:  # pylint: disable = useless-return
+        self.close()
+        return None
+
+    def close(self) -> None:
+        return None
+
+    def render(self) -> t.Any:
+        assert True
+        raise NotImplementedError()
+
+    @property
+    def unwrapped(self) -> Problem:
+        return self
+
+    def get_wrapper_attr(self, name: str) -> t.Any:
+        return getattr(self, name)
+
+    @classmethod
+    def __subclasshook__(cls, other: type) -> t.Any:
+        if issubclass(other, Problem):  # type: ignore[misc]
+            return True
         return super().__subclasshook__(other)

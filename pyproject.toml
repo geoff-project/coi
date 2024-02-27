@@ -80,6 +80,7 @@ test = [
     'pytest >= 6.0',
     'pytest-cov',
     'types-docutils',
+    'typing-extensions',
 ]
 
 [tool.setuptools]
@@ -125,6 +126,7 @@ disable = [
     'fixme',
     'line-too-long',
     'similarities',
+    'too-few-public-methods',
     'unpacking-non-sequence',
 ]
 

@@ -12,7 +12,7 @@ from abc import abstractmethod
 import gymnasium as gym
 import numpy as np
 
-from ._problem import Problem
+from ._problem import BaseProblem, Problem
 from ._single_opt import Constraint, ParamType
 
 __all__ = (
@@ -23,7 +23,7 @@ __all__ = (
 
 
 @t.runtime_checkable
-class FunctionOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
+class FunctionOptimizable(Problem, t.Protocol[ParamType]):
     """Interface for problems that optimize functions over time.
 
     An optimization problem in which the target is a function over time
@@ -92,6 +92,7 @@ class FunctionOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
         """
         raise NotImplementedError()
 
+    # TODO: Add optional `seed` and `options` arguments.
     @abstractmethod
     def compute_function_objective(
         self,
@@ -183,3 +184,73 @@ class FunctionOptimizable(Problem, t.Protocol, t.Generic[ParamType]):
         that is not in that list.
         """
         return None
+
+
+class BaseFunctionOptimizable(BaseProblem, t.Generic[ParamType]):
+    """ABC that implements the `FunctionOptimizable` protocol.
+
+    Subclassing this :term:`abstract base class`  instead of
+    `FunctionOptimizable` directly comes with a few advantages for
+    convenience:
+
+    - an `~object.__init__()` method that ensures that the `render_mode`
+      attribute is set correctly;
+    - :term:`context manager` methods that ensure that `close()` is
+      called when using the problem in a :keyword:`with` statement;
+    - the attribute `~HasNpRandom.np_random` as an exclusive and
+      seedable `~numpy.random` number generator.
+    - a `FunctionOptimizable.compute_single_objective()` method that
+      automatically calls `~Problem.render()` if in render mode
+      ``human``.
+
+    To check whether an object satisfies the `FunctionOptimizable`
+    protocol, use the dedicated function `is_function_optimizable()`.
+    Alternatively, you may also call ``isinstance(obj.unwrapped,
+    FunctionOptimizable)``. Do not use this class for such checks!
+
+    Equivalent base classes also exist for the other interfaces.
+
+    See Also:
+        `BaseSingleOptimizable`, `BaseProblem`, `Env`
+    """
+
+    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
+    constraints: list[Constraint] = []
+
+    @abstractmethod
+    def get_optimization_space(self, cycle_time: float) -> gym.spaces.Space[ParamType]:
+        """See `FunctionOptimizable.get_optimization_space()`."""  # noqa: D402
+        raise NotImplementedError()
+
+    # TODO: If `get_initial_params()` gains new arguments, those should
+    # be used by default in this method.
+    @abstractmethod
+    def get_initial_params(self, cycle_time: float) -> ParamType:
+        """See `FunctionOptimizable.get_initial_params()`."""  # noqa: D402
+        raise NotImplementedError()
+
+    @abstractmethod
+    def compute_function_objective(
+        self,
+        cycle_time: float,
+        params: ParamType,
+    ) -> float:
+        """See `FunctionOptimizable.compute_function_objective()`."""  # noqa: D402
+
+    def get_objective_function_name(self) -> t.Optional[str]:
+        """See `FunctionOptimizable.get_objective_function_name()`."""  # noqa: D402
+        return None
+
+    def get_param_function_names(self) -> list[str]:
+        """See `FunctionOptimizable.get_param_function_names()`."""  # noqa: D402
+        return []
+
+    def override_skeleton_points(self) -> list[float] | None:
+        """See `FunctionOptimizable.override_skeleton_points()`."""  # noqa: D402
+        return None
+
+    @classmethod
+    def __subclasshook__(cls, other: type) -> t.Any:
+        if issubclass(other, FunctionOptimizable):  # type: ignore[misc]
+            return True
+        return super().__subclasshook__(other)
