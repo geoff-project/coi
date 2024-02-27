@@ -9,9 +9,9 @@
 import typing as t
 from abc import ABCMeta
 
-import gym
 import numpy as np
 
+from ._goalenv import GoalEnv
 from ._single_opt import SingleOptimizable
 
 InfoDict = t.Dict[str, t.Any]
@@ -19,7 +19,7 @@ InfoDict = t.Dict[str, t.Any]
 GoalObs = t.Dict[str, np.ndarray]
 
 
-class SeparableGoalEnv(gym.GoalEnv):
+class SeparableGoalEnv(GoalEnv):
     """A multi-goal environment whose calculations nicely separate.
 
     This interface is superficially similar to `~gym.GoalEnv`, but
@@ -105,7 +105,7 @@ class SeparableGoalEnv(gym.GoalEnv):
         raise NotImplementedError()
 
 
-class OptGoalEnv(gym.GoalEnv, SingleOptimizable, metaclass=ABCMeta):
+class OptGoalEnv(GoalEnv, SingleOptimizable, metaclass=ABCMeta):
     """An optimizable multi-goal environment.
 
     This is an intersection of `~gym.GoalEnv` and `SingleOptimizable`.
@@ -116,7 +116,7 @@ class OptGoalEnv(gym.GoalEnv, SingleOptimizable, metaclass=ABCMeta):
     def __subclasshook__(cls, other: type) -> t.Any:
         if cls is OptGoalEnv:
             bases = other.__mro__
-            return gym.GoalEnv in bases and SingleOptimizable in bases
+            return GoalEnv in bases and SingleOptimizable in bases
         return NotImplemented
 
 

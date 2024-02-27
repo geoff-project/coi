@@ -55,6 +55,7 @@ from ._custom_policy_provider import CustomPolicyProvider, Policy
 from ._extra_envs import OptEnv, SeparableEnv, SeparableOptEnv
 from ._extra_goal_envs import OptGoalEnv, SeparableGoalEnv, SeparableOptGoalEnv
 from ._func_opt import FunctionOptimizable
+from ._goalenv import GoalEnv
 from ._machine import Machine
 from ._problem import Problem
 from ._registration import make, register, registry, spec
@@ -71,6 +72,7 @@ __all__ = [
     "CustomPolicyProvider",
     "DuplicateConfig",
     "FunctionOptimizable",
+    "GoalEnv",
     "Machine",
     "OptEnv",
     "OptGoalEnv",
