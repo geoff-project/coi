@@ -8,7 +8,7 @@
 requires = [
     'pip >= 22',
     'setuptools >= 45',
-    'setuptools-scm[toml] ~= 7.0',
+    'setuptools-scm[toml] ~= 8.0',
     'wheel',
 ]
 build-backend = 'setuptools.build_meta'
@@ -22,25 +22,15 @@ authors = [
 description = 'Common optimization interfaces for RL/num. optimization'
 readme = 'README.md'
 license = {file='COPYING'}
-requires-python = '>=3.7'
+requires-python = '>=3.9'
 dependencies = [
-    # Temporary hack: Gym 0.22 removes GoalEnv and puts it into a new
-    # gym-robotics package. We'll have to address that.
-    'gym >= 0.11, < 0.22',
-    # Note: on Python 3.9, we still can't use `importlib.metadata`
-    # from the stdlib because we use the SelectableEntryPoints API,
-    # which was only added in importlib_metadata 3.6/Python 3.10.
-    'importlib-metadata >= 3.6, < 7; python_version<"3.10"',
-    # On Python 3.7, we are stuck with importlib_metadata 4.* until
-    # we no longer need Gym 0.21 because it uses the old Entry Points API
-    # removed in importlib_metadata 5.0. On Python 3.8, they use the stdlib
-    # `importlib.metadata`, which still supports that API.
-    # Removing this hack depends on Stable Baselines 3 adding support for Gym
-    # 0.22+. This will most likely materialize in stable-baselines3 2.0 as
-    # support for Gymnasium 0.26+.
-    'importlib-metadata < 5; python_version<"3.8"',
-    'numpy ~= 1.10',
+    'gymnasium < 2',
+    'numpy ~= 1.22',
     'scipy ~= 1.1',
+    # Dependencies on importlib-metadata and typing-extensions are identical
+    # with Gymnasium's.
+    'importlib-metadata >= 4.8.0; python_version<"3.10"',
+    'typing-extensions >= 4.3.0',
 ]
 classifiers = [
     'Development Status :: 3 - Alpha',
@@ -48,8 +38,6 @@ classifiers = [
     'Natural Language :: English',
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
@@ -67,13 +55,16 @@ wiki = 'https://wikis.cern.ch/pages/viewpage.action?pageId=194741479'
 
 [project.optional-dependencies]
 matplotlib = [
-    'matplotlib ~= 3.0',
+    'matplotlib ~= 3.8',
 ]
 optimizers = [
-     'cernml-coi-optimizers  ~= 1.1',
+    'cernml-coi-optimizers  ~= 2.0',
+]
+robotics = [
+    'gymnasium-robotics ~= 1.0',
 ]
 all = [
-    'cernml-coi[matplotlib,optimizers]',
+    'cernml-coi[gymnasium-robotics,matplotlib,optimizers]',
 ]
 doc = [
     'sphinx >= 4.0',
@@ -82,12 +73,13 @@ doc = [
 examples = [
     'cernml-coi[all]',
     'PyQt5 ~= 5.0',
-    'stable_baselines3 ~= 1.0',
+    'stable_baselines3 ~= 2.0',
 ]
 test = [
     'cernml-coi[all]',
     'pytest >= 6.0',
     'pytest-cov',
+    'types-docutils',
 ]
 
 [tool.setuptools]
@@ -97,7 +89,7 @@ package-data = {'*' = ['py.typed']}
 [tool.setuptools_scm]
 
 [tool.black]
-target-version = ['py37', 'py38', 'py39']
+target-version = ['py39', 'py310', 'py311']
 
 [tool.isort]
 profile = 'black'
@@ -142,5 +134,5 @@ explicit_package_bases = true
 mypy_path = '$MYPY_CONFIG_FILE_DIR/src'
 
 [[tool.mypy.overrides]]
-module = ['scipy.*', 'gym.*', 'matplotlib.*']
+module = ['scipy.*']
 ignore_missing_imports = true
