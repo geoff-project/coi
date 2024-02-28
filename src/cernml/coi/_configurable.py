@@ -9,15 +9,13 @@
 from __future__ import annotations
 
 import typing
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from collections import OrderedDict
 from dataclasses import dataclass
 from functools import singledispatch
 from types import SimpleNamespace
 
 import numpy
-
-from ._abc_helpers import check_methods as _check_methods
 
 T = typing.TypeVar("T")  # pylint: disable = invalid-name
 T.__module__ = ""
@@ -365,7 +363,8 @@ class Config:
         return result
 
 
-class Configurable(metaclass=ABCMeta):
+@typing.runtime_checkable
+class Configurable(typing.Protocol):
     """Interface for problems that are configurable.
 
     Some `Problem` classes have several parameters that determine
@@ -463,12 +462,6 @@ class Configurable(metaclass=ABCMeta):
         Raises:
             Exception: If any additional validation checks fail.
         """
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> typing.Any:
-        if cls is Configurable:
-            return _check_methods(other, "get_config", "apply_config")
-        return NotImplemented
 
 
 AnyBool = typing.TypeVar("AnyBool", bool, numpy.bool_)

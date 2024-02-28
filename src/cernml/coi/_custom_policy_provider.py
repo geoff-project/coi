@@ -9,14 +9,15 @@
 from __future__ import annotations
 
 import typing as t
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 import numpy as np
 
-from ._abc_helpers import AttrCheckProtocol, check_methods
+from ._abc_helpers import AttrCheckProtocol
 
 
-class Policy(metaclass=ABCMeta):
+@t.runtime_checkable
+class Policy(t.Protocol):
     """Interface of RL algorithms returned by `CustomPolicyProvider`.
 
     This is an :term:`std:abstract base class`. This means even classes
@@ -63,12 +64,6 @@ class Policy(metaclass=ABCMeta):
             next hidden state. Non-recurrent policies always return None
             as a state.
         """
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is Policy:
-            return check_methods(other, "predict")
-        return NotImplemented
 
 
 @t.runtime_checkable
