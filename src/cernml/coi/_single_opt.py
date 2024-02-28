@@ -136,11 +136,8 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
         """
         raise NotImplementedError()
 
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        return super().__subclasshook__(other)
 
-
+@SingleOptimizable.register
 class BaseSingleOptimizable(BaseProblem, t.Generic[ParamType]):
     """ABC that implements the `SingleOptimizable` protocol.
 
@@ -188,9 +185,3 @@ class BaseSingleOptimizable(BaseProblem, t.Generic[ParamType]):
     def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
         """See `SingleOptimizable.compute_single_objective()`."""  # noqa: D402
         raise NotImplementedError()
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if issubclass(other, SingleOptimizable):  # type: ignore[misc]
-            return True
-        return super().__subclasshook__(other)

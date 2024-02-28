@@ -223,7 +223,7 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
         Example:
 
-            >>> from gym import Env
+            >>> from gymnasium import Env
             >>> class MyEnv(Env):
             ...     metadata = {'render.modes': ['human', 'rgb_array']}
             ...     def render(self, mode='human'):
@@ -256,11 +256,8 @@ class Problem(AttrCheckProtocol, t.Protocol):
         """Gets the attribute `name` from the environment."""
         return getattr(self, name)
 
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        return super().__subclasshook__(other)
 
-
+@Problem.register
 class BaseProblem(HasNpRandom, metaclass=ABCMeta):
     """ABC that implements the `Problem` protocol.
 
@@ -313,9 +310,12 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
     def __enter__(self) -> "Self":
         return self
 
-    def __exit__(self, *args: t.Any) -> bool | None:  # pylint: disable = useless-return
+    # pylint: disable = useless-return
+    def __exit__(self, *args: t.Any) -> bool | None:
         self.close()
         return None
+
+    # pylint: enable = useless-return
 
     def close(self) -> None:
         return None
@@ -330,9 +330,3 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
 
     def get_wrapper_attr(self, name: str) -> t.Any:
         return getattr(self, name)
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if issubclass(other, Problem):  # type: ignore[misc]
-            return True
-        return super().__subclasshook__(other)

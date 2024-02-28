@@ -6,32 +6,38 @@
 
 # pylint: disable = abstract-method
 # pylint: disable = too-few-public-methods
+# pylint: disable = too-many-ancestors
 
 """An interface that splits calculations into reusable parts."""
 
 import typing as t
 from abc import ABCMeta
 
-import gymnasium as gym
-import numpy as np
+from gymnasium.core import ActType, Env, ObsType
 
-from ._single_opt import SingleOptimizable
+from ._single_opt import ParamType, SingleOptimizable
 
-InfoDict = t.Dict[str, t.Any]
-# TODO: Use t.TypedDict with Python 3.8.
-GoalObs = t.Dict[str, np.ndarray]
+__all__ = (
+    "ActType",
+    "InfoDict",
+    "ObsType",
+    "OptEnv",
+    "SeparableEnv",
+    "SeparableOptEnv",
+)
+
+InfoDict = dict[str, t.Any]
 
 
-class SeparableEnv(gym.Env):
+class SeparableEnv(Env[ObsType, ActType]):
     """An environment whose calculations nicely separate.
 
-    This interface is superficially similar to `~gym.GoalEnv`, but
-    doesn't pose any requirements to the observation space. (By
-    contrast, `~gym.GoalEnv` requires that the observation space is a
-    dict with keys ``"observation"``, ``"desired_goal"`` and
-    ``"achieved_goal"``.) The only requirement is that the calculation
-    of observation, reward and end-of-episode can be separated into
-    distinct steps.
+    This interface is superficially similar to `~.GoalEnv`, but doesn't
+    pose any requirements to the observation space. (By contrast,
+    `.GoalEnv` requires that the observation space is a dict with keys
+    ``"observation"``, ``"desired_goal"`` and ``"achieved_goal"``.) The
+    only requirement is that the calculation of observation, reward and
+    end-of-episode can be separated into distinct steps.
 
     This makes two things possible:
 
@@ -42,24 +48,29 @@ class SeparableEnv(gym.Env):
 
     Because of these use cases, all state transition should be
     restricted to `compute_observation()`. In particular, it must be
-    possible to call `compute_reward()` and `compute_done()` multiple
-    times without changing the internal state of the environment.
+    possible to call `compute_reward()`, `compute_terminated()` and
+    `compute_truncated()` multiple times without changing the internal
+    state of the environment.
     """
 
-    def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, InfoDict]:
-        """Implementation of `gym.Env.step()`.
+    def step(
+        self, action: ActType
+    ) -> tuple[ObsType, t.SupportsFloat, bool, bool, InfoDict]:
+        """Implementation of `.Env.step()`.
 
-        This calls in turn the three new abstract methods:
-        `compute_observation()`, `compute_reward()`, and
-        `compute_done()`.
+        This calls in turn the four new abstract methods:
+        `compute_observation()`, `compute_reward()`,
+        `compute_terminated()` and `compute_truncated()`.
         """
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(obs, None, info)
-        done = self.compute_done(obs, reward, info)
-        return obs, reward, done, info
+        info["reward"] = reward
+        terminated = self.compute_terminated(obs, None, info)
+        truncated = self.compute_truncated(obs, None, info)
+        return obs, reward, terminated, truncated, info
 
-    def compute_observation(self, action: np.ndarray, info: InfoDict) -> np.ndarray:
+    def compute_observation(self, action: ActType, info: InfoDict) -> ObsType:
         """Compute the next observation if *action* is taken.
 
         This should encapsulate all state transitions of the
@@ -78,11 +89,13 @@ class SeparableEnv(gym.Env):
         """
         raise NotImplementedError()
 
-    def compute_reward(self, obs: np.ndarray, goal: None, info: InfoDict) -> float:
+    def compute_reward(
+        self, obs: ObsType, goal: None, info: InfoDict
+    ) -> t.SupportsFloat:
         """Compute the next observation if *action* is taken.
 
         This externalizes the reward function. In this regard, it is
-        similar to `gym.GoalEnv.compute_reward()`, but it doesn't impose
+        similar to `.GoalEnv.compute_reward()`, but it doesn't impose
         any structure on the observation space.
 
         Note that this function should be free of side-effects or
@@ -91,10 +104,10 @@ class SeparableEnv(gym.Env):
         always expect the same result.
 
         Args:
-            obs: The observation calculated by `~gym.Env.reset()` or
+            obs: The observation calculated by `~.Env.reset()` or
                 `compute_observation()`.
             goal: A dummy parameter to stay compatible with the
-                `~gym.GoalEnv` API. This parameter generally is None. If
+                `.GoalEnv` API. This parameter generally is None. If
                 you want a multi-goal environment, consider
                 `SeparableGoalEnv`.
             info: an info dictionary with additional information.
@@ -107,36 +120,70 @@ class SeparableEnv(gym.Env):
         """
         raise NotImplementedError()
 
-    def compute_done(self, obs: np.ndarray, reward: float, info: InfoDict) -> bool:
+    def compute_terminated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
-        This externalizes the determination of the end of episode. This
-        function should be free of side-effects or modifications of
-        *self*. In particular, it must be possible to call
-        ``env.compute_done(obs, reward, {})`` multiple times and always
-        get the same result.
+        This externalizes the decision whether the agent has reached the
+        terminal state of the environment (e.g. winning or losing
+        a game). This function should be free of side-effects or
+        modifications of *self*. In particular, it must be possible to
+        call ``env.compute_terminated(obs, reward, {})`` multiple times
+        and always get the same result.
 
         If you want to indicate that the episode has ended in a success,
         consider setting ``info["success"] = True``.
 
         Args:
-            obs: The observation calculated by `~gym.Env.reset()` or
-                `compute_observation()`.
-            reward: The observation calculated by `compute_reward()`.
+            obs: The observation calculated by `~gymnasium.Env.reset()`
+                or `compute_observation()`.
+            goal: A dummy parameter to stay compatible with the
+                `.GoalEnv` API. This parameter generally is None. If
+                you want a multi-goal environment, consider
+                `SeparableGoalEnv`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to `compute_reward()`
-                before.
+                before. The `step()` method adds a key ``"reward"`` that
+                contains the result of `compute_reward()`.
 
         Returns:
-            bool: True if the episode has ended, False otherwise.
+            bool: True if the episode has reached a terminal state,
+                False otherwise.
+        """
+        raise NotImplementedError()
+
+    def compute_truncated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
+        """Compute whether the episode ends in this step.
+
+        This externalizes the decision whether a condition outside of
+        the environment has ended the episode (e.g. a time limit). This
+        function should be free of side-effects or modifications of
+        *self*. In particular, it must be possible to call
+        ``env.compute_truncated(obs, reward, {})`` multiple times and
+        always get the same result.
+
+        Args:
+            obs: The observation calculated by `~gymnasium.Env.reset()`
+                or `compute_observation()`.
+            goal: A dummy parameter to stay compatible with the
+                `.GoalEnv` API. This parameter generally is None. If
+                you want a multi-goal environment, consider
+                `SeparableGoalEnv`.
+            info: an info dictionary with additional information. It may
+                or may not have been passed to `compute_reward()`
+                before. The `step()` method adds a key ``"reward"`` that
+                contains the result of `compute_reward()`.
+
+        Returns:
+            bool: True if the episode has been terminated by outside
+                forces, False otherwise.
         """
         raise NotImplementedError()
 
 
-class OptEnv(gym.Env, SingleOptimizable, metaclass=ABCMeta):
+class OptEnv(Env[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCMeta):
     """An optimizable environment.
 
-    This is an intersection of `~gym.Env` and `SingleOptimizable`. Any
+    This is an intersection of `~.Env` and `SingleOptimizable`. Any
     class that inherits from both, also inherits from this class.
     """
 
@@ -144,11 +191,13 @@ class OptEnv(gym.Env, SingleOptimizable, metaclass=ABCMeta):
     def __subclasshook__(cls, other: type) -> t.Any:
         if cls is OptEnv:
             bases = other.__mro__
-            return gym.Env in bases and SingleOptimizable in bases
+            return Env in bases and SingleOptimizable in bases
         return NotImplemented
 
 
-class SeparableOptEnv(SeparableEnv, SingleOptimizable, metaclass=ABCMeta):
+class SeparableOptEnv(
+    SeparableEnv[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCMeta
+):
     """An optimizable and separable environment.
 
     This is an intersection of `SeparableEnv` and `SingleOptimizable`.

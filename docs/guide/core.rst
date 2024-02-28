@@ -55,7 +55,7 @@ also implements `~cernml.coi.OptEnv`. A demonstration:
 
 .. code-block:: python
 
-    import gym
+    import gymnasium as gym
     from cernml import coi
 
     class Indirect(coi.SingleOptimizable, gym.Env):

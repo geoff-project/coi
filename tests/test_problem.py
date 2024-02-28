@@ -10,7 +10,6 @@
 
 """Test that `Problem` does not require direct inheritance."""
 
-import collections.abc
 import typing as t
 
 import pytest
@@ -37,7 +36,7 @@ def test_problem_is_abstract() -> None:
         def get_wrapper_attr(self, name: str) -> t.Any:
             return getattr(self, name)
 
-    assert issubclass(NonInheritingProblem, coi.Problem)
+    assert issubclass(NonInheritingProblem, coi.Problem)  # type: ignore[misc]  # noqa: LN002
 
 
 def test_render_raises() -> None:
@@ -59,4 +58,4 @@ def test_problem_requires_close() -> None:
         def unwrapped(self) -> "NullProblemo":
             return self
 
-    assert not issubclass(NullProblemo, coi.Problem)
+    assert not issubclass(NullProblemo, coi.Problem)  # type: ignore[misc]

@@ -4,35 +4,46 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Checker for the `gym.Env` ABC."""
+"""Checker for the `gymnasium.Env` ABC."""
 
 import typing as t
 import warnings
 
-import gym
 import numpy as np
+from gymnasium import Env, spaces
 
-from .._extra_envs import SeparableEnv
+from .._typeguards import is_env, is_goal_env, is_separable_env
 from ._generic import assert_range, is_bool, is_box, is_reward
 
 
-def check_env(env: gym.Env, warn: bool = True) -> None:
+def check_env(env: Env, warn: bool = True) -> None:
     """Check the run-time invariants of the given interface."""
-    assert isinstance(env.unwrapped, gym.Env), f"{type(env)} must inherit from gym.Env"
+    assert is_env(env), f"{type(env)} must inherit from gymnasium.Env"
     assert_observation_space(env)
     assert_action_space(env)
     assert_range(env.reward_range, "reward")
     assert_env_returned_values(env)
     assert_env_no_nan(env)
     if warn:
-        warn_observation_space(
-            env.observation_space
-            if is_box(env.observation_space)
-            else env.observation_space["observation"]
-        )
+        obs_space = env.observation_space
+        if is_box(obs_space):
+            warn_observation_space(obs_space)
+        else:
+            assert isinstance(obs_space, spaces.Dict), (
+                f"for now, observation spaces must be Box or "
+                f"(for GoalEnv) Dict, not {obs_space!r}"
+            )
+            nested_obs_space = obs_space.get("observation")
+            assert (
+                nested_obs_space is not None
+            ), f"Dict space is missing required key 'observation': {obs_space!r}"
+            assert is_box(
+                nested_obs_space
+            ), f"observation_space['observation'] is not a Box: {nested_obs_space!r}"
+            warn_observation_space(nested_obs_space)
 
 
-def assert_observation_space(env: gym.Env) -> None:
+def assert_observation_space(env: Env) -> None:
     """Check that the observation space is as expected.
 
     The space must generally be a box. The exception are multi-goal
@@ -41,10 +52,8 @@ def assert_observation_space(env: gym.Env) -> None:
     sub-space must be a box in turn.
     """
     space = env.observation_space
-    if isinstance(space, gym.spaces.Dict):
-        assert isinstance(
-            env.unwrapped, gym.GoalEnv
-        ), f"only GoalEnv can have dict observation space {space}"
+    if isinstance(space, spaces.Dict):
+        assert is_goal_env(env), f"only GoalEnv can have dict observation space {space}"
         actual_keys = set(space.spaces.keys())
         expected_keys = {"observation", "desired_goal", "achieved_goal"}
         assert actual_keys == expected_keys, (
@@ -58,7 +67,7 @@ def assert_observation_space(env: gym.Env) -> None:
         assert is_box(space), f"observation space {space} must be a gym.spaces.Box"
 
 
-def assert_action_space(env: gym.Env) -> None:
+def assert_action_space(env: Env) -> None:
     """Check that the action space has symmetric/normalized limits."""
     space = env.action_space
     assert is_box(space), f"action space {space} must be a gym.spaces.Box"
@@ -68,8 +77,8 @@ def assert_action_space(env: gym.Env) -> None:
     assert np.any(abs(space.high) <= 1.0), "action space limits must be 1.0 or less"
 
 
-def assert_env_returned_values(env: gym.Env) -> None:
-    """Check the return types of `env.rest()` and `env.step()`.
+def assert_env_returned_values(env: Env) -> None:
+    """Check the return types of `env.reset()` and `env.step()`.
 
     Example:
         >>> class Foo:
@@ -82,7 +91,7 @@ def assert_env_returned_values(env: gym.Env) -> None:
         ...     def reset(self):
         ...         return np.array(0.0, dtype=np.float32)
         ...     def step(self, action):
-        ...         return action, 0.0, False, {}
+        ...         return action, 0.0, False, False, {}
         >>> assert_env_returned_values(Foo())
     """
 
@@ -90,58 +99,97 @@ def assert_env_returned_values(env: gym.Env) -> None:
         assert (
             obs in env.observation_space
         ), f"observation {obs} outside of space {env.observation_space}"
-        inner_obs = (
-            obs["observation"] if isinstance(env.unwrapped, gym.GoalEnv) else obs
-        )
+        inner_obs = obs["observation"] if is_goal_env(env) else obs
         assert isinstance(
             inner_obs, np.ndarray
         ), f"observation {inner_obs} must be NumPy array"
 
-    obs = env.reset()
+    obs, info = env.reset()
     _check_obs(obs)
+    assert isinstance(
+        info, dict
+    ), f"`info` returned by `reset()` must be a dictionary: {info}"
     data = env.step(env.action_space.sample())
-    assert (
-        len(data) == 4
-    ), f"step() must return four values: obs, reward, done, info; not {data}"
-    obs, reward, done, info = data
+    assert len(data) == 5, (
+        f"step() must return four values: obs, reward, "
+        f"terminated, truncated, info; not {data}"
+    )
+    obs, reward, terminated, truncated, info = data
     _check_obs(obs)
     assert is_reward(reward), "reward must be a float or integer"
     low, high = env.reward_range
-    assert low <= reward <= high, f"reward is out of range [{low}, {high}]: {reward}"
-    assert is_bool(done), f"done signal must be a bool: {done}"
-    assert isinstance(info, dict), f"info must be a dictionary: {info}"
-    if isinstance(env.unwrapped, gym.GoalEnv):
+    assert is_reward(low), "reward range must be float: {low!r}"
+    assert is_reward(high), "reward range must be float: {high!r}"
+    assert (
+        float(low) <= float(reward) <= float(high)
+    ), f"reward is out of range [{low}, {high}]: {reward!r}"
+    assert is_bool(terminated), f"`terminated` signal must be a bool: {terminated!r}"
+    assert is_bool(truncated), f"`truncated` signal must be a bool: {truncated!r}"
+    assert isinstance(
+        info, dict
+    ), f"`info` returned by `step()` must be a dictionary: {info}"
+    if is_goal_env(env):
         expected = env.compute_reward(obs["achieved_goal"], obs["desired_goal"], info)
         assert reward == expected, f"reward does not match: {reward} != {expected}"
-    elif isinstance(env.unwrapped, SeparableEnv):
+    elif is_separable_env(env):
         expected = env.compute_reward(obs, None, info)
         assert reward == expected, f"reward does not match: {reward} != {expected}"
 
 
-def assert_env_no_nan(env: gym.Env) -> None:
+def assert_env_no_nan(env: Env) -> None:
     """Check that the environment never produces infinity or NaN."""
 
-    def _check_val(val: t.Union[float, np.ndarray, np.floating]) -> bool:
-        isnan = np.any(np.isnan(val))
-        isinf = np.any(np.isinf(val))
-        return not isnan and not isinf
+    def _check_val(val: t.SupportsFloat) -> np.bool_:
+        assert isinstance(val, t.SupportsFloat), f"not a float reward: {val!r}"
+        return np.isfinite(float(val))
 
-    obs = env.reset()
+    terminated = truncated = True
     for _ in range(10):
-        if isinstance(env.unwrapped, gym.GoalEnv):
+        if terminated or truncated:
+            obs, _ = env.reset()
+        if is_goal_env(env):
             obs = obs["observation"]
         assert _check_val(obs), f"NaN or inf in observation: {obs}"
-        obs, reward, _, _ = env.step(env.action_space.sample())
+        obs, reward, terminated, truncated, _ = env.step(env.action_space.sample())
         assert _check_val(reward), f"NaN or inf in reward: {reward}"
 
 
-def warn_observation_space(space: gym.spaces.Box) -> None:
+def warn_observation_space(space: spaces.Space) -> None:
+    """Check that the observation space has the right shape.
+
+    For a regular `.Env`, the space must be a `Box` with either a flat
+    shape, or the shape of a pixel array (dtype is `~numpy.uint8`, shape
+    is 3D ``(width, height, channels)``, values go from 0 to 255
+    inclusive, image is at least 36 pixels wide and high).
+
+    For a `.GoalEnv`, the space must be a `Dict` with the keys expected
+    by the API. The ``"observation"`` sub-space must be a `Box` with the
+    same requirements as above.
+    """
+    if is_box(space):
+        warn_observation_space(space)
+        return
+    assert isinstance(space, spaces.Dict), (
+        f"for now, observation spaces must be Box or "
+        f"(for GoalEnv) Dict, not {space!r}"
+    )
+    nested_space = space.get("observation")
+    assert (
+        nested_space is not None
+    ), f"Dict space is missing required key 'observation': {space!r}"
+    assert is_box(
+        nested_space
+    ), f"observation_space['observation'] is not a Box: {nested_space!r}"
+    warn_observation_space(nested_space)
+
+
+def warn_flat_observation_space(space: spaces.Box) -> None:
     """Check that the observation space is either flat or an image.
 
     Examples:
 
         >>> from warnings import simplefilter
-        >>> from gym.spaces import Box
+        >>> from gymnasium.spaces import Box
         >>> simplefilter("error")
         >>> warn_observation_space(Box(-1, 1, (10,)))
         >>> warn_observation_space(Box(-1, 1, (10, 10)))

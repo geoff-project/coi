@@ -6,11 +6,13 @@
 
 """Generic assertions and checks used by multiple checkers."""
 
-import numbers
 import typing as t
 
-import gym
+import gymnasium as gym
 import numpy as np
+import typing_extensions as tx
+
+# TODO: Add proper version guards around tx
 
 
 def assert_range(reward_range: t.Tuple[float, float], name: str) -> None:
@@ -20,12 +22,12 @@ def assert_range(reward_range: t.Tuple[float, float], name: str) -> None:
     assert low <= high, f"lower bound of {name} range must be lower than upper bound"
 
 
-def is_reward(reward: t.Any) -> bool:
+def is_reward(reward: t.Any) -> tx.TypeGuard[t.SupportsFloat]:
     """Return True if the object has the correct type for a reward."""
-    return isinstance(reward, (numbers.Number, np.bool_))
+    return isinstance(reward, t.SupportsFloat)
 
 
-def is_bool(value: t.Any) -> bool:
+def is_bool(value: t.Any) -> tx.TypeGuard[t.Union[bool, np.bool_]]:
     """Return True if the object is a true boolean.
 
     This accepts `bool`, :class:`np.bool_` and possible subclasses, but
@@ -88,6 +90,6 @@ def is_iterable(value: t.Any) -> bool:
     return isinstance(value, t.Iterable) or hasattr(type(value), "__getitem__")
 
 
-def is_box(space: gym.Space) -> bool:
+def is_box(space: gym.Space) -> tx.TypeGuard[gym.spaces.Box]:
     """Return True if the given space is a Box."""
     return isinstance(space, gym.spaces.Box)

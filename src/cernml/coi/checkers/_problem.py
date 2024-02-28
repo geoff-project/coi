@@ -13,6 +13,7 @@ import warnings
 
 from .._machine import Machine
 from .._problem import Problem
+from .._typeguards import is_problem
 from ._render import get_render_mode_checks
 
 
@@ -20,6 +21,7 @@ def check_problem(
     problem: Problem, *, warn: bool = True, headless: bool = True
 ) -> None:
     """Check the run-time invariants of the given interface."""
+    assert is_problem(problem), f"doesn't implement the Problem API: {problem!r}"
     assert_machine(problem)
     assert_render_modes_defined(problem)
     assert_no_undeclared_render(problem, warn=warn, headless=headless)
@@ -87,11 +89,16 @@ def assert_no_undeclared_render(
     # pylint: disable = isinstance-second-argument-not-valid-type
     blocked_modes = set(_get_blocked_modes(headless=headless))
     render_modes = set(t.cast(t.Collection[str], problem.metadata["render.modes"]))
+    # TODO: Add ansi_list and rgb_array_list.
+    # TODO: Actually, this check has to be reworked completely, since
+    # render_mode is defined in the constructor now, and not supposed to
+    # change after construction.
     known_modes = {"ansi", "human", "matplotlib_figures", "rgb_array"}
     modes_to_check = known_modes - blocked_modes - render_modes
     for mode in modes_to_check:
         try:
-            problem.render(mode)
+            problem.render_mode = mode
+            problem.render()
         except (NotImplementedError, ValueError):
             pass
         except Exception as exc:
@@ -131,10 +138,13 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
     blocked_modes = _get_blocked_modes(headless=headless)
     render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
     for mode in render_modes:
+        # TODO: This check has to be rethought, since render_mode is not
+        # expected to change after construction.
         if mode in blocked_modes:
             continue
         try:
-            result = problem.render(mode)
+            problem.render_mode = mode
+            result = problem.render()
         except NotImplementedError as exc:
             raise AssertionError(
                 f"render mode {mode!r} declared but not implemented"

@@ -128,7 +128,3 @@ class CustomPolicyProvider(AttrCheckProtocol, t.Protocol):
         pre-trained weights into it.
         """
         raise NotImplementedError
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        return super().__subclasshook__(other)

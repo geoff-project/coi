@@ -12,7 +12,7 @@ import sys
 import typing as t
 from types import SimpleNamespace
 
-import gym
+import gymnasium as gym
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot

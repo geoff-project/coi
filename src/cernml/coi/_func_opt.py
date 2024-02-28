@@ -186,6 +186,7 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         return None
 
 
+@FunctionOptimizable.register
 class BaseFunctionOptimizable(BaseProblem, t.Generic[ParamType]):
     """ABC that implements the `FunctionOptimizable` protocol.
 
@@ -248,9 +249,3 @@ class BaseFunctionOptimizable(BaseProblem, t.Generic[ParamType]):
     def override_skeleton_points(self) -> list[float] | None:
         """See `FunctionOptimizable.override_skeleton_points()`."""  # noqa: D402
         return None
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if issubclass(other, FunctionOptimizable):  # type: ignore[misc]
-            return True
-        return super().__subclasshook__(other)

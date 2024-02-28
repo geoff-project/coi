@@ -12,7 +12,7 @@
 """Test the inheritance chain of the package."""
 
 import numpy as np
-from gym.spaces import Box
+from gymnasium.spaces import Box
 
 from cernml import coi
 

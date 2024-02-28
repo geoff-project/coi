@@ -9,7 +9,7 @@
 import logging
 import typing as t
 
-import gym
+import gymnasium as gym
 
 try:
     import importlib_metadata

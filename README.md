@@ -84,7 +84,7 @@ more fully featured version of the code below.)
 
 ```python
 # my_project/__init__.py
-import gym
+import gymnasium as gym
 import numpy as np
 from cernml import coi
 

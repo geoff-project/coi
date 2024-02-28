@@ -12,7 +12,7 @@
 
 import typing as t
 
-import gym
+import gymnasium as gym
 import matplotlib.figure
 import numpy as np
 from matplotlib import pyplot

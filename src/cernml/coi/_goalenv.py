@@ -178,6 +178,8 @@ class GoalEnv(gym.Env):
 
 
 try:
-    from gymnasium_robotics import GoalEnv  # type: ignore[import-not-found, no-redef]
+    from gymnasium_robotics import (  # type: ignore[no-redef, import-not-found]  # noqa: LN002
+        GoalEnv,
+    )
 except ImportError:
     pass

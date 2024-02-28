@@ -8,17 +8,21 @@
 
 import typing as t
 
-import gym
+import gymnasium as gym
 import numpy as np
 from scipy.optimize import LinearConstraint, NonlinearConstraint
 
 from .._single_opt import Constraint, SingleOptimizable
+from .._typeguards import is_single_optimizable
 from ._generic import assert_range, is_box, is_reward
 
 
 def check_single_optimizable(opt: SingleOptimizable, warn: bool = True) -> None:
     """Check the run-time invariants of the given interface."""
     _ = warn  # Flag is currently unused, keep it for forward compatibility.
+    assert is_single_optimizable(
+        opt
+    ), f"doesn't implement the SingleOptimizable API: {opt!r}"
     assert_optimization_space(opt)
     assert_range(opt.objective_range, "objective")
     assert_constraints(opt.constraints)
@@ -80,7 +84,12 @@ def assert_matching_names(opt: SingleOptimizable) -> None:
         assert not isinstance(
             opt.param_names, str
         ), f"param names {opt.param_names} must not be a single string"
-        expected = np.prod(opt.optimization_space.shape)
+        opt_space = opt.optimization_space
+        shape: t.Optional[tuple[int, ...]] = getattr(opt_space, "shape", None)
+        assert (
+            shape is not None
+        ), f"param names require optimization space with a shape: {opt_space!r}"
+        expected = int(np.prod(shape))
         assert (
             len(opt.param_names) == expected
         ), f"expected {expected} parameter names, got {len(opt.param_names)}"
@@ -107,7 +116,12 @@ def assert_opt_returned_values(opt: SingleOptimizable) -> None:
     params = opt.get_initial_params()
     assert params in opt.optimization_space, "parameters outside of space"
     assert isinstance(params, np.ndarray), "parameters must be NumPy array"
-    loss = opt.compute_single_objective(opt.optimization_space.sample())
-    assert is_reward(loss), "loss must be a float or integer"
+    params = opt.optimization_space.sample()
     low, high = opt.objective_range
-    assert low <= loss <= high, f"loss is out of range [{low}, {high}]: {loss}"
+    loss = opt.compute_single_objective(params)
+    assert is_reward(loss), "loss must be a float or integer"
+    assert is_reward(low), "loss range must be float: {low!r}"
+    assert is_reward(high), "loss range must be float: {high!r}"
+    assert (
+        float(low) <= float(loss) <= float(high)
+    ), f"loss is out of range [{low}, {high}]: {loss!r}"

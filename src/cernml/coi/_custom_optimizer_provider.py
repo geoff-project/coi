@@ -68,7 +68,3 @@ class CustomOptimizerProvider(AttrCheckProtocol, t.Protocol):
         other.
         """
         return {}
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        return super().__subclasshook__(other)

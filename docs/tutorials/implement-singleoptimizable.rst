@@ -49,7 +49,7 @@ and importing a few things we will need later (and only those things):
     import time
     import typing as t
 
-    import gym
+    import gymnasium as gym
     import numpy as np
     from cernml import coi
     from pyjapc import PyJapc
@@ -487,7 +487,7 @@ We start out by modifying a few lines of code we've already written:
 .. code-block:: diff
 
       # coi_example/env.py
-      import gym
+      import gymnasium as gym
       import numpy as np
       from cernml import coi
     + from matplotlib import pyplot
@@ -607,7 +607,7 @@ the previous code:
 .. code-block:: diff
 
       # coi_example/env.py
-      import gym
+      import gymnasium as gym
       import numpy as np
       from cernml import coi
       from matplotlib import pyplot

@@ -4,22 +4,51 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
+# pylint: disable = too-many-ancestors
+
 """Interfaces that combine two or more base interfaces."""
 
+from __future__ import annotations
+
+import sys
 import typing as t
 from abc import ABCMeta
 
-import numpy as np
+from gymnasium.core import ActType, Env, ObsType
 
+from ._extra_envs import InfoDict
 from ._goalenv import GoalEnv
-from ._single_opt import SingleOptimizable
+from ._single_opt import ParamType, SingleOptimizable
 
-InfoDict = t.Dict[str, t.Any]
-# TODO: Use t.TypedDict with Python 3.8.
-GoalObs = t.Dict[str, np.ndarray]
+if sys.version_info < (3, 11):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
+
+__all__ = (
+    "ActType",
+    "GoalObs",
+    "GoalType",
+    "InfoDict",
+    "ObsType",
+    "OptGoalEnv",
+    "ParamType",
+    "SeparableGoalEnv",
+    "SeparableOptGoalEnv",
+)
+
+GoalType = t.TypeVar("GoalType")  # pylint: disable = invalid-name
 
 
-class SeparableGoalEnv(GoalEnv):
+class GoalObs(TypedDict, t.Generic[GoalType, ObsType]):
+    """Type annotation for the observation type of `.GoalEnv`."""
+
+    observation: ObsType
+    desired_goal: GoalType
+    achieved_goal: GoalType
+
+
+class SeparableGoalEnv(GoalEnv, Env[GoalObs[ObsType, GoalType], ActType]):
     """A multi-goal environment whose calculations nicely separate.
 
     This interface is superficially similar to `~gym.GoalEnv`, but
@@ -42,24 +71,28 @@ class SeparableGoalEnv(GoalEnv):
     environment.
     """
 
-    def step(self, action: np.ndarray) -> t.Tuple[GoalObs, float, bool, InfoDict]:
+    def step(
+        self, action: ActType
+    ) -> tuple[GoalObs[ObsType, GoalType], t.SupportsFloat, bool, bool, InfoDict]:
         """Implementation of `gym.Env.step()`.
 
         This calls in turn the three new abstract methods:
-        `compute_observation()`, `~gym.GoalEnv.compute_reward()`, and
-        `compute_done()`.
+        `compute_observation()`, `~gym.GoalEnv.compute_reward()`,
+        `compute_terminated()` and `compute_truncated()`.
         """
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
-        reward = self.compute_reward(
-            obs["achieved_goal"],
-            obs["desired_goal"],
-            info,
-        )
-        done = self.compute_done(obs, reward, info)
-        return obs, reward, done, info
+        achieved_goal = obs["achieved_goal"]
+        desired_goal = obs["desired_goal"]
+        reward = self.compute_reward(achieved_goal, desired_goal, info)
+        info["reward"] = reward
+        terminated = self.compute_terminated(achieved_goal, desired_goal, info)
+        truncated = self.compute_truncated(achieved_goal, desired_goal, info)
+        return obs, reward, terminated, truncated, info
 
-    def compute_observation(self, action: np.ndarray, info: InfoDict) -> GoalObs:
+    def compute_observation(
+        self, action: ActType, info: InfoDict
+    ) -> GoalObs[ObsType, GoalType]:
         """Compute the next observation if *action* is taken.
 
         This should encapsulate all state transitions of the
@@ -78,34 +111,13 @@ class SeparableGoalEnv(GoalEnv):
         """
         raise NotImplementedError()
 
-    def compute_done(self, obs: GoalObs, reward: float, info: InfoDict) -> bool:
-        """Compute whether the episode ends in this step.
 
-        This externalizes the determination of the end of episode. This
-        function should be free of side-effects or modifications of
-        *self*. In particular, it must be possible to call
-        ``env.compute_done(obs, reward, {})`` multiple times and always
-        expect the same result.
-
-        If you want to indicate that the episode has ended in a success,
-        consider setting ``info["success"] = True``.
-
-        Args:
-            obs: The observation calculated by `~gym.Env.reset()` or
-                `compute_observation()`.
-            reward: The observation calculated by
-                `~gym.GoalEnv.compute_reward()`.
-            info: an info dictionary with additional information. It may
-                or may not have been passed to
-                `~gym.GoalEnv.compute_reward()` before.
-
-        Returns:
-            True if the episode has ended, False otherwise.
-        """
-        raise NotImplementedError()
-
-
-class OptGoalEnv(GoalEnv, SingleOptimizable, metaclass=ABCMeta):
+class OptGoalEnv(
+    GoalEnv,
+    Env[GoalObs[ObsType, GoalType], ActType],
+    SingleOptimizable[ParamType],
+    metaclass=ABCMeta,
+):
     """An optimizable multi-goal environment.
 
     This is an intersection of `~gym.GoalEnv` and `SingleOptimizable`.
@@ -120,7 +132,11 @@ class OptGoalEnv(GoalEnv, SingleOptimizable, metaclass=ABCMeta):
         return NotImplemented
 
 
-class SeparableOptGoalEnv(SeparableGoalEnv, SingleOptimizable, metaclass=ABCMeta):
+class SeparableOptGoalEnv(
+    SeparableGoalEnv[ObsType, GoalType, ActType],
+    SingleOptimizable[ParamType],
+    metaclass=ABCMeta,
+):
     """An optimizable and separable multi-goal environment.
 
     This is an intersection of `SeparableGoalEnv` and
