@@ -13,6 +13,7 @@
 
 import functools
 import typing as t
+from abc import ABCMeta
 from collections.abc import Mapping
 
 if t.TYPE_CHECKING:
@@ -57,7 +58,8 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
         #    `typing._get_protocol_attrs()` would find that as
         #    a protocol method.
         if name == "AttrCheckProtocol" and bases == (t.Protocol,):
-            pass
+            namespace["_is_protocol"] = True
+            namespace["_is_runtime_protocol"] = False
         elif not namespace.get("_is_protocol", False):
             namespace["_is_protocol"] = any(b is AttrCheckProtocol for b in bases)
         namespace.setdefault("__subclasshook__", _proto_hook)
@@ -72,7 +74,7 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
             cls.__protocol_attrs__: set[str] = attrs
 
     def __instancecheck__(cls, instance: t.Any) -> bool:
-        if cls is t.Protocol:
+        if cls is AttrCheckProtocol:
             return type.__instancecheck__(cls, instance)
         if not getattr(cls, "_is_protocol", False):
             # i.e., it's a concrete subclass of a protocol
@@ -82,9 +84,18 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
                 "Instance and class checks can only be used with"
                 " @runtime_checkable protocols"
             )
-        if super().__instancecheck__(instance):
+        # Skip _ProtocolMeta.__instancecheck__, it runs through the
+        # attribute list with the primitive test we want to avoid.
+        if ABCMeta.__instancecheck__(cls, instance):
             return True
         return attrs_match(cls, instance)
+
+    def __subclasscheck__(cls, other: type) -> bool:
+        # Do not let `AttrCheckProtocol` itself go through the
+        # `Protocol` machinery!
+        if cls is AttrCheckProtocol:
+            return type.__subclasscheck__(cls, other)
+        return super().__subclasscheck__(other)
 
     def __dir__(cls) -> t.Iterable[str]:
         # Include protocol members that only exist as annotations.
@@ -225,10 +236,14 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
     """
     members = getattr(cls, "__proto_classmethods__", None)
     if members is None:
+        # Access the attributes via the class dictionary; access
+        # via `getattr()` would bind them and give us bound-method
+        # objects, not classmethod objects!
+        cvars = _get_dunder_dict_of_class(cls)
         members = set()
-        for attr in non_callable_proto_members(cls):
+        for attr in cls.__protocol_attrs__:
             try:
-                is_classmethod = isinstance(getattr(cls, attr, None), classmethod)
+                is_classmethod = isinstance(cvars.get(attr, None), classmethod)
             except Exception as e:
                 raise TypeError(
                     f"Failed to determine whether protocol member {attr!r} "
@@ -327,40 +342,15 @@ class AttrCheckProtocol(t.Protocol, metaclass=AttrCheckProtocolMeta):
 
     A regular method in place of a classmethod is rejected:
 
-        >>> class Bad1:
+        >>> class Bad:
         ...     def meth(self): pass
         ...     def c_meth(self): pass
         ...     attr = {}
         ...
-        >>> isinstance(Bad1(), MyProtocol)
+        >>> isinstance(Bad(), MyProtocol)
         False
-        >>> issubclass(Bad1, MyProtocol)
-        False
-        >>> class Bad1:
-        ...     def meth(self): pass
-        ...     def c_meth(self): pass
-        ...     attr = {}
-        ...
-        >>> isinstance(Bad1(), MyProtocol)
-        False
-        >>> issubclass(Bad1, MyProtocol)
-        False
-        >>> class Bad1:
-        ...     def meth(self): pass
-        ...     def c_meth(self): pass
-        ...     attr = {}
-        ...
-        >>> isinstance(Bad1(), MyProtocol)
-        False
-        >>> issubclass(Bad1, MyProtocol)
-        False
-        >>> class Bad1:
-        ...     def meth(self): pass
-        ...     def c_meth(self): pass
-        ...     attr = {}
-        ...
-        >>> isinstance(Bad1(), MyProtocol)
-        False
-        >>> issubclass(Bad1, MyProtocol)
+        >>> issubclass(Bad, MyProtocol)
         False
     """
+
+    __slots__ = ()
