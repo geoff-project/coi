@@ -13,7 +13,7 @@ from abc import abstractmethod
 
 import numpy as np
 
-from ._abc_helpers import AttrCheckProtocol
+from ._machinery import AttrCheckProtocol
 
 
 @t.runtime_checkable

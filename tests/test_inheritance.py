@@ -6,17 +6,17 @@
 
 """Test the inheritance chain of the package."""
 
+import typing as t
 from collections.abc import Sequence
 from types import new_class
-from typing import Type
 
-import gymnasium as gym
 import pytest
+from gymnasium import Env
 
 from cernml import coi
 
 
-class ConcreteEnv(gym.Env):
+class ConcreteEnv(Env):
     pass
 
 
@@ -66,17 +66,17 @@ def _assert_env_subclass(subclass: type, superclasses: Sequence[type]) -> None:
         )
 
 
-def _is_abstract_base_class(abc: type, env_class: Type[gym.Env]) -> bool:
+def _is_abstract_base_class(abc: type, env_class: type[Env]) -> bool:
     mock = new_class("NoDirectInheritance", bases=(coi.SingleOptimizable, env_class))
     return issubclass(mock, abc)
 
 
 def test_env_problem() -> None:
-    assert issubclass(gym.Env, coi.Problem)
+    assert coi.is_problem_class(Env)
 
 
 def test_optenv_is_abstract() -> None:
-    assert _is_abstract_base_class(coi.OptEnv, gym.Env)
+    assert _is_abstract_base_class(coi.OptEnv, Env)
 
 
 def test_optgoalenv_is_abstract() -> None:
@@ -92,31 +92,31 @@ def test_sepoptgoalenv_is_abstract() -> None:
 
 
 def test_env() -> None:
-    _assert_env_subclass(ConcreteEnv, [gym.Env])
+    _assert_env_subclass(ConcreteEnv, [Env])
 
 
 def test_optenv() -> None:
     _assert_env_subclass(
         ConcreteOptEnv,
-        [gym.Env, coi.SingleOptimizable, coi.OptEnv],
+        [Env, coi.SingleOptimizable, coi.OptEnv],
     )
 
 
 def test_goalenv() -> None:
-    _assert_env_subclass(ConcreteGoalEnv, [gym.Env, coi.GoalEnv])
+    _assert_env_subclass(ConcreteGoalEnv, [Env, coi.GoalEnv])
 
 
 def test_optgoalenv() -> None:
     _assert_env_subclass(
         ConcreteOptGoalEnv,
-        [gym.Env, coi.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
+        [Env, coi.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
     )
 
 
 def test_sepenv() -> None:
     _assert_env_subclass(
         ConcreteSeparableEnv,
-        [gym.Env, coi.SeparableEnv],
+        [Env, coi.SeparableEnv],
     )
 
 
@@ -124,7 +124,7 @@ def test_sepoptenv() -> None:
     _assert_env_subclass(
         ConcreteSeparableOptEnv,
         [
-            gym.Env,
+            Env,
             coi.SingleOptimizable,
             coi.OptEnv,
             coi.SeparableEnv,
@@ -138,7 +138,7 @@ def test_sepgoalenv() -> None:
     # methods are semantically different.
     _assert_env_subclass(
         ConcreteSeparableGoalEnv,
-        [gym.Env, coi.GoalEnv, coi.SeparableGoalEnv],
+        [Env, coi.GoalEnv, coi.SeparableGoalEnv],
     )
 
 
@@ -148,7 +148,7 @@ def test_sepoptgoalenv() -> None:
     _assert_env_subclass(
         ConcreteSeparableOptGoalEnv,
         [
-            gym.Env,
+            Env,
             coi.GoalEnv,
             coi.SingleOptimizable,
             coi.OptEnv,
@@ -160,9 +160,9 @@ def test_sepoptgoalenv() -> None:
 
 
 def test_failures() -> None:
-    assert not issubclass(int, gym.Env)
+    assert not issubclass(int, Env)
     assert not issubclass(int, coi.GoalEnv)
-    assert not issubclass(int, coi.SingleOptimizable)
+    assert not issubclass(int, coi.SingleOptimizable)  # type: ignore[misc]
     assert not issubclass(int, coi.OptEnv)
     assert not issubclass(int, coi.OptGoalEnv)
     assert not issubclass(int, coi.SeparableEnv)
@@ -174,17 +174,19 @@ def test_failures() -> None:
 @pytest.mark.parametrize(
     "cls", [coi.OptEnv, coi.OptGoalEnv, coi.SeparableOptEnv, coi.SeparableOptGoalEnv]
 )
-def test_subclasses_arent_magic(cls: Type[coi.Problem]) -> None:
+def test_subclasses_arent_magic(cls: type[coi.Problem]) -> None:
     # pylint: disable = too-few-public-methods
     class Subclass(cls):  # type: ignore[misc, valid-type]
         pass
 
-    class ImplementsProtocol(*cls.__bases__):  # type: ignore[misc]
+    bases = [b for b in cls.__bases__ if b is not t.Generic]
+
+    class ImplementsProtocol(*bases):  # type: ignore[misc]
         reset = ...
         step = ...
         get_initial_params = ...
         compute_single_objective = ...
 
-    for base in cls.__bases__:
+    for base in bases:
         assert issubclass(ImplementsProtocol, base)
     assert not issubclass(ImplementsProtocol, Subclass)

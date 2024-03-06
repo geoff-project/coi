@@ -84,7 +84,7 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
             )
         if super().__instancecheck__(instance):
             return True
-        return _attrs_match(cls, instance)
+        return attrs_match(cls, instance)
 
     def __dir__(cls) -> t.Iterable[str]:
         # Include protocol members that only exist as annotations.
@@ -103,32 +103,55 @@ def _proto_hook(cls: AttrCheckProtocolMeta, other: type) -> t.Any:
     if not isinstance(other, type):
         # Same error message as for issubclass(1, int).
         raise TypeError("issubclass() arg 1 must be a class")
-    if not _attrs_match(cls, other):
+    if not attrs_match(cls, other):
         return NotImplemented
     return True
 
 
-def _attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
-    getattr_static = _lazy_load_getattr_static()
+def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
+    """Check if the attributes of *obj* match those of *proto*.
+
+    This is the core logic of `AttrCheckProtocol`, called by both
+    `isinstance()` and `issubclass()`. It iterates over all protocol
+    members (which have been cached at class creation) and attempts to
+    access each one on *obj* via `inspect.getattr_static()`.
+
+    If *obj* is itself a protocol, its annotations (and those of its
+    base classes) are checked as well.
+
+    If an attribute is a method on the protocol, any object except
+    `None` is accepted on *obj*.
+
+    If an attribute is a classmethod on the protocol, it must be one on
+    *obj* as well.
+
+    If an attribute is neither a method nor a classmethod, any value is
+    accepted on *obj*.
+    """
+    getattr_static = lazy_load_getattr_static()
     for attr in proto.__protocol_attrs__:
-        is_classmethod = attr in _proto_classmethods(proto)
+        is_classmethod = attr in proto_classmethods(proto)
         try:
             val = getattr_static(
                 type(obj) if is_classmethod and not isinstance(obj, type) else obj, attr
             )
         except AttributeError:
-            if not _is_subprotocol(obj) or not _attr_in_annotations(obj, attr):
+            if not is_subprotocol(obj) or not attr_in_annotations(obj, attr):
                 return False
         else:
             if is_classmethod:
                 if not isinstance(val, classmethod):
                     return False
-            elif val is None and attr not in _non_callable_proto_members(proto):
+            elif val is None and attr not in non_callable_proto_members(proto):
                 return False
     return True
 
 
-def _is_subprotocol(obj: object) -> "TypeGuard[AttrCheckProtocolMeta]":
+def is_subprotocol(obj: object) -> "TypeGuard[AttrCheckProtocolMeta]":
+    """Check whether *obj* is a subclass of `Protocol`.
+
+    This has been copied from Python 3.12+ `_ProtocolMeta.__new__()`.
+    """
     return (
         isinstance(obj, type)
         and issubclass(obj, t.Generic)  # type: ignore[arg-type]
@@ -136,7 +159,15 @@ def _is_subprotocol(obj: object) -> "TypeGuard[AttrCheckProtocolMeta]":
     )
 
 
-def _attr_in_annotations(proto: AttrCheckProtocolMeta, attr: str) -> bool:
+def attr_in_annotations(proto: AttrCheckProtocolMeta, attr: str) -> bool:
+    """Check if *proto* or anything in its MRO annotate *attr*.
+
+    This check is necessary because attributes of a protocol may be
+    merely annotated (but not defined), in which case `getattr_static()`
+    won't find them.
+
+    This code is modified from Python 3.12+ `typing._proto_hook()`.
+    """
     for base in _static_mro(proto):
         try:
             annotations = _static_annotations(base)
@@ -147,8 +178,20 @@ def _attr_in_annotations(proto: AttrCheckProtocolMeta, attr: str) -> bool:
     return False
 
 
-def _non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
-    """Reproduction of Python 3.12+ `@runtime_checkable`."""
+def non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
+    """Lazy collection of any protocol members that aren't methods.
+
+    Note that this does not include classmethods. Classmethod objects
+    themselves are not callable; however, we collect them with
+    `getattr(cls, name)`. This returns a bound method object, which _is_
+    callable!
+
+    The result is cached in the class's `__non_callable_proto_members__`
+    attribute. If it already exists (which is the case on Python 3.12+),
+    it is returned directly.
+
+    This code is modified from Python 3.12+ `@runtime_checkable`.
+    """
     members = getattr(cls, "__non_callable_proto_members__", None)
     if members is None:
         members = set()
@@ -166,12 +209,24 @@ def _non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
     return members
 
 
-def _proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
-    """Reproduction of Python 3.12+ `@runtime_checkable`."""
+def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
+    """Lazy collection of any protocol classmethods.
+
+    Whether an object is a classmethod is tested by `isinstance()` check
+    against `classmethod`. Note that at least on CPython, this is true
+    even for implicit classmethods like `object.__init_subclass__()` and
+    `object.__class_getitem__()`.
+
+    The result is cached in the class's `__proto_classmethods__`
+    attribute.
+
+    This code is based on `non_callable_proto_members()`, which is in
+    turn modified from Python 3.12+ `@runtime_checkable`.
+    """
     members = getattr(cls, "__proto_classmethods__", None)
     if members is None:
         members = set()
-        for attr in _non_callable_proto_members(cls):
+        for attr in non_callable_proto_members(cls):
             try:
                 is_classmethod = isinstance(getattr(cls, attr, None), classmethod)
             except Exception as e:
@@ -186,7 +241,14 @@ def _proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
 
 
 @functools.cache
-def _lazy_load_getattr_static() -> "_GetAttr":
+def lazy_load_getattr_static() -> "_GetAttr":
+    """Lazy loader for `inspect.getattr_static()`.
+
+    This delays loading the `inspect` module until the first
+    instance/subclass check against an `AttrCheckProtocol`, since the
+    module is rather heavy. This has been copied from the Python 3.12+
+    `typing` module.
+    """
     # Copied from typing.py.
     from inspect import getattr_static
 
@@ -238,7 +300,7 @@ class AttrCheckProtocol(t.Protocol, metaclass=AttrCheckProtocolMeta):
         >>> from typing import Any, runtime_checkable
         ...
         >>> @runtime_checkable
-        >>> class MyProtocol(AttrCheckProtocol):
+        ... class MyProtocol(AttrCheckProtocol):
         ...     def meth(self): pass
         ...     @classmethod
         ...     def c_meth(cls): pass

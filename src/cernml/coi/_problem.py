@@ -14,8 +14,8 @@ import numpy as np
 from gymnasium.envs.registration import EnvSpec
 from gymnasium.utils import seeding
 
-from ._abc_helpers import AttrCheckProtocol
 from ._machine import Machine
+from ._machinery import AttrCheckProtocol
 
 if t.TYPE_CHECKING:
     from typing_extensions import Self

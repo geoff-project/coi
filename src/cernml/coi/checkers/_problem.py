@@ -65,14 +65,14 @@ def assert_no_undeclared_render(
         >>> from warnings import simplefilter
         >>> simplefilter("error")
         >>> class Foo(Problem):
-        ...     def render(self, mode):
+        ...     def render(self):
         ...         return None
         >>> assert_no_undeclared_render(Foo())
         Traceback (most recent call last):
         ...
         AssertionError: ... doesn't raise NotImplementedError
         >>> class Foo(Problem):
-        ...     def render(self, mode):
+        ...     def render(self):
         ...         raise TypeError()
         >>> assert_no_undeclared_render(Foo(), warn=False)
         >>> assert_no_undeclared_render(Foo())
@@ -80,8 +80,8 @@ def assert_no_undeclared_render(
         ...
         UserWarning: ... raises instead: TypeError()
         >>> class Foo(Problem):
-        ...     def render(self, mode):
-        ...         return super().render(mode)
+        ...     def render(self):
+        ...         return super().render()
         >>> assert_no_undeclared_render(Foo())
     """
     # pylint: disable = broad-except
@@ -129,10 +129,12 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
         AssertionError: render mode 'ansi' declared ...
         >>> class Foo(Problem):
         ...     metadata = {"render.modes": ["custom"]}
-        ...     def render(self, mode):
-        ...         if mode == "custom":
+        ...     def __init__(self, render_mode=None):
+        ...         self.render_mode = render_mode
+        ...     def render(self):
+        ...         if self.render_mode == "custom":
         ...             return None
-        ...         return super().render(mode)
+        ...         return super().render()
         >>> assert_execute_render(Foo())
     """
     additional_checks = get_render_mode_checks()

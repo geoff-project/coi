@@ -120,6 +120,8 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
+    # TODO: Change this to pass the reward instead of the goal. Keep
+    # harmony with GoalEnv in mind.
     def compute_terminated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 

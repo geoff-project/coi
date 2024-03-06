@@ -6,12 +6,15 @@
 
 """Test the check() function if matplotlib is not importable."""
 
+from __future__ import annotations
+
 import sys
 import typing as t
 
 import gymnasium as gym
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 
 @pytest.fixture
@@ -36,18 +39,19 @@ def no_matplotlib() -> t.Iterator[None]:  # noqa: PT004
 def test_sep_env(no_matplotlib: None) -> None:
     from cernml import coi
 
-    class SeparableParabola(coi.SeparableEnv):
+    class SeparableParabola(coi.SeparableEnv[NDArray[np.double], NDArray[np.double]]):
         action_space = gym.spaces.Box(-1, 1, (2,))
         observation_space = gym.spaces.Box(-2, 2, (2,))
         reward_range = (-np.sqrt(16.0), 0.0)
-        metadata: t.ClassVar[t.Mapping[str, t.Any]] = {
+        metadata: dict[str, t.Any] = {
             "render.modes": ["ansi"],
             "cern.machine": coi.Machine.NO_MACHINE,
             "cern.japc": False,
             "cern.cancellable": False,
         }
 
-        def __init__(self) -> None:
+        def __init__(self, *, render_mode: str | None = None) -> None:
+            self.render_mode = render_mode
             self.pos = self.action_space.sample()
             self.goal = self.action_space.sample()
 
@@ -55,12 +59,16 @@ def test_sep_env(no_matplotlib: None) -> None:
         def distance(self) -> float:
             return float(np.linalg.norm(self.pos - self.goal))
 
-        def reset(self) -> np.ndarray:
+        def reset(
+            self, seed: int | None = None, options: coi.InfoDict | None = None
+        ) -> tuple[NDArray[np.double], coi.InfoDict]:
             self.pos = self.action_space.sample()
             self.goal = self.action_space.sample()
-            return self.pos - self.goal
+            return self.pos - self.goal, {}
 
-        def compute_observation(self, action: np.ndarray, info: t.Dict) -> np.ndarray:
+        def compute_observation(
+            self, action: NDArray[np.double], info: coi.InfoDict
+        ) -> NDArray[np.double]:
             self.pos += action
             return np.clip(
                 self.pos - self.goal,
@@ -69,20 +77,30 @@ def test_sep_env(no_matplotlib: None) -> None:
             )
 
         def compute_reward(
-            self, obs: np.ndarray, goal: None, info: t.Dict[str, t.Any]
+            self, obs: NDArray[np.double], goal: None, info: coi.InfoDict
         ) -> float:
             return max(-np.linalg.norm(obs), self.reward_range[0])
 
-        def compute_done(
-            self, obs: np.ndarray, reward: float, info: t.Dict[str, t.Any]
+        def compute_terminated(
+            self,
+            achieved_goal: NDArray[np.double],
+            desired_goal: None,
+            info: coi.InfoDict,
         ) -> bool:
-            success = self.distance < 0.05
-            return success or obs not in self.observation_space
+            return self.distance < 0.05
 
-        def render(self, mode: str = "human") -> t.Any:
-            if mode == "ansi":
+        def compute_truncated(
+            self,
+            achieved_goal: NDArray[np.double],
+            desired_goal: None,
+            info: coi.InfoDict,
+        ) -> bool:
+            return achieved_goal not in self.observation_space
+
+        def render(self) -> t.Any:
+            if self.render_mode == "ansi":
                 return f"{self.pos} -> {self.goal}"
-            return super().render(mode)
+            return super().render()
 
     assert no_matplotlib is None
     coi.check(SeparableParabola(), warn=False)

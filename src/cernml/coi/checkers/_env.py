@@ -6,7 +6,6 @@
 
 """Checker for the `gymnasium.Env` ABC."""
 
-import typing as t
 import warnings
 
 import numpy as np
@@ -71,13 +70,13 @@ def assert_env_returned_values(env: Env) -> None:
     Example:
         >>> class Foo:
         ...     reward_range = (-1.0, 1.0)
-        ...     observation_space = gym.spaces.Box(-1, 1, ())
+        ...     observation_space = spaces.Box(-1, 1, ())
         ...     action_space = observation_space
         ...     @property
         ...     def unwrapped(self):
         ...         return self
-        ...     def reset(self):
-        ...         return np.array(0.0, dtype=np.float32)
+        ...     def reset(self, seed=None, options=None):
+        ...         return np.array(0.0, dtype=np.float32), {}
         ...     def step(self, action):
         ...         return action, 0.0, False, False, {}
         >>> assert_env_returned_values(Foo())
@@ -126,20 +125,15 @@ def assert_env_returned_values(env: Env) -> None:
 
 def assert_env_no_nan(env: Env) -> None:
     """Check that the environment never produces infinity or NaN."""
-
-    def _check_val(val: t.SupportsFloat) -> np.bool_:
-        assert isinstance(val, t.SupportsFloat), f"not a float reward: {val!r}"
-        return np.isfinite(float(val))
-
     terminated = truncated = True
     for _ in range(10):
         if terminated or truncated:
             obs, _ = env.reset()
         if is_goal_env(env):
             obs = obs["observation"]
-        assert _check_val(obs), f"NaN or inf in observation: {obs}"
+        assert np.all(np.isfinite(obs)), f"NaN or inf in observation: {obs}"
         obs, reward, terminated, truncated, _ = env.step(env.action_space.sample())
-        assert _check_val(reward), f"NaN or inf in reward: {reward}"
+        assert np.isfinite(float(reward)), f"NaN or inf in reward: {reward}"
 
 
 def warn_observation_space(space: spaces.Space, warn: int = True) -> None:
@@ -156,7 +150,7 @@ def warn_observation_space(space: spaces.Space, warn: int = True) -> None:
     """
     warn = bump_warn_arg(warn)
     if is_box(space):
-        warn_observation_space(space, warn=warn)
+        warn_flat_observation_space(space, warn=warn)
         return
     assert isinstance(space, spaces.Dict), (
         f"for now, observation spaces must be Box or "
@@ -169,7 +163,7 @@ def warn_observation_space(space: spaces.Space, warn: int = True) -> None:
     assert is_box(
         nested_space
     ), f"observation_space['observation'] is not a Box: {nested_space!r}"
-    warn_observation_space(nested_space, warn=warn)
+    warn_flat_observation_space(nested_space, warn=warn)
 
 
 def warn_flat_observation_space(space: spaces.Box, warn: int = True) -> None:
@@ -189,7 +183,7 @@ def warn_flat_observation_space(space: spaces.Box, warn: int = True) -> None:
         Traceback (most recent call last):
         ...
         UserWarning: ... (and have dtype uint8), or ...
-        >>> warn_observation_space(Box(-1, 1, (10, 10, 10), np.uint8))
+        >>> warn_observation_space(Box(0, 1, (10, 10, 10), np.uint8))
         Traceback (most recent call last):
         ...
         UserWarning: ... (and have bounds [0, 255]), or ...

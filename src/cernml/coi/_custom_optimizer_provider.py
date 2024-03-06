@@ -9,7 +9,7 @@
 import typing as t
 from abc import abstractmethod
 
-from ._abc_helpers import AttrCheckProtocol
+from ._machinery import AttrCheckProtocol
 
 if t.TYPE_CHECKING:
     import cernml.optimizers
