@@ -70,7 +70,6 @@ def assert_is_good_config(config: Config, warn: int = True) -> None:
         )
         for field in config.fields():
             if not isinstance(field.value, good_types):
-                print(warn)
                 warnings.warn(
                     warning_template.format(
                         kind="value", value=field.value, dest=field.dest
