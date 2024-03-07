@@ -12,16 +12,24 @@ This only is used if `gymnasium-robotics` isn't installed.
 
 from abc import abstractmethod
 from contextlib import suppress
-from typing import Any, Optional, SupportsFloat
+from typing import Any, Generic, Optional, SupportsFloat, TypeVar, Union
 
 import gymnasium as gym
 from gymnasium import error
-from gymnasium.core import ObsType
+from gymnasium.core import ActType, ObsType
 
-__all__ = ("GoalEnv",)
+__all__ = (
+    "GoalEnv",
+    "GoalType",
+)
+
+GoalType = TypeVar("GoalType")  # pylint: disable = invalid-name
 
 
-class GoalEnv(gym.Env):
+class GoalEnv(
+    gym.Env[dict[str, Union[ObsType, GoalType]], ActType],
+    Generic[ObsType, GoalType, ActType],
+):
     r"""A goal-based environment.
 
     It functions just as any regular Gymnasium environment but it
@@ -42,13 +50,15 @@ class GoalEnv(gym.Env):
       on the achieved and desired goal, as well as extra information.
     """
 
+    observation_space: gym.spaces.Dict
+
     @abstractmethod
     def reset(
         self,
         *,
         seed: Optional[int] = None,
         options: Optional[dict] = None,
-    ) -> tuple[ObsType, dict[str, Any]]:
+    ) -> tuple[dict[str, Union[ObsType, GoalType]], dict[str, Any]]:
         """Reset the environment.
 
         In addition, check if the observation space is correct by
@@ -73,7 +83,7 @@ class GoalEnv(gym.Env):
 
     @abstractmethod
     def compute_reward(
-        self, achieved_goal: Any, desired_goal: Any, info: Any
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, Any]
     ) -> SupportsFloat:
         """Compute the step reward.
 
@@ -105,7 +115,7 @@ class GoalEnv(gym.Env):
 
     @abstractmethod
     def compute_terminated(
-        self, achieved_goal: Any, desired_goal: Any, info: Any
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, Any]
     ) -> bool:
         """Compute the step termination.
 
@@ -143,7 +153,7 @@ class GoalEnv(gym.Env):
 
     @abstractmethod
     def compute_truncated(
-        self, achieved_goal: Any, desired_goal: Any, info: Any
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, Any]
     ) -> bool:
         """Compute the step truncation.
 

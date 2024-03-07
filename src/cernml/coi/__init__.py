@@ -52,8 +52,21 @@ from ._configurable import (
 )
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._custom_policy_provider import CustomPolicyProvider, Policy
-from ._extra_envs import InfoDict, OptEnv, SeparableEnv, SeparableOptEnv
-from ._extra_goal_envs import OptGoalEnv, SeparableGoalEnv, SeparableOptGoalEnv
+from ._extra_envs import (
+    ActType,
+    InfoDict,
+    ObsType,
+    OptEnv,
+    SeparableEnv,
+    SeparableOptEnv,
+)
+from ._extra_goal_envs import (
+    GoalObs,
+    GoalType,
+    OptGoalEnv,
+    SeparableGoalEnv,
+    SeparableOptGoalEnv,
+)
 from ._func_opt import BaseFunctionOptimizable, FunctionOptimizable
 from ._goalenv import GoalEnv
 from ._machine import Machine
@@ -76,6 +89,7 @@ from ._typeguards import (
 from .checkers import check
 
 __all__ = [
+    "ActType",
     "AnyOptimizable",
     "BadConfig",
     "BaseFunctionOptimizable",
@@ -90,9 +104,12 @@ __all__ = [
     "DuplicateConfig",
     "FunctionOptimizable",
     "GoalEnv",
+    "GoalObs",
+    "GoalType",
     "HasNpRandom",
     "InfoDict",
     "Machine",
+    "ObsType",
     "OptEnv",
     "OptGoalEnv",
     "Policy",

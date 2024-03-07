@@ -14,10 +14,10 @@ import sys
 import typing as t
 from abc import ABCMeta
 
-from gymnasium.core import ActType, Env, ObsType
+from gymnasium.core import ActType, ObsType
 
 from ._extra_envs import InfoDict
-from ._goalenv import GoalEnv
+from ._goalenv import GoalEnv, GoalType
 from ._single_opt import ParamType, SingleOptimizable
 
 if sys.version_info < (3, 11):
@@ -37,10 +37,8 @@ __all__ = (
     "SeparableOptGoalEnv",
 )
 
-GoalType = t.TypeVar("GoalType")  # pylint: disable = invalid-name
 
-
-class GoalObs(TypedDict, t.Generic[GoalType, ObsType]):
+class GoalObs(TypedDict, t.Generic[ObsType, GoalType]):
     """Type annotation for the observation type of `.GoalEnv`."""
 
     observation: ObsType
@@ -48,7 +46,7 @@ class GoalObs(TypedDict, t.Generic[GoalType, ObsType]):
     achieved_goal: GoalType
 
 
-class SeparableGoalEnv(GoalEnv, Env[GoalObs[ObsType, GoalType], ActType]):
+class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
     """A multi-goal environment whose calculations nicely separate.
 
     This interface is superficially similar to `~gym.GoalEnv`, but
@@ -73,7 +71,9 @@ class SeparableGoalEnv(GoalEnv, Env[GoalObs[ObsType, GoalType], ActType]):
 
     def step(
         self, action: ActType
-    ) -> tuple[GoalObs[ObsType, GoalType], t.SupportsFloat, bool, bool, InfoDict]:
+    ) -> tuple[
+        dict[str, t.Union[ObsType, GoalType]], t.SupportsFloat, bool, bool, InfoDict
+    ]:
         """Implementation of `gym.Env.step()`.
 
         This calls in turn the three new abstract methods:
@@ -81,9 +81,12 @@ class SeparableGoalEnv(GoalEnv, Env[GoalObs[ObsType, GoalType], ActType]):
         `compute_terminated()` and `compute_truncated()`.
         """  # noqa: D402
         info: InfoDict = {}
-        obs = self.compute_observation(action, info)
-        achieved_goal = obs["achieved_goal"]
-        desired_goal = obs["desired_goal"]
+        obs = t.cast(
+            dict[str, t.Union[ObsType, GoalType]],
+            self.compute_observation(action, info),
+        )
+        achieved_goal = t.cast(GoalType, obs["achieved_goal"])
+        desired_goal = t.cast(GoalType, obs["desired_goal"])
         reward = self.compute_reward(achieved_goal, desired_goal, info)
         info["reward"] = reward
         terminated = self.compute_terminated(achieved_goal, desired_goal, info)
@@ -113,9 +116,9 @@ class SeparableGoalEnv(GoalEnv, Env[GoalObs[ObsType, GoalType], ActType]):
 
 
 class OptGoalEnv(
-    GoalEnv,
-    Env[GoalObs[ObsType, GoalType], ActType],
+    GoalEnv[ObsType, GoalType, ActType],
     SingleOptimizable[ParamType],
+    t.Generic[ObsType, GoalType, ActType, ParamType],
     metaclass=ABCMeta,
 ):
     """An optimizable multi-goal environment.
@@ -135,6 +138,7 @@ class OptGoalEnv(
 class SeparableOptGoalEnv(
     SeparableGoalEnv[ObsType, GoalType, ActType],
     SingleOptimizable[ParamType],
+    t.Generic[ObsType, GoalType, ActType, ParamType],
     metaclass=ABCMeta,
 ):
     """An optimizable and separable multi-goal environment.
