@@ -15,6 +15,8 @@ import functools
 import typing as t
 from abc import ABCMeta
 from collections.abc import Mapping
+from contextlib import suppress
+from types import GetSetDescriptorType
 
 if t.TYPE_CHECKING:
     from typing_extensions import TypeGuard
@@ -26,8 +28,7 @@ __all__ = (
 
 
 _static_mro: t.Callable[[type], tuple[type, ...]] = vars(type)["__mro__"].__get__
-_static_annotations: t.Callable[[type], t.Any] = vars(type)["__annotations__"].__get__
-_get_dunder_dict_of_class: t.Callable[[object], dict[str, t.Any]] = vars(type)[
+_get_dunder_dict_of_class: t.Callable[[type], dict[str, object]] = vars(type)[
     "__dict__"
 ].__get__
 
@@ -181,7 +182,7 @@ def attr_in_annotations(proto: AttrCheckProtocolMeta, attr: str) -> bool:
     """
     for base in _static_mro(proto):
         try:
-            annotations = _static_annotations(base)
+            annotations = get_class_annotations(base)
         except AttributeError:
             continue
         if isinstance(annotations, Mapping) and attr in annotations:
@@ -253,6 +254,50 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
                 members.add(attr)
         cls.__proto_classmethods__ = members  # type: ignore[attr-defined]
     return members
+
+
+try:
+    get_class_annotations: t.Callable[[type], dict[str, object]] = vars(type)[
+        "__annotations__"
+    ].__get__
+except KeyError:
+
+    def get_class_annotations(obj: type) -> dict[str, object]:
+        """Safely retrieve annotations from a type object.
+
+        This is copied from `inspect.get_annotations()` for backwards
+        compatibility with Python 3.9. The following changes have been
+        made:
+
+        - remove logic for non-type objects;
+        - remove logic for evaluation of annotations;
+        - replace unsafe `getattr()` with access via the `__dict__`
+          descriptor;
+        - whereas `inspect.get_annotations()` never modifies `obj` and
+          always returns a fresh `dict`, this function only creates
+          a new dict if necessary, and also assigns it to
+          `obj.__annotations__` in that case. This is to be parallel
+          with the Python 3.10 data descriptor `type.__dict__`.
+
+        Note that if the dict cannot be assigned (e.g. because `obj` is
+        a builtin type), we may still end up producing a fresh dict on
+        every call.
+        """
+        obj_dict = _get_dunder_dict_of_class(obj)
+        if obj_dict and hasattr(obj_dict, "get"):
+            ann = obj_dict.get("__annotations__", None)
+            if isinstance(ann, GetSetDescriptorType):
+                # This is the case e.g. when `obj` is `type`.
+                ann = None
+        else:
+            ann = None
+        if ann is None:
+            ann = {}
+            # May raise if `obj` a builtin type.
+            with suppress(TypeError):
+                type.__setattr__(obj, "__annotations__", ann)
+            return ann
+        return t.cast(dict, ann)
 
 
 @functools.cache

@@ -6,6 +6,8 @@
 
 """Provide `Problem`, the most fundamental API of this package."""
 
+from __future__ import annotations
+
 import typing as t
 from abc import ABCMeta
 from types import MappingProxyType

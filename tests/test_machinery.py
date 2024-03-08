@@ -203,3 +203,37 @@ def test_attrs_match_not_classmethod() -> None:
 
     assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl), "subclass"
     assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl()), "instance"
+
+
+@pytest.mark.parametrize(
+    "obj",
+    [
+        type("mock", (), {}),
+        type("mock", (), {"__annotations__": {"a": "int"}}),
+        type("mock", (type("", (), {"__annotations__": {"a": "int"}}),), {}),
+        type("mock", (), {"__dict__": None}),
+    ],
+)
+def get_get_class_annotations(obj: type) -> None:
+    assert "__annotations__" not in vars(obj)
+    res = _machinery.get_class_annotations(obj)
+    ann = vars(obj)["__annotations__"]
+    assert ann == {}
+    assert res is ann
+
+
+def get_get_class_annotations_on_type() -> None:
+    assert "__annotations__" in vars(type)
+    res = _machinery.get_class_annotations(type)
+    res2 = _machinery.get_class_annotations(type)
+    assert res == {} == res2
+    assert res is not res2
+
+
+def get_get_class_annotations_on_object() -> None:
+    assert "__annotations__" not in vars(type)
+    res = _machinery.get_class_annotations(type)
+    res2 = _machinery.get_class_annotations(type)
+    assert "__annotations__" not in vars(type)
+    assert res == {} == res2
+    assert res is not res2
