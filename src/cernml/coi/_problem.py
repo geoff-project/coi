@@ -13,11 +13,11 @@ from abc import ABCMeta
 from types import MappingProxyType
 
 import numpy as np
-from gymnasium.envs.registration import EnvSpec
 from gymnasium.utils import seeding
 
 from ._machine import Machine
 from ._machinery import AttrCheckProtocol
+from .registration import EnvSpec, MinimalEnvSpec
 
 if t.TYPE_CHECKING:
     from typing_extensions import Self
@@ -116,8 +116,6 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
             Additionally, all keys that start with ``"cern."`` are
             reserved for future use.
-        render_mode: TODO
-        spec: TODO
     """
 
     # Subclasses should make `metadata` just a regular dict. This is
@@ -135,8 +133,38 @@ class Problem(AttrCheckProtocol, t.Protocol):
         ),
     )
 
-    render_mode: str | None = None
-    spec: EnvSpec | None = None
+    @property
+    def render_mode(self) -> str | None:
+        """The render mode as determined during initialization.
+
+        This attribute is expected to be set inside ``__init__()`` and
+        then not changed again.
+        """
+        # Hack: We mark this as read-only here, but all sub-protocols
+        # make it writeable again. The reason is that
+        # `gymnasium.Wrapper` defines `render_mode` to be read-only. If
+        # it were settable in `Problem`, wrappers would no longer
+        # considered to implement the protocol.
+        return vars(self).get("render_mode")
+
+    @property
+    def spec(self) -> MinimalEnvSpec | None:
+        """Information on how the problem was initialized.
+
+        This property is usually set by `make()`. You generally should
+        not modify it yourself. Wrappers should `~copy.deepcopy()` the
+        spec of the wrapped environment and make their modifications on
+        the copy.
+        """
+        # Hack: We mark this as read-only here, but all sub-protocols
+        # make it writeable again.
+        # Marking the attribute as read-only also makes it _covariant_,
+        # i.e. subclasses are allowed to return subclasses of
+        # `MinimalEnvSpec` instead of `MinimalEnvSpec` _exactly_. This
+        # allows us to replace `gymnasium.envs.registration.EnvSpec`
+        # with `cernml.coi.registration.EnvSpec`, which is exactly the
+        # same except it calls _our_ `make()` instead of Gymnasium's.
+        return vars(self).get("spec")
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -152,6 +180,7 @@ class Problem(AttrCheckProtocol, t.Protocol):
         - `unwrapped` must continue to behave as expected;
         - calling `close()` again should do nothing.
         """
+        return None  # noqa: RET501
 
     @property
     def unwrapped(self) -> "Problem":

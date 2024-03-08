@@ -71,9 +71,7 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
 
     def step(
         self, action: ActType
-    ) -> tuple[
-        dict[str, t.Union[ObsType, GoalType]], t.SupportsFloat, bool, bool, InfoDict
-    ]:
+    ) -> tuple[dict[str, ObsType | GoalType], t.SupportsFloat, bool, bool, InfoDict]:
         """Implementation of `gym.Env.step()`.
 
         This calls in turn the three new abstract methods:

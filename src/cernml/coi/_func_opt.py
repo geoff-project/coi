@@ -6,6 +6,8 @@
 
 """Definition of the interface for temporal optimization."""
 
+from __future__ import annotations
+
 import typing as t
 from abc import abstractmethod
 
@@ -46,6 +48,8 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
             :mod:`scipy.optimize`. In the future, this might be relaxed
             to allow more optimization algorithms.
     """
+
+    render_mode: str | None = None
 
     objective_range: tuple[float, float] = (-np.inf, np.inf)
     constraints: t.Sequence[Constraint] = []
@@ -134,7 +138,7 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         """
         raise NotImplementedError
 
-    def get_objective_function_name(self) -> t.Optional[str]:
+    def get_objective_function_name(self) -> str | None:
         """Return the name of the objective function.
 
         By default, this method returns the empty string. If it returns
@@ -236,17 +240,17 @@ class BaseFunctionOptimizable(BaseProblem, t.Generic[ParamType]):
         cycle_time: float,
         params: ParamType,
     ) -> float:
-        """See `FunctionOptimizable.compute_function_objective()`."""  # noqa: D402
+        """See `FunctionOptimizable.compute_function_objective`."""
         raise NotImplementedError
 
-    def get_objective_function_name(self) -> t.Optional[str]:
-        """See `FunctionOptimizable.get_objective_function_name()`."""  # noqa: D402
+    def get_objective_function_name(self) -> str | None:
+        """See `FunctionOptimizable.get_objective_function_name`."""
         return None
 
     def get_param_function_names(self) -> list[str]:
-        """See `FunctionOptimizable.get_param_function_names()`."""  # noqa: D402
+        """See `FunctionOptimizable.get_param_function_names`."""
         return []
 
     def override_skeleton_points(self) -> list[float] | None:
-        """See `FunctionOptimizable.override_skeleton_points()`."""  # noqa: D402
+        """See `FunctionOptimizable.override_skeleton_points`."""
         return None

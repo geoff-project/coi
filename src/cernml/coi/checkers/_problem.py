@@ -62,16 +62,18 @@ def assert_no_undeclared_render(
 
     Example:
 
+        >>> from cernml.coi import BaseProblem
         >>> from warnings import simplefilter
         >>> simplefilter("error")
-        >>> class Foo(Problem):
+        >>> class Foo(BaseProblem):
         ...     def render(self):
         ...         return None
         >>> assert_no_undeclared_render(Foo())
         Traceback (most recent call last):
         ...
         AssertionError: ... doesn't raise NotImplementedError
-        >>> class Foo(Problem):
+
+        >>> class Foo(BaseProblem):
         ...     def render(self):
         ...         raise TypeError()
         >>> assert_no_undeclared_render(Foo(), warn=False)
@@ -79,7 +81,8 @@ def assert_no_undeclared_render(
         Traceback (most recent call last):
         ...
         UserWarning: ... raises instead: TypeError()
-        >>> class Foo(Problem):
+
+        >>> class Foo(BaseProblem):
         ...     def render(self):
         ...         return super().render()
         >>> assert_no_undeclared_render(Foo())
@@ -97,7 +100,7 @@ def assert_no_undeclared_render(
     modes_to_check = known_modes - blocked_modes - render_modes
     for mode in modes_to_check:
         try:
-            problem.render_mode = mode
+            problem.render_mode = mode  # type: ignore[misc]
             problem.render()
         except (NotImplementedError, ValueError):  # noqa:PERF203
             pass
@@ -121,13 +124,15 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
 
     Example:
 
-        >>> class Foo(Problem):
+        >>> from cernml.coi import BaseProblem
+        >>> class Foo(BaseProblem):
         ...     metadata = {"render.modes": ["ansi"]}
         >>> assert_execute_render(Foo())
         Traceback (most recent call last):
         ...
         AssertionError: render mode 'ansi' declared ...
-        >>> class Foo(Problem):
+
+        >>> class Foo(BaseProblem):
         ...     metadata = {"render.modes": ["custom"]}
         ...     def __init__(self, render_mode=None):
         ...         self.render_mode = render_mode
@@ -146,7 +151,7 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
         if mode in blocked_modes:
             continue
         try:
-            problem.render_mode = mode
+            problem.render_mode = mode  # type: ignore[misc]
             result = problem.render()
         except NotImplementedError as exc:
             raise AssertionError(

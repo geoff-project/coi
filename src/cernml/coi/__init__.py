@@ -71,7 +71,6 @@ from ._func_opt import BaseFunctionOptimizable, FunctionOptimizable
 from ._goalenv import GoalEnv
 from ._machine import Machine
 from ._problem import BaseProblem, HasNpRandom, Problem
-from ._registration import make, register, registry, spec
 from ._single_opt import BaseSingleOptimizable, Constraint, ParamType, SingleOptimizable
 from ._typeguards import (
     AnyOptimizable,
@@ -87,6 +86,15 @@ from ._typeguards import (
     is_single_optimizable_class,
 )
 from .checkers import check
+from .registration import (
+    make,
+    make_vec,
+    pprint_registry,
+    register,
+    register_envs,
+    registry,
+    spec,
+)
 
 __all__ = [
     "ActType",
@@ -133,7 +141,10 @@ __all__ = [
     "is_single_optimizable",
     "is_single_optimizable_class",
     "make",
+    "make_vec",
+    "pprint_registry",
     "register",
+    "register_envs",
     "registry",
     "spec",
 ]

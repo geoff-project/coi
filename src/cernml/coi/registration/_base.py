@@ -4,11 +4,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Forwarding to the Gymnasium Registry.
+"""Safe imports from the Gymnasium registry module.
 
-Temporary note: Before Gym 0.22, we used to maintain our own registry.
-We need to investigate how best to proceed -- does it make sense to just
-put everything into one registry?
+This imports all helpers that do not reference the global
+`gymnasium.envs.registry` object. Those are functions we can reuse in
+our own implementation.
 """
 
 from gymnasium.envs.registration import (
@@ -16,14 +16,11 @@ from gymnasium.envs.registration import (
     EnvSpec,
     VectorEnvCreator,
     WrapperSpec,
-    current_namespace,
-    make,
-    make_vec,
+    get_env_id,
+    load_env_creator,
+    parse_env_id,
     pprint_registry,
-    register,
     register_envs,
-    registry,
-    spec,
 )
 
 __all__ = (
@@ -31,12 +28,9 @@ __all__ = (
     "EnvSpec",
     "VectorEnvCreator",
     "WrapperSpec",
-    "current_namespace",
-    "make",
-    "make_vec",
+    "get_env_id",
+    "load_env_creator",
+    "parse_env_id",
     "pprint_registry",
-    "register",
     "register_envs",
-    "registry",
-    "spec",
 )

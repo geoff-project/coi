@@ -16,10 +16,12 @@ from ._extra_goal_envs import SeparableGoalEnv
 from ._func_opt import FunctionOptimizable
 from ._goalenv import GoalEnv
 from ._problem import Problem
-from ._single_opt import ParamType, SingleOptimizable
+from ._single_opt import SingleOptimizable
 
 if t.TYPE_CHECKING:
-    from typing_extensions import TypeGuard
+    from typing_extensions import TypeAlias, TypeGuard
+
+    from ._single_opt import ParamType  # noqa: F401
 
 __all__ = (
     "AnyOptimizable",
@@ -132,7 +134,9 @@ def is_function_optimizable_class(
     return isinstance(obj, type) and issubclass(obj, FunctionOptimizable)  # type: ignore[misc]
 
 
-AnyOptimizable = SingleOptimizable[ParamType] | FunctionOptimizable[ParamType]
+AnyOptimizable: "TypeAlias" = (
+    "SingleOptimizable[ParamType] | FunctionOptimizable[ParamType]"
+)
 
 
 def is_optimizable(obj: object, /) -> "TypeGuard[AnyOptimizable]":

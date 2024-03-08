@@ -10,6 +10,8 @@
 
 """An interface that splits calculations into reusable parts."""
 
+from __future__ import annotations
+
 import typing as t
 from abc import ABCMeta
 

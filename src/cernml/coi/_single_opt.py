@@ -8,6 +8,8 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
+from __future__ import annotations
+
 import typing as t
 from abc import abstractmethod
 
@@ -88,6 +90,8 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
             exactly as many elements as the `constraints`. The default
             is not to attach any meaning to the constraints.
     """
+
+    render_mode: str | None = None
 
     optimization_space: gym.spaces.Space[ParamType]
     objective_range: tuple[float, float] = (-float("inf"), float("inf"))
