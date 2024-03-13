@@ -17,8 +17,8 @@ from types import SimpleNamespace
 
 import numpy as np
 
-T = typing.TypeVar("T")  # pylint: disable = invalid-name
-T.__module__ = ""
+T = typing.TypeVar("T")
+# T.__module__ = ""  # TODO: Re-evaluate this one when making docs.
 
 ConfigValues = SimpleNamespace
 
@@ -127,11 +127,11 @@ class Config:
         dest: str
         value: T
         label: str
-        help: typing.Optional[str]
+        help: str | None
         type: typing.Callable[[str], T]
-        range: typing.Optional[typing.Tuple[T, T]]
-        choices: typing.Optional[typing.List[T]]
-        default: typing.Optional[T]
+        range: tuple[T, T] | None
+        choices: list[T] | None
+        default: T | None
 
         def validate(self, text_repr: str) -> T:
             """Validate a user-chosen value.
@@ -147,20 +147,26 @@ class Config:
             """
             try:
                 value = self.type(text_repr)
-                if self.range is not None:
-                    low, high = self.range
-                    if not low <= value <= high:  # type: ignore[operator]
-                        raise ValueError(f"{value} not in range [{low}, {high}]")
-                if self.choices is not None and value not in self.choices:
-                    raise ValueError(f"{value} not in {self.choices!r}")
+                self._validate_range(value)
+                self._validate_choices(value)
             except Exception as exc:
                 raise BadConfig(
                     f"invalid value for {self.dest}: {text_repr!r}"
                 ) from exc
             return value
 
+        def _validate_range(self, value: T) -> None:
+            if self.range is not None:
+                low, high = self.range
+                if not low <= value <= high:  # type: ignore[operator]
+                    raise ValueError(f"{value} not in range [{low}, {high}]")
+
+        def _validate_choices(self, value: T) -> None:
+            if self.choices is not None and value not in self.choices:
+                raise ValueError(f"{value} not in {self.choices!r}")
+
     def __init__(self) -> None:
-        self._fields: typing.Dict[str, Config.Field] = OrderedDict()
+        self._fields: dict[str, Config.Field] = OrderedDict()
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__}: {list(self._fields)}>"
@@ -169,7 +175,7 @@ class Config:
         """Return a read-only view of all declared fields."""
         return self._fields.values()
 
-    def get_field_values(self) -> typing.Dict[str, typing.Any]:
+    def get_field_values(self) -> dict[str, typing.Any]:
         """Return a `dict` of the pre-configured field values.
 
         Note that this is not quite the expected input to
@@ -201,14 +207,14 @@ class Config:
     def add(
         self,
         dest: str,
-        value: "T",
+        value: T,
         *,
-        label: typing.Optional[str] = None,
-        help: typing.Optional[str] = None,
-        type: typing.Optional[typing.Callable[[str], "T"]] = None,
-        range: typing.Optional[typing.Tuple["T", "T"]] = None,
-        choices: typing.Optional[typing.Sequence["T"]] = None,
-        default: typing.Optional["T"] = None,
+        label: str | None = None,
+        help: str | None = None,
+        type: typing.Callable[[str], T] | None = None,
+        range: tuple[T, T] | None = None,
+        choices: typing.Sequence[T] | None = None,
+        default: T | None = None,
     ) -> "Config":
         """Add a new config field.
 
@@ -561,8 +567,8 @@ class StrSafeBool(typing.Generic[AnyBool]):
 
     __slots__ = ("base_type",)
 
-    def __init__(self, base_type: typing.Type[AnyBool]) -> None:
-        self.base_type: typing.Type[AnyBool] = base_type
+    def __init__(self, base_type: type[AnyBool]) -> None:
+        self.base_type: type[AnyBool] = base_type
 
     def __repr__(self) -> str:
         return f"<{type(self).__module__}.{type(self).__name__}({self.base_type!r})>"
