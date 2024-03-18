@@ -174,7 +174,12 @@ def _get_render_modes(
             ),
             stacklevel=stacklevel,
         )
-        return tuple(modes)
+        # Try to fix the mistake, but continue as usual if that's not
+        # possible.
+        try:
+            return tuple(t.cast(dict, metadata).setdefault("render_modes", modes))
+        except AttributeError:  # pragma: no cover
+            return tuple(modes)
     return tuple(metadata.get("render_modes", ()))
 
 

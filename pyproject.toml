@@ -159,6 +159,9 @@ master.extension-pkg-whitelist = 'PyQt5'
 addopts = '--doctest-modules'
 testpaths = ['src', 'tests']
 doctest_optionflags = ['IGNORE_EXCEPTION_DETAIL']
+markers = [
+    'render_modes: metadata item `render_modes` of a mock Env'
+]
 
 [tool.coverage.run]
 source = ['src']
