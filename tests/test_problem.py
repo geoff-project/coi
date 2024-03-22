@@ -6,7 +6,10 @@
 
 """Test that `Problem` does not require direct inheritance."""
 
+from __future__ import annotations
+
 import typing as t
+from unittest.mock import Mock
 
 import pytest
 
@@ -15,7 +18,7 @@ from cernml import coi
 
 def test_problem_is_abstract() -> None:
     class NonInheritingProblem:
-        metadata: t.Dict[str, t.Any] = {"render.modes": []}
+        metadata: t.ClassVar[dict[str, t.Any]] = {"render_modes": []}
         render_mode = None
         spec = None
 
@@ -46,7 +49,7 @@ def test_render_raises() -> None:
 
 def test_problem_requires_close() -> None:
     class NullProblemo:
-        metadata: t.ClassVar[t.Dict[str, t.Any]] = {"render.modes": []}
+        metadata: t.ClassVar[dict[str, t.Any]] = {"render_modes": []}
 
         def render(self, mode: str = "human") -> t.Any:
             raise NotImplementedError
@@ -54,4 +57,21 @@ def test_problem_requires_close() -> None:
         def unwrapped(self) -> "NullProblemo":
             return self
 
-    assert not issubclass(NullProblemo, coi.Problem)  # type: ignore[misc]
+    assert not coi.is_problem_class(NullProblemo)
+
+
+@pytest.mark.parametrize("render_mode", ["human", None])
+def test_base_problem_sets_render_mode(render_mode: str | None) -> None:
+    class Subclass(coi.BaseProblem):
+        metadata = {"render_modes": ["human"]}
+
+    env = Subclass(render_mode=render_mode)
+    assert env.render_mode == render_mode
+
+
+def test_base_problem_context_manager() -> None:
+    env = coi.BaseProblem()
+    env.close = Mock(wraps=env.close)  # type: ignore[method-assign]
+    with env as ctx:
+        assert ctx is env
+    env.close.assert_called_once_with()

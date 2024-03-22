@@ -193,7 +193,7 @@ maximum visibility:
         """Awake electron-beam steering optimization problem."""
 
         metadata = {
-            "render.modes": [],
+            "render_modes": [],
             "cern.machine": coi.Machine.AWAKE,
             "cern.japc": True,
         }
@@ -205,7 +205,7 @@ information if you think you need to. However, some keys are standardized and
 have conventional meaning. The full list is given :attr:`elsewhere
 <cernml.coi.Problem.metadata>`, but the important parts are:
 
-``render.modes``
+``render_modes``
     This must be present and it must be a collection of strings. We'll get to
     the details :ref:`further down <custom rendering output>`, but this
     declares the ways in which a user can visualize your problem. Because this
@@ -475,7 +475,7 @@ You can find the full list in the :meth:`API docs
 Like for many other parts of the COI, implementing rendering involves two
 steps:
 
-1. Declare the supported render modes in the ``render.modes``
+1. Declare the supported render modes in the ``render_modes``
    `~cernml.coi.Problem.metadata`.
 2. Override the `Problem.render() <cernml.coi.Problem.render()>` method.
 
@@ -498,8 +498,8 @@ We start out by modifying a few lines of code we've already written:
 
       # coi_example/env.py (cont.)
           metadata = {
-    -         "render.modes": [],
-    +         "render.modes": ["human"],
+    -         "render_modes": [],
+    +         "render_modes": ["human"],
               "cern.machine": coi.Machine.AWAKE,
               "cern.japc": True,
           }
@@ -619,8 +619,8 @@ the previous code:
 
       # coi_example/env.py (cont.)
           metadata = {
-    -         "render.modes": ["human"],
-    +         "render.modes": ["human", "matplotlib_figures"],
+    -         "render_modes": ["human"],
+    +         "render_modes": ["human", "matplotlib_figures"],
               "cern.machine": coi.Machine.AWAKE,
               "cern.japc": True,
           }

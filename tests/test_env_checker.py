@@ -37,7 +37,7 @@ class MultiGoalParabola(
     reward_range = (-np.sqrt(16.0), 0.0)
     objective_range = (0.0, np.sqrt(18.0))
     metadata: dict[str, t.Any] = {
-        "render.modes": ["ansi", "human", "matplotlib_figures"],
+        "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
         "cern.japc": False,
         "cern.cancellable": False,
@@ -131,7 +131,7 @@ class MultiGoalParabola(
 class FunctionParabola(coi.BaseFunctionOptimizable):
     objective_range = (0.0, np.sqrt(18.0))
     metadata: dict[str, t.Any] = {
-        "render.modes": ["ansi", "human", "matplotlib_figures"],
+        "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
         "cern.japc": False,
         "cern.cancellable": False,

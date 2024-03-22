@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import typing as t
+import warnings
 from abc import ABCMeta
 from types import MappingProxyType
 
@@ -17,7 +18,7 @@ from gymnasium.utils import seeding
 
 from ._machine import Machine
 from ._machinery import AttrCheckProtocol
-from .registration import EnvSpec, MinimalEnvSpec
+from .registration import EnvSpec, MinimalEnvSpec, errors
 
 if t.TYPE_CHECKING:
     from typing_extensions import Self
@@ -91,7 +92,7 @@ class Problem(AttrCheckProtocol, t.Protocol):
             The following keys are defined and understood by this
             package:
 
-            ``"render.modes"``
+            ``"render_modes"``
                 The render modes that the optimization problem
                 understands. Standard render modes are documented under
                 `render()`.
@@ -125,7 +126,7 @@ class Problem(AttrCheckProtocol, t.Protocol):
         dict[str, t.Any],
         MappingProxyType(
             {
-                "render.modes": [],
+                "render_modes": [],
                 "cern.machine": Machine.NO_MACHINE,
                 "cern.japc": False,
                 "cern.cancellable": False,
@@ -217,7 +218,7 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
         Args:
             mode: the mode to render with. Must be a member of
-                ``self.metadata["render.modes"]``.
+                ``self.metadata["render_modes"]``.
 
         The set of supported modes varies. Some problems do not support
         rendering at all. The following modes have a standardized
@@ -255,7 +256,7 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
             >>> from gymnasium import Env
             >>> class MyEnv(Env):
-            ...     metadata = {'render.modes': ['human', 'rgb_array']}
+            ...     metadata = {'render_modes': ['human', 'rgb_array']}
             ...     def render(self, mode='human'):
             ...         if mode == 'rgb_array':
             ...             # Return RGB frame suitable for video.
@@ -270,7 +271,7 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
         Note:
             Make sure to declare all modes that you support in the
-            ``"render.modes"`` key of your `metadata`. It's recommended
+            ``"render_modes"`` key of your `metadata`. It's recommended
             to call `super` in implementations to use the functionality
             of this method.
         """
@@ -317,7 +318,7 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
         dict[str, t.Any],
         MappingProxyType(
             {
-                "render.modes": [],
+                "render_modes": [],
                 "cern.machine": Machine.NO_MACHINE,
                 "cern.japc": False,
                 "cern.cancellable": False,
@@ -329,7 +330,16 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
 
     def __init__(self, render_mode: str | None = None) -> None:
         if render_mode is not None:
-            modes = self.metadata.get("render.modes", ())
+            modes = self.metadata.get("render_modes", ())
+            if not modes:
+                modes = self.metadata.get("render_modes", ())
+                if modes:
+                    warnings.warn(
+                        errors.GymDeprecationWarning(
+                            "metadata key 'render_modes'", "'render_modes'"
+                        ),
+                        stacklevel=2,
+                    )
             if render_mode not in modes:
                 raise ValueError(
                     f"invalid render mode: expected one of {modes}, "

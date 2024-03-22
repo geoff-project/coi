@@ -43,14 +43,14 @@ def assert_render_modes_defined(problem: Problem) -> None:
     """Check that the environment defines render modes correctly."""
     # pylint: disable = unsubscriptable-object
     # pylint: disable = isinstance-second-argument-not-valid-type
-    render_modes = t.cast(t.Collection[str], problem.metadata.get("render.modes"))
+    render_modes = t.cast(t.Collection[str], problem.metadata.get("render_modes"))
     assert (
         render_modes is not None
-    ), "missing key render.modes in the environment metadata"
+    ), "missing key render_modes in the environment metadata"
     # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
     assert isinstance(
         render_modes, collections.abc.Collection
-    ), "render.modes must be a collection"
+    ), "render_modes must be a collection"
     for mode in render_modes:
         assert isinstance(mode, str), f"render mode must be string: {mode!r}"
 
@@ -91,7 +91,14 @@ def assert_no_undeclared_render(
     # pylint: disable = unsubscriptable-object
     # pylint: disable = isinstance-second-argument-not-valid-type
     blocked_modes = set(_get_blocked_modes(headless=headless))
-    render_modes = set(t.cast(t.Collection[str], problem.metadata["render.modes"]))
+    render_modes = set(problem.metadata.get("render.modes", ()))
+    if render_modes and warn:
+        warnings.warn(
+            "The metadata key `render.modes` is deprecated; "
+            "use `render_modes` instead",
+            stacklevel=max(2, warn),
+        )
+    render_modes = set(problem.metadata.get("render_modes", render_modes))
     # TODO: Add ansi_list and rgb_array_list.
     # TODO: Actually, this check has to be reworked completely, since
     # render_mode is defined in the constructor now, and not supposed to
@@ -126,14 +133,14 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
 
         >>> from cernml.coi import BaseProblem
         >>> class Foo(BaseProblem):
-        ...     metadata = {"render.modes": ["ansi"]}
+        ...     metadata = {"render_modes": ["ansi"]}
         >>> assert_execute_render(Foo())
         Traceback (most recent call last):
         ...
         AssertionError: render mode 'ansi' declared ...
 
         >>> class Foo(BaseProblem):
-        ...     metadata = {"render.modes": ["custom"]}
+        ...     metadata = {"render_modes": ["custom"]}
         ...     def __init__(self, render_mode=None):
         ...         self.render_mode = render_mode
         ...     def render(self):
@@ -144,7 +151,7 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
     """
     additional_checks = get_render_mode_checks()
     blocked_modes = _get_blocked_modes(headless=headless)
-    render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
+    render_modes = t.cast(t.Collection[str], problem.metadata["render_modes"])
     for mode in render_modes:
         # TODO: This check has to be rethought, since render_mode is not
         # expected to change after construction.
@@ -171,7 +178,7 @@ def warn_render_modes(problem: Problem, warn: int = True) -> None:
         >>> simplefilter("error")
         >>> class Foo:
         ...     def __init__(self, modes):
-        ...         self.metadata = {"render.modes": modes}
+        ...         self.metadata = {"render_modes": modes}
         >>> warn_render_modes(Foo([
         ...     "ansi", "human", "matplotlib_figures"
         ... ]))
@@ -189,7 +196,7 @@ def warn_render_modes(problem: Problem, warn: int = True) -> None:
         UserWarning: missing render mode 'matplotlib_figures': ...
     """
     # pylint: disable = unsubscriptable-object
-    render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
+    render_modes = t.cast(t.Collection[str], problem.metadata["render_modes"])
     if "ansi" not in render_modes:
         warnings.warn(
             "missing render mode 'ansi': This is the most basic "

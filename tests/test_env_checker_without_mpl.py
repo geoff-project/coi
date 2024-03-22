@@ -44,7 +44,7 @@ def test_sep_env(no_matplotlib: None) -> None:
         observation_space = gym.spaces.Box(-2, 2, (2,))
         reward_range = (-np.sqrt(16.0), 0.0)
         metadata: dict[str, t.Any] = {
-            "render.modes": ["ansi"],
+            "render_modes": ["ansi"],
             "cern.machine": coi.Machine.NO_MACHINE,
             "cern.japc": False,
             "cern.cancellable": False,

@@ -42,7 +42,7 @@ class ConfParabola(
     # Domain declarations.
     metadata = {
         # All `mode` arguments to `self.render()` that we support.
-        "render.modes": ["ansi", "human", "matplotlib_figures"],
+        "render_modes": ["ansi", "human", "matplotlib_figures"],
         # The example is independent of all CERN accelerators.
         "cern.machine": coi.Machine.NO_MACHINE,
         # No need for communication with CERN accelerators.
