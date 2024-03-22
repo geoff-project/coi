@@ -11,6 +11,7 @@ import typing as t
 from gymnasium import Env
 
 from ._configurable import Configurable
+from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._extra_envs import SeparableEnv
 from ._extra_goal_envs import SeparableGoalEnv
 from ._func_opt import FunctionOptimizable
@@ -27,6 +28,8 @@ __all__ = (
     "AnyOptimizable",
     "is_configurable",
     "is_configurable_class",
+    "is_custom_optimizer_provider",
+    "is_custom_optimizer_provider_class",
     "is_env",
     "is_env_class",
     "is_function_optimizable",
@@ -245,3 +248,29 @@ def is_separable_goal_env_class(obj: object, /) -> "TypeGuard[type[SeparableGoal
     the ``is_*()`` functions based on `isinstance()`.
     """
     return isinstance(obj, type) and issubclass(obj, SeparableGoalEnv)
+
+
+def is_custom_optimizer_provider(
+    obj: object, /
+) -> "TypeGuard[CustomOptimizerProvider]":
+    """Check whether the given `Problem` is a `CustomOptimizerProvider`.
+
+    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
+    into account and unwraps them. For convenience when using Mypy, this
+    is a `~typing.TypeGuard`.
+    """
+    # This class is special! it may not have an `unwrapped` property.
+    unwrapped = getattr(obj, "unwrapped", obj)
+    return isinstance(unwrapped, CustomOptimizerProvider)
+
+
+def is_custom_optimizer_provider_class(
+    obj: object, /
+) -> "TypeGuard[type[CustomOptimizerProvider]]":
+    """Check whether the type is a subclass of `CustomOptimizerProvider`.
+
+    This is a simple wrapper around `issubclass()`. Its purpose is to
+    work around some weaknesses in Mypy's reporting, and symmetry with
+    the ``is_*()`` functions based on `isinstance()`.
+    """
+    return isinstance(obj, type) and issubclass(obj, CustomOptimizerProvider)
