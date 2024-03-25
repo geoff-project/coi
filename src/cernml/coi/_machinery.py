@@ -68,12 +68,14 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
 
     def __init__(cls, *args: t.Any, **kwargs: t.Any) -> None:
         super().__init__(*args, **kwargs)
-        if "__protocol_attrs__" not in vars(cls) and getattr(
-            cls, "_is_protocol", False
-        ):
-            # Note: This is our own function, not
-            # `typing._get_protocol_attrs()!`
-            cls.__protocol_attrs__: set[str] = protocol_attrs(cls)
+        if getattr(cls, "_is_protocol", False):
+            # If `__protocol_attrs__` has not yet been set, we set it
+            # here; if it HAS been set, we remove our own internal
+            # attributes from it (e.g. `__proto_classmethods__`).
+            if "__protocol_attrs__" not in vars(cls):
+                cls.__protocol_attrs__ = protocol_attrs(cls)
+            else:
+                cls.__protocol_attrs__ -= _SPECIAL_NAMES
 
     def __instancecheck__(cls, instance: t.Any) -> bool:
         if cls is AttrCheckProtocol:
