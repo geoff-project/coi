@@ -6,6 +6,7 @@
 
 """Test inidividual pieces of our protocol machinery."""
 
+import sys
 import typing as t
 from functools import partial
 
@@ -63,7 +64,7 @@ def test_is_subprotocol(obj: object, expected: bool) -> None:
 
 @pytest.mark.parametrize("cls", [MyAttrProtocol, MyProtocol])
 def test_protocol_attrs(cls: t._ProtocolMeta) -> None:
-    assert cls.__protocol_attrs__ == {  # type: ignore[attr-defined]
+    assert _machinery.protocol_attrs(cls) == {
         "attr",
         "base_attr",
         "base_cmeth",
@@ -103,13 +104,16 @@ def test_attr_check_protocol_dict_empty() -> None:
         {"__annotations__", "__subclasshook__", "__init__"}
     )
     attr_check_protocol_attrs.difference_update(_get_dict(t.Protocol))
+    if sys.version_info < (3, 12):
+        # Only added to `t.Protocol` in Python 3.12.
+        attr_check_protocol_attrs.remove("__protocol_attrs__")
     assert not attr_check_protocol_attrs
 
 
 @pytest.mark.parametrize("cls", [MyAttrProtocol, MyProtocol])
 def test_attr_in_annotations(cls: _machinery.AttrCheckProtocolMeta) -> None:
     check = partial(_machinery.attr_in_annotations, cls)
-    annotated_attrs = set(filter(check, cls.__protocol_attrs__))
+    annotated_attrs = set(filter(check, _machinery.protocol_attrs(cls)))
     assert annotated_attrs == {"attr", "base_attr", "base_hint", "hint"}
 
 

@@ -13,7 +13,7 @@ import gymnasium as gym
 import pytest
 
 from cernml import coi
-from cernml.coi._machinery import AttrCheckProtocol
+from cernml.coi._machinery import AttrCheckProtocol, protocol_attrs
 
 TYPE_MAP: tuple[
     tuple[
@@ -96,7 +96,7 @@ def test_typeguard(
     is_instance: t.Callable[[object], bool],
     is_subclass: t.Callable[[object], bool],
 ) -> None:
-    attr_list = getattr(cls, "__protocol_attrs__", ())
+    attr_list = protocol_attrs(cls)
     bases = (coi.SeparableGoalEnv, coi.GoalEnv, coi.SeparableEnv, gym.Env)
     for base in bases:
         if base in cls.__mro__:

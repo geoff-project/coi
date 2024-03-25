@@ -68,18 +68,19 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
 
     def __init__(cls, *args: t.Any, **kwargs: t.Any) -> None:
         super().__init__(*args, **kwargs)
-        if getattr(cls, "_is_protocol", False) and not hasattr(
-            cls, "__protocol_attrs__"
+        if "__protocol_attrs__" not in vars(cls) and getattr(
+            cls, "_is_protocol", False
         ):
-            attrs = t._get_protocol_attrs(cls)  # type: ignore[attr-defined]
-            cls.__protocol_attrs__: set[str] = attrs
+            # Note: This is our own function, not
+            # `typing._get_protocol_attrs()!`
+            cls.__protocol_attrs__: set[str] = protocol_attrs(cls)
 
     def __instancecheck__(cls, instance: t.Any) -> bool:
         if cls is AttrCheckProtocol:
             return type.__instancecheck__(cls, instance)
         if not getattr(cls, "_is_protocol", False):
             # i.e., it's a concrete subclass of a protocol
-            return super().__instancecheck__(instance)
+            return issubclass(instance.__class__, cls)
         if not getattr(cls, "_is_runtime_protocol", False):
             raise TypeError(
                 "Instance and class checks can only be used with"
@@ -141,7 +142,7 @@ def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
     accepted on *obj*.
     """
     getattr_static = lazy_load_getattr_static()
-    for attr in proto.__protocol_attrs__:
+    for attr in protocol_attrs(proto):
         is_classmethod = attr in proto_classmethods(proto)
         try:
             val = getattr_static(
@@ -207,7 +208,7 @@ def non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
     members = getattr(cls, "__non_callable_proto_members__", None)
     if members is None:
         members = set()
-        for attr in cls.__protocol_attrs__:
+        for attr in protocol_attrs(cls):
             try:
                 is_callable = callable(getattr(cls, attr, None))
             except Exception as e:
@@ -242,7 +243,7 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
         # objects, not classmethod objects!
         cvars = _get_dunder_dict_of_class(cls)
         members = set()
-        for attr in cls.__protocol_attrs__:
+        for attr in protocol_attrs(cls):
             try:
                 is_classmethod = isinstance(cvars.get(attr, None), classmethod)
             except Exception as e:
@@ -254,6 +255,44 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
                 members.add(attr)
         cls.__proto_classmethods__ = members  # type: ignore[attr-defined]
     return members
+
+
+# Extension of the `typing` exclusion list with our own attributes.
+_SPECIAL_NAMES = {
+    "__protocol_attrs__",
+    "__non_callable_proto_members__",
+    "__proto_classmethods__",
+}
+
+
+def protocol_attrs(cls: type) -> set[str]:
+    """Lazy collection of any protocol attributes.
+
+    If a protocol has an attribute `__protocol_attrs__`, we simply
+    return it. Otherwise, we call the private function
+    `typing._get_protocol_attrs()`, which exists unmodified at least
+    from Python 3.9 to 3.12. We modify its return value to exclude
+    implementation details such as `__non_callable_proto_members__`,
+    `__proto_classmethods__` and also `__protocol_attrs__` itself.
+
+    Note that unlike `non_callable_proto_members()` and
+    `proto_classmethods()`, this function *never* caches its result.
+    The attribute `AttrCheckProtocol.__protocol_attrs__` is set from
+    within the `__init__()` method.
+    """
+    # Do _not_ use `getattr()` because that runs the risk of fetching
+    # `__protocol_attrs__` from a parent protocol. That parent protocol
+    # might even be `AttrCheckProtocol` itself, for which this is the
+    # empty set.
+    attrs = t.cast(
+        t.Union[set[str], None],
+        _get_dunder_dict_of_class(cls).get("__protocol_attrs__"),
+    )
+    if attrs is not None:
+        return attrs
+    attrs = t._get_protocol_attrs(cls)  # type: ignore[attr-defined]
+    attrs.difference_update(_SPECIAL_NAMES)
+    return attrs
 
 
 try:
@@ -300,8 +339,14 @@ except KeyError:
         return t.cast(dict, ann)
 
 
+class _GetAttr(t.Protocol):
+    def __call__(
+        self, obj: object, name: str, default: t.Optional[t.Any] = ..., /
+    ) -> t.Any: ...
+
+
 @functools.cache
-def lazy_load_getattr_static() -> "_GetAttr":
+def lazy_load_getattr_static() -> _GetAttr:
     """Lazy loader for `inspect.getattr_static()`.
 
     This delays loading the `inspect` module until the first
@@ -313,12 +358,6 @@ def lazy_load_getattr_static() -> "_GetAttr":
     from inspect import getattr_static
 
     return getattr_static
-
-
-class _GetAttr(t.Protocol):
-    def __call__(
-        self, obj: object, name: str, default: t.Optional[t.Any] = ..., /
-    ) -> t.Any: ...
 
 
 class AttrCheckProtocol(t.Protocol, metaclass=AttrCheckProtocolMeta):
