@@ -126,10 +126,12 @@ class OptGoalEnv(
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is OptGoalEnv:
-            bases = other.__mro__
-            return GoalEnv in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if issubclass(other, GoalEnv) and proto is True:
+            return True
         return NotImplemented
 
 
@@ -147,8 +149,10 @@ class SeparableOptGoalEnv(
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is SeparableOptGoalEnv:
-            bases = other.__mro__
-            return SeparableGoalEnv in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if issubclass(other, SeparableGoalEnv) and proto is True:
+            return True
         return NotImplemented

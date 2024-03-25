@@ -192,10 +192,12 @@ class OptEnv(Env[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCM
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is OptEnv:
-            bases = other.__mro__
-            return Env in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if Env.__subclasscheck__(other) and proto is True:
+            return True
         return NotImplemented
 
 
@@ -209,8 +211,10 @@ class SeparableOptEnv(
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is SeparableOptEnv:
-            bases = other.__mro__
-            return SeparableEnv in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if issubclass(other, SeparableEnv) and proto is True:
+            return True
         return NotImplemented
