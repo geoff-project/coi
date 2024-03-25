@@ -329,17 +329,18 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
     spec: EnvSpec | None = None
 
     def __init__(self, render_mode: str | None = None) -> None:
+        modes: t.Collection[str] | None = self.metadata.get("render.modes", None)
+        if modes is not None:
+            warnings.warn(
+                errors.GymDeprecationWarning(
+                    "metadata key 'render_modes'", "'render_modes'"
+                ),
+                stacklevel=2,
+            )
         if render_mode is not None:
-            modes = self.metadata.get("render_modes", ())
-            if not modes:
-                modes = self.metadata.get("render_modes", ())
-                if modes:
-                    warnings.warn(
-                        errors.GymDeprecationWarning(
-                            "metadata key 'render_modes'", "'render_modes'"
-                        ),
-                        stacklevel=2,
-                    )
+            modes = t.cast(
+                t.Collection[str], self.metadata.get("render_modes", modes or ())
+            )
             if render_mode not in modes:
                 raise ValueError(
                     f"invalid render mode: expected one of {modes}, "
