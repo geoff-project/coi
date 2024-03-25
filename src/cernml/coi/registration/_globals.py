@@ -142,9 +142,8 @@ def register(
 ) -> None:
     """Register an environment for later use with `make()`.
 
-    Todo:
-        The following section fits better into the user guide than the
-        API reference.
+    TODO: The following section fits better into the user guide than the
+    API reference.
 
     The environment ID follows the syntax:
     ``[<namespace>/]<name>[-v<version>]``. See `make()` for information
