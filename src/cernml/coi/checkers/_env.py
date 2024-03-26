@@ -24,10 +24,7 @@ def check_env(env: Env, warn: int = True) -> None:
     assert_env_returned_values(env)
     assert_env_no_nan(env)
     if warn:
-        warn_observation_space(
-            env.observation_space,
-            warn=bump_warn_arg(warn),
-        )
+        warn_observation_space(env, warn=bump_warn_arg(warn))
 
 
 def assert_observation_space(env: Env) -> None:
@@ -136,7 +133,7 @@ def assert_env_no_nan(env: Env) -> None:
         assert np.isfinite(float(reward)), f"NaN or inf in reward: {reward}"
 
 
-def warn_observation_space(space: spaces.Space, warn: int = True) -> None:
+def warn_observation_space(env: Env, warn: int = True) -> None:
     """Check that the observation space has the right shape.
 
     For a regular `.Env`, the space must be a `Box` with either a flat
@@ -147,23 +144,67 @@ def warn_observation_space(space: spaces.Space, warn: int = True) -> None:
     For a `.GoalEnv`, the space must be a `Dict` with the keys expected
     by the API. The ``"observation"`` sub-space must be a `Box` with the
     same requirements as above.
+
+    Examples:
+
+        >>> from .. import GoalEnv
+        >>> class MyEnv(GoalEnv):
+        ...     observation_space = spaces.Box(-1, 1, shape=(2,))
+        >>> warn_observation_space(MyEnv())
+        Traceback (most recent call last):
+        ...
+        AssertionError: observation space for GoalEnv...must be Dict...
+        >>> class MyEnv(GoalEnv):
+        ...     observation_space = spaces.Dict({
+        ...         'obs': spaces.Box(-1, 1, shape=(2,)),
+        ...     })
+        >>> warn_observation_space(MyEnv())
+        Traceback (most recent call last):
+        ...
+        AssertionError: Dict space is missing required key...
+        >>> class MyEnv(GoalEnv):
+        ...     observation_space = spaces.Dict({
+        ...         'observation': spaces.Discrete(2),
+        ...     })
+        >>> warn_observation_space(MyEnv())
+        Traceback (most recent call last):
+        ...
+        AssertionError: ... is not a Box: Discrete(2)
+        >>> class MyEnv(GoalEnv):
+        ...     observation_space = spaces.Dict({
+        ...         'observation': spaces.Box(-1, 1, shape=(2,)),
+        ...     })
+        >>> warn_observation_space(MyEnv())
+
+        >>> class MyEnv(Env):
+        ...     observation_space = spaces.Dict({})
+        >>> warn_observation_space(MyEnv())
+        Traceback (most recent call last):
+        ...
+        AssertionError: ... is not a Box: Dict({})
+        >>> class MyEnv(Env):
+        ...     observation_space = spaces.Box(-1, 1, shape=(2,))
+        >>> warn_observation_space(MyEnv())
     """
     warn = bump_warn_arg(warn)
-    if is_box(space):
+    space = env.observation_space
+    if is_goal_env(env):
+        assert isinstance(
+            space, spaces.Dict
+        ), f"observation space for GoalEnv {env!r} must be Dict, not {space!r}"
+        nested_space = space.get("observation")
+        assert (
+            nested_space is not None
+        ), f"Dict space is missing required key 'observation': {space!r}"
+        assert is_box(
+            nested_space
+        ), f"observation_space['observation'] is not a Box: {nested_space!r}"
+        warn_flat_observation_space(nested_space, warn=warn)
+    else:
+        assert is_box(
+            space
+        ), f"observation space for non-GoalEnv {env!r} must be Box, not {space!r}"
         warn_flat_observation_space(space, warn=warn)
-        return
-    assert isinstance(space, spaces.Dict), (
-        f"for now, observation spaces must be Box or "
-        f"(for GoalEnv) Dict, not {space!r}"
-    )
-    nested_space = space.get("observation")
-    assert (
-        nested_space is not None
-    ), f"Dict space is missing required key 'observation': {space!r}"
-    assert is_box(
-        nested_space
-    ), f"observation_space['observation'] is not a Box: {nested_space!r}"
-    warn_flat_observation_space(nested_space, warn=warn)
 
 
 def warn_flat_observation_space(space: spaces.Box, warn: int = True) -> None:
@@ -174,24 +215,25 @@ def warn_flat_observation_space(space: spaces.Box, warn: int = True) -> None:
         >>> from warnings import simplefilter
         >>> from gymnasium.spaces import Box
         >>> simplefilter("error")
-        >>> warn_observation_space(Box(-1, 1, (10,)))
-        >>> warn_observation_space(Box(-1, 1, (10, 10)))
+        >>> warn_flat_observation_space(Box(-1, 1, (10,)))
+        >>> warn_flat_observation_space(Box(-1, 1, (10, 10)), warn=False)
+        >>> warn_flat_observation_space(Box(-1, 1, (10, 10)))
         Traceback (most recent call last):
         ...
         UserWarning: ... an unconventional shape ...
-        >>> warn_observation_space(Box(-1, 1, (10, 10, 10)))
+        >>> warn_flat_observation_space(Box(-1, 1, (10, 10, 10)))
         Traceback (most recent call last):
         ...
         UserWarning: ... (and have dtype uint8), or ...
-        >>> warn_observation_space(Box(0, 1, (10, 10, 10), np.uint8))
+        >>> warn_flat_observation_space(Box(0, 1, (10, 10, 10), np.uint8))
         Traceback (most recent call last):
         ...
         UserWarning: ... (and have bounds [0, 255]), or ...
-        >>> warn_observation_space(Box(0, 255, (10, 10, 10), np.uint8))
+        >>> warn_flat_observation_space(Box(0, 255, (10, 10, 10), np.uint8))
         Traceback (most recent call last):
         ...
         UserWarning: ... at least a resolution of 36x36 pixels
-        >>> warn_observation_space(Box(0, 255, (36, 36, 10), np.uint8))
+        >>> warn_flat_observation_space(Box(0, 255, (36, 36, 10), np.uint8))
     """
     if not warn:
         return
