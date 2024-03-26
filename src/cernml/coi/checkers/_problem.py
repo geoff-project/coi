@@ -24,7 +24,7 @@ def check_problem(problem: Problem, *, warn: int = True, headless: bool = True) 
     assert is_problem(problem), f"doesn't implement the Problem API: {problem!r}"
     assert_machine(problem)
     assert_render_modes_defined(problem)
-    assert_no_undeclared_render(problem, warn=warn, headless=headless)
+    assert_render_mode_valid(problem, warn=warn)
     assert_execute_render(problem, headless=headless)
     if warn:
         warn_japc(problem, warn)
@@ -41,8 +41,9 @@ def assert_machine(problem: Problem) -> None:
 
 def assert_render_modes_defined(problem: Problem) -> None:
     """Check that the environment defines render modes correctly."""
-    # pylint: disable = unsubscriptable-object
-    # pylint: disable = isinstance-second-argument-not-valid-type
+    assert (
+        "render.modes" not in problem.metadata
+    ), "The metadata key `render.modes` is deprecated; use `render_modes` instead"
     render_modes = t.cast(t.Collection[str], problem.metadata.get("render_modes"))
     assert (
         render_modes is not None
@@ -55,10 +56,57 @@ def assert_render_modes_defined(problem: Problem) -> None:
         assert isinstance(mode, str), f"render mode must be string: {mode!r}"
 
 
-def assert_no_undeclared_render(
+def assert_render_mode_valid(problem: Problem, *, warn: int = True) -> None:
+    """Check whether the current render mode is a valid one.
+
+    Example:
+
+        >>> from cernml.coi import BaseProblem, Problem
+        >>> from warnings import simplefilter
+        >>> simplefilter("error")
+        >>> class Foo:
+        ...     metadata = {"render.modes": []}
+        ...     def __init__(self, render_mode=None):
+        ...         self.render_mode = render_mode
+        >>> assert_render_mode_valid(Foo())
+        Traceback (most recent call last):
+        ...
+        UserWarning: ...`render.modes` is deprecated...
+
+        >>> class Foo:
+        ...     metadata = {}
+        ...     def __init__(self, render_mode=None):
+        ...         self.render_mode = render_mode
+        >>> assert_render_mode_valid(Foo())
+        >>> assert_render_mode_valid(Foo(render_mode="human"))
+        Traceback (most recent call last):
+        ...
+        AssertionError: ...uses render mode 'human', which is not
+        among the declared render modes: []
+
+        >>> class Foo(BaseProblem):
+        ...     metadata = {"render_modes": ["human"]}
+        >>> assert_render_mode_valid(Foo(render_mode="human"))
+    """
+    render_modes = problem.metadata.get("render.modes", None)
+    if warn and render_modes is not None:
+        warnings.warn(
+            "The metadata key `render.modes` is deprecated; "
+            "use `render_modes` instead",
+            stacklevel=max(2, warn),
+        )
+    render_modes = problem.metadata.get("render_modes", render_modes or ())
+    render_mode = problem.render_mode
+    assert render_mode is None or render_mode in render_modes, (
+        f"env uses render mode {render_mode!r}, which is not among "
+        f"the declared render modes: {list(render_modes)!r}"
+    )
+
+
+def assert_execute_render(
     problem: Problem, *, warn: int = True, headless: bool = True
 ) -> None:
-    """Check for render modes that are implemented but not declared.
+    """Check that current render mode can be executed.
 
     Example:
 
@@ -66,107 +114,54 @@ def assert_no_undeclared_render(
         >>> from warnings import simplefilter
         >>> simplefilter("error")
         >>> class Foo(BaseProblem):
-        ...     def render(self):
-        ...         return None
-        >>> assert_no_undeclared_render(Foo())
+        ...     metadata = {"render_modes": ["human"]}
+        >>> assert_execute_render(Foo(render_mode="human"))
         Traceback (most recent call last):
         ...
-        AssertionError: ... doesn't raise NotImplementedError
-
-        >>> class Foo(BaseProblem):
-        ...     def render(self):
-        ...         raise TypeError()
-        >>> assert_no_undeclared_render(Foo(), warn=False)
-        >>> assert_no_undeclared_render(Foo())
-        Traceback (most recent call last):
-        ...
-        UserWarning: ... raises instead: TypeError()
-
-        >>> class Foo(BaseProblem):
-        ...     def render(self):
-        ...         return super().render()
-        >>> assert_no_undeclared_render(Foo())
-    """
-    # pylint: disable = broad-except
-    # pylint: disable = unsubscriptable-object
-    # pylint: disable = isinstance-second-argument-not-valid-type
-    blocked_modes = set(_get_blocked_modes(headless=headless))
-    render_modes = set(problem.metadata.get("render.modes", ()))
-    if render_modes and warn:
-        warnings.warn(
-            "The metadata key `render.modes` is deprecated; "
-            "use `render_modes` instead",
-            stacklevel=max(2, warn),
-        )
-    render_modes = set(problem.metadata.get("render_modes", render_modes))
-    # TODO: Add ansi_list and rgb_array_list.
-    # TODO: Actually, this check has to be reworked completely, since
-    # render_mode is defined in the constructor now, and not supposed to
-    # change after construction.
-    known_modes = {"ansi", "human", "matplotlib_figures", "rgb_array"}
-    modes_to_check = known_modes - blocked_modes - render_modes
-    for mode in modes_to_check:
-        try:
-            problem.render_mode = mode  # type: ignore[misc]
-            problem.render()
-        except (NotImplementedError, ValueError):  # noqa:PERF203
-            pass
-        except Exception as exc:
-            if warn:
-                warnings.warn(
-                    f"calling render({mode!r}) should raise "
-                    f"NotImplementedError or ValueError, but raises "
-                    f"instead: {exc!r}",
-                    stacklevel=max(2, warn),
-                )
-        else:
-            raise AssertionError(
-                f"calling render({mode!r}) with undeclared render "
-                f"mode doesn't raise NotImplementedError"
-            )
-
-
-def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
-    """Check that each declared render mode can be executed.
-
-    Example:
+        UserWarning: ...cannot be run while headless=True
 
         >>> from cernml.coi import BaseProblem
         >>> class Foo(BaseProblem):
         ...     metadata = {"render_modes": ["ansi"]}
-        >>> assert_execute_render(Foo())
+        >>> assert_execute_render(Foo(render_mode="ansi"))
         Traceback (most recent call last):
         ...
         AssertionError: render mode 'ansi' declared ...
 
         >>> class Foo(BaseProblem):
-        ...     metadata = {"render_modes": ["custom"]}
+        ...     metadata = {"render_modes": ["ansi", "custom"]}
         ...     def __init__(self, render_mode=None):
         ...         self.render_mode = render_mode
         ...     def render(self):
-        ...         if self.render_mode == "custom":
-        ...             return None
-        ...         return super().render()
-        >>> assert_execute_render(Foo())
+        ...         return None
+        >>> assert_execute_render(Foo(render_mode="ansi"))
+        Traceback (most recent call last):
+        ...
+        AssertionError: ...should return str or StringIO, not None
+        >>> assert_execute_render(Foo(render_mode="custom"))
     """
     additional_checks = get_render_mode_checks()
     blocked_modes = _get_blocked_modes(headless=headless)
-    render_modes = t.cast(t.Collection[str], problem.metadata["render_modes"])
-    for mode in render_modes:
-        # TODO: This check has to be rethought, since render_mode is not
-        # expected to change after construction.
-        if mode in blocked_modes:
-            continue
-        try:
-            problem.render_mode = mode  # type: ignore[misc]
-            result = problem.render()
-        except NotImplementedError as exc:
-            raise AssertionError(
-                f"render mode {mode!r} declared but not implemented"
-            ) from exc
-        additional_check = additional_checks.get(mode)
-        if additional_check:
-            additional_check(result)
+    mode = problem.render_mode
+    if mode is None:
+        return
+    if mode in blocked_modes:
+        warnings.warn(
+            f"render mode is set to {mode!r}, which cannot be run "
+            f"while headless={headless!r}",
+            stacklevel=max(2, warn),
+        )
+        # Not necessary to cover this line as long as we cover the
+        # warning above.
+        return  # pragma: no cover
+    try:
+        result = problem.render()
+    except NotImplementedError as exc:
+        raise AssertionError(
+            f"render mode {mode!r} declared but not implemented"
+        ) from exc
+    if additional_check := additional_checks.get(mode):
+        additional_check(result)
 
 
 def warn_render_modes(problem: Problem, warn: int = True) -> None:

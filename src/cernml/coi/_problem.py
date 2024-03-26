@@ -333,7 +333,7 @@ class BaseProblem(HasNpRandom, metaclass=ABCMeta):
         if modes is not None:
             warnings.warn(
                 errors.GymDeprecationWarning(
-                    "metadata key 'render_modes'", "'render_modes'"
+                    "metadata key 'render.modes'", "'render_modes'"
                 ),
                 stacklevel=2,
             )
