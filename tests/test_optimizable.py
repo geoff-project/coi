@@ -15,6 +15,82 @@ from gymnasium.spaces import Box
 from cernml import coi
 
 
+class TestSingleOptProtocol:
+    def test_protocol_attrs(self) -> None:
+        assert getattr(coi.SingleOptimizable, "__protocol_attrs__", None) == {
+            "close",
+            "compute_single_objective",
+            "constraint_names",
+            "constraints",
+            "get_initial_params",
+            "get_wrapper_attr",
+            "metadata",
+            "objective_name",
+            "objective_range",
+            "optimization_space",
+            "param_names",
+            "render",
+            "render_mode",
+            "spec",
+            "unwrapped",
+        }
+
+    def test_non_callable_proto_members(self) -> None:
+        assert getattr(
+            coi.SingleOptimizable, "__non_callable_proto_members__", None
+        ) == {
+            "constraint_names",
+            "constraints",
+            "metadata",
+            "objective_name",
+            "objective_range",
+            "optimization_space",
+            "param_names",
+            "render_mode",
+            "spec",
+            "unwrapped",
+        }
+
+    def test_proto_classmethods__(self) -> None:
+        assert getattr(coi.SingleOptimizable, "__proto_classmethods__", None) == set()
+
+
+class TestFunctionOptProtocol:
+    def test_protocol_attrs(self) -> None:
+        assert getattr(coi.FunctionOptimizable, "__protocol_attrs__", None) == {
+            "close",
+            "compute_function_objective",
+            "constraints",
+            "get_initial_params",
+            "get_objective_function_name",
+            "get_optimization_space",
+            "get_param_function_names",
+            "get_wrapper_attr",
+            "metadata",
+            "objective_range",
+            "override_skeleton_points",
+            "render",
+            "render_mode",
+            "spec",
+            "unwrapped",
+        }
+
+    def test_non_callable_proto_members(self) -> None:
+        assert getattr(
+            coi.FunctionOptimizable, "__non_callable_proto_members__", None
+        ) == {
+            "constraints",
+            "metadata",
+            "objective_range",
+            "render_mode",
+            "spec",
+            "unwrapped",
+        }
+
+    def test_proto_classmethods__(self) -> None:
+        assert getattr(coi.FunctionOptimizable, "__proto_classmethods__", None) == set()
+
+
 @pytest.mark.parametrize("cls", [coi.SingleOptimizable, coi.BaseSingleOptimizable])
 def test_single_optimizable_defaults(cls: type[coi.SingleOptimizable]) -> None:
     assert cls.metadata["render_modes"] == []

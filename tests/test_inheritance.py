@@ -65,6 +65,7 @@ def test_is_abstract_base_class(abc: type, env_class: type[Env]) -> None:
     mock = new_class(
         "NoDirectInheritance", bases=(coi.SingleOptimizable, env_class), exec_body=body
     )
+    assert issubclass(mock, env_class)
     assert issubclass(mock, abc)
 
 

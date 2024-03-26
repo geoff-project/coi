@@ -267,7 +267,11 @@ def non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
 
     This code is modified from Python 3.12+ `@runtime_checkable`.
     """
-    members = getattr(cls, "__non_callable_proto_members__", None)
+    # Don't use `getattr()` to avoid lookup in super classes.
+    members = t.cast(
+        t.Union[set[str], None],
+        _get_dunder_dict_of_class(cls).get("__non_callable_proto_members__"),
+    )
     if members is None:
         members = set()
         for attr in protocol_attrs(cls):
@@ -301,7 +305,11 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
     This code is based on `non_callable_proto_members()`, which is in
     turn modified from Python 3.12+ `@runtime_checkable`.
     """
-    members = getattr(cls, "__proto_classmethods__", None)
+    # Don't use `getattr()` to avoid lookup in super classes.
+    members = t.cast(
+        t.Union[set[str], None],
+        _get_dunder_dict_of_class(cls).get("__proto_classmethods__"),
+    )
     if members is None:
         # Access the attributes via the class dictionary; access
         # via `getattr()` would bind them and give us bound-method

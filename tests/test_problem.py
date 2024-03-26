@@ -38,6 +38,30 @@ class TestHasNpRandom:
         _: coi.HasNpRandom = Subclass()
 
 
+class TestProtocol:
+    def test_protocol_attrs(self) -> None:
+        assert getattr(coi.Problem, "__protocol_attrs__", None) == {
+            "close",
+            "get_wrapper_attr",
+            "metadata",
+            "render",
+            "render_mode",
+            "spec",
+            "unwrapped",
+        }
+
+    def test_non_callable_proto_members(self) -> None:
+        assert getattr(coi.Problem, "__non_callable_proto_members__", None) == {
+            "metadata",
+            "render_mode",
+            "spec",
+            "unwrapped",
+        }
+
+    def test_proto_classmethods__(self) -> None:
+        assert getattr(coi.Problem, "__proto_classmethods__", None) == set()
+
+
 class TestProblem:
     def test_is_abstract(self) -> None:
         class NonInheritingProblem:

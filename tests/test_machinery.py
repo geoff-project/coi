@@ -109,7 +109,9 @@ def test_proto_classmethods(cls: _machinery.AttrCheckProtocolMeta) -> None:
 
 
 def test_proto_classmethods_fails(monkeypatch: pytest.MonkeyPatch) -> None:
-    def get(key: str, default: object = None) -> t.Any:
+    def get(key: str, default: object = None) -> object:
+        if key == "__proto_classmethods__":
+            return None
         if key == "__protocol_attrs__":
             return {"cmeth"}
         raise ValueError
@@ -164,6 +166,14 @@ class TestAttrCheckProtocolEdgeCases:
         assert issubclass(MyAttrProtocol, _machinery.AttrCheckProtocol)  # type: ignore[misc]
         assert not issubclass(int, _machinery.AttrCheckProtocol)  # type: ignore[misc]
         assert issubclass(_machinery.AttrCheckProtocol, t.Protocol)  # type: ignore[arg-type]
+
+    @pytest.mark.xfail(
+        sys.version_info < (3, 12),
+        strict=True,
+        reason="Before Python 3.12, `Protocol` was simply an empty "
+        "protocol that matched any type",
+    )
+    def test_protocol_not_special(self) -> None:
         assert not issubclass(int, t.Protocol)  # type: ignore[arg-type]
 
     def test_no_protocol_attrs(self, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -396,7 +406,10 @@ class TestGetClassAnnotations:
         assert expected is actual
 
     def test_type(self, impl: t.Callable[[object], dict[str, object]]) -> None:
-        assert "__annotations__" in vars(type)
+        if sys.version_info < (3, 10):
+            assert "__annotations__" not in vars(type)
+        else:
+            assert "__annotations__" in vars(type)
         with pytest.raises(
             AttributeError,
             match="type object 'type' has no attribute '__annotations__'",
