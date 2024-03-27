@@ -391,7 +391,6 @@ class Token:
 
     __slots__ = ("_state", "_wait_handle", "_source")
 
-    # TODO: Mark this argument as kwarg-only
     def __init__(self, cancelled: bool = False) -> None:
         self._wait_handle: t.Optional[threading.Condition] = None
         self._state = _State.CANCELLED if cancelled else _State.READY

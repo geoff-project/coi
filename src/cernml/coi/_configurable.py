@@ -18,7 +18,7 @@ from types import SimpleNamespace
 import numpy as np
 
 T = typing.TypeVar("T")
-# T.__module__ = ""  # TODO: Re-evaluate this one when making docs.
+# T.__module__ = ""  # TODO(docs): Re-evaluate this one when making docs.
 
 ConfigValues = SimpleNamespace
 
@@ -200,7 +200,7 @@ class Config:
         """
         return {dest: field.value for dest, field in self._fields.items()}
 
-    # TODO: Can we fix this mess?
+    # TODO(docs): Can we fix this mess?
     # Escape the generic parameter `T` here so that Sphinx does not
     # parse it. If it did, this would mess up all references to built-in
     # types in the docs.

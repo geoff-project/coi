@@ -12,12 +12,11 @@ from contextlib import contextmanager
 
 import gymnasium as gym
 import numpy as np
-import typing_extensions as tx
 
 if t.TYPE_CHECKING:
-    from .. import protocols
+    from typing_extensions import TypeGuard
 
-# TODO: Add proper version guards around tx
+    from .. import protocols
 
 
 def bump_warn_arg(warn: int) -> int:
@@ -108,12 +107,12 @@ def assert_human_render_called(problem: "protocols.Problem") -> t.Iterator[None]
         ) from exc
 
 
-def is_reward(reward: t.Any) -> tx.TypeGuard[t.SupportsFloat]:
+def is_reward(reward: t.Any) -> "TypeGuard[t.SupportsFloat]":
     """Return True if the object has the correct type for a reward."""
     return isinstance(reward, t.SupportsFloat)
 
 
-def is_bool(value: t.Any) -> tx.TypeGuard[t.Union[bool, np.bool_]]:
+def is_bool(value: t.Any) -> "TypeGuard[bool | np.bool_]":
     """Return True if the object is a true boolean.
 
     This accepts `bool`, :class:`np.bool_` and possible subclasses, but
@@ -176,6 +175,6 @@ def is_iterable(value: t.Any) -> bool:
     return isinstance(value, t.Iterable) or hasattr(type(value), "__getitem__")
 
 
-def is_box(space: gym.Space) -> tx.TypeGuard[gym.spaces.Box]:
+def is_box(space: gym.Space) -> "TypeGuard[gym.spaces.Box]":
     """Return True if the given space is a Box."""
     return isinstance(space, gym.spaces.Box)
