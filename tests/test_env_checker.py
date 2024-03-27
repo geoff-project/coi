@@ -29,13 +29,13 @@ class MultiGoalParabola(
 
     action_space = gym.spaces.Box(-1, 1, (2,), dtype=np.double)
     observation_space = gym.spaces.Dict(
-        observation=gym.spaces.Box(0.0, np.sqrt(8.0), (1,), dtype=np.double),
+        observation=gym.spaces.Box(0.0, np.sqrt(3**2 + 3**2), (1,), dtype=np.double),
         achieved_goal=gym.spaces.Box(-2, 2, (2,), dtype=np.double),
         desired_goal=gym.spaces.Box(-2, 2, (2,), dtype=np.double),
     )
     optimization_space = gym.spaces.Box(-2, 2, (2,), dtype=np.double)
     reward_range = (-np.sqrt(16.0), 0.0)
-    objective_range = (0.0, np.sqrt(18.0))
+    objective_range = (0.0, np.sqrt(3**2 + 3**2))
     metadata: dict[str, t.Any] = {
         "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
@@ -67,6 +67,7 @@ class MultiGoalParabola(
     def compute_observation(
         self, action: NDArray[np.double], info: coi.InfoDict
     ) -> coi.GoalObs:
+        assert action in self.action_space
         self.pos += action
         return {
             "observation": np.array([self.distance]),
@@ -103,6 +104,7 @@ class MultiGoalParabola(
         return obs["achieved_goal"]
 
     def compute_single_objective(self, params: NDArray[np.double]) -> t.SupportsFloat:
+        assert params in self.optimization_space
         self.pos = params.copy()
         return self.distance
 
@@ -129,7 +131,8 @@ class MultiGoalParabola(
 
 
 class FunctionParabola(coi.BaseFunctionOptimizable):
-    objective_range = (0.0, np.sqrt(18.0))
+    optimization_space = gym.spaces.Box(-2, 2, (2,))
+    objective_range = (0.0, np.sqrt(4**2 + 4**2))
     metadata: dict[str, t.Any] = {
         "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
@@ -149,7 +152,7 @@ class FunctionParabola(coi.BaseFunctionOptimizable):
         return float(np.linalg.norm(self.pos - self.goals[self.time]))
 
     def get_optimization_space(self, cycle_time: float) -> gym.Space:
-        return gym.spaces.Box(-2, 2, (2,))
+        return self.optimization_space
 
     def get_initial_params(self, cycle_time: float) -> NDArray[np.double]:
         space = self.get_optimization_space(cycle_time)
@@ -161,6 +164,7 @@ class FunctionParabola(coi.BaseFunctionOptimizable):
     def compute_function_objective(
         self, cycle_time: float, params: NDArray[np.double]
     ) -> float:
+        assert params in self.get_optimization_space(cycle_time)
         self.time = cycle_time
         self.pos = params.copy()
         return self.distance
