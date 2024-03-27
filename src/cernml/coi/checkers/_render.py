@@ -23,7 +23,6 @@ else:
 
 def get_render_mode_checks() -> dict[str, t.Callable[..., None]]:
     """Return a mapping from render mode to checker for that mode."""
-    # TODO: Handle new semantics of `human` (render() call not necessary)
     checks = {
         "rgb_array_list": assert_rgb_array_list,
         "rgb_array": assert_rgb_array,

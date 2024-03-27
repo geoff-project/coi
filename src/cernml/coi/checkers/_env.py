@@ -12,7 +12,14 @@ import numpy as np
 from gymnasium import Env, spaces
 
 from .._typeguards import is_env, is_goal_env, is_separable_env
-from ._generic import assert_range, bump_warn_arg, is_bool, is_box, is_reward
+from ._generic import (
+    assert_human_render_called,
+    assert_range,
+    bump_warn_arg,
+    is_bool,
+    is_box,
+    is_reward,
+)
 
 
 def check_env(env: Env, warn: int = True) -> None:
@@ -21,7 +28,7 @@ def check_env(env: Env, warn: int = True) -> None:
     assert_observation_space(env)
     assert_action_space(env)
     assert_range(env.reward_range, "reward")
-    assert_env_returned_values(env)
+    assert_env_return_values(env)
     assert_env_no_nan(env)
     if warn:
         warn_observation_space(env, warn=bump_warn_arg(warn))
@@ -61,7 +68,7 @@ def assert_action_space(env: Env) -> None:
     assert np.any(abs(space.high) <= 1.0), "action space limits must be 1.0 or less"
 
 
-def assert_env_returned_values(env: Env) -> None:
+def assert_env_return_values(env: Env) -> None:
     """Check the return types of `env.reset()` and `env.step()`.
 
     Example:
@@ -69,6 +76,8 @@ def assert_env_returned_values(env: Env) -> None:
         ...     reward_range = (-1.0, 1.0)
         ...     observation_space = spaces.Box(-1, 1, ())
         ...     action_space = observation_space
+        ...     def __init__(self, render_mode=None):
+        ...         self.render_mode = render_mode
         ...     @property
         ...     def unwrapped(self):
         ...         return self
@@ -76,30 +85,34 @@ def assert_env_returned_values(env: Env) -> None:
         ...         return np.array(0.0, dtype=np.float32), {}
         ...     def step(self, action):
         ...         return action, 0.0, False, False, {}
-        >>> assert_env_returned_values(Foo())
+        >>> assert_env_return_values(Foo())
     """
+    _check_env_reset(env)
+    _check_env_step(env)
 
-    def _check_obs(obs: np.ndarray) -> None:
-        assert (
-            obs in env.observation_space
-        ), f"observation {obs} outside of space {env.observation_space}"
-        inner_obs = obs["observation"] if is_goal_env(env) else obs
-        assert isinstance(
-            inner_obs, np.ndarray
-        ), f"observation {inner_obs} must be NumPy array"
 
-    obs, info = env.reset()
-    _check_obs(obs)
+def _check_env_reset(env: Env) -> None:
+    """Check the return types of `env.reset()`."""
+    with assert_human_render_called(env):
+        data = env.reset()
+    assert len(data) == 2, f"step() must return two values: obs, info; not {data!r}"
+    obs, info = data
+    _check_obs(obs, env)
     assert isinstance(
         info, dict
-    ), f"`info` returned by `reset()` must be a dictionary: {info}"
-    data = env.step(env.action_space.sample())
+    ), f"`info` returned by `reset()` must be a dictionary: {info!r}"
+
+
+def _check_env_step(env: Env) -> None:
+    """Check the return types of `env.step()`."""
+    with assert_human_render_called(env):
+        data = env.step(env.action_space.sample())
     assert len(data) == 5, (
-        f"step() must return four values: obs, reward, "
-        f"terminated, truncated, info; not {data}"
+        f"step() must return five values: obs, reward, "
+        f"terminated, truncated, info; not {data!r}"
     )
     obs, reward, terminated, truncated, info = data
-    _check_obs(obs)
+    _check_obs(obs, env)
     assert is_reward(reward), "reward must be a float or integer"
     low, high = env.reward_range
     assert is_reward(low), "reward range must be float: {low!r}"
@@ -118,6 +131,17 @@ def assert_env_returned_values(env: Env) -> None:
     elif is_separable_env(env):
         expected = env.compute_reward(obs, None, info)
         assert reward == expected, f"reward does not match: {reward} != {expected}"
+
+
+def _check_obs(obs: np.ndarray, env: Env) -> None:
+    """Assert that observation matches the observation space."""
+    assert (
+        obs in env.observation_space
+    ), f"observation {obs} outside of space {env.observation_space}"
+    inner_obs = obs["observation"] if is_goal_env(env) else obs
+    assert isinstance(
+        inner_obs, np.ndarray
+    ), f"obs['observation'] {inner_obs} must be NumPy array"
 
 
 def assert_env_no_nan(env: Env) -> None:
