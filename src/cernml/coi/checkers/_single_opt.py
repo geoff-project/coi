@@ -12,8 +12,8 @@ import gymnasium as gym
 import numpy as np
 from scipy.optimize import LinearConstraint, NonlinearConstraint
 
-from .._single_opt import Constraint, SingleOptimizable
 from .._typeguards import is_single_optimizable
+from ..protocols import Constraint, SingleOptimizable
 from ._generic import assert_human_render_called, assert_range, is_box, is_reward
 
 

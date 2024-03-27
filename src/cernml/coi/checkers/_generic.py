@@ -14,7 +14,8 @@ import gymnasium as gym
 import numpy as np
 import typing_extensions as tx
 
-from .._problem import Problem
+if t.TYPE_CHECKING:
+    from .. import protocols
 
 # TODO: Add proper version guards around tx
 
@@ -57,7 +58,7 @@ def assert_range(reward_range: tuple[float, float], name: str) -> None:
 
 
 @contextmanager
-def assert_human_render_called(problem: Problem) -> t.Iterator[None]:
+def assert_human_render_called(problem: "protocols.Problem") -> t.Iterator[None]:
     """Context manager that asserts automatic `render()` calls.
 
     This context manager fails if the render mode of *env* is *human*

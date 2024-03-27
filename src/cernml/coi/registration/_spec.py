@@ -21,7 +21,7 @@ if t.TYPE_CHECKING:
         from typing_extensions import Self
     else:
         from typing import Self
-    from .._problem import Problem
+    from .. import protocols
 
 __all__ = (
     "MinimalEnvSpec",
@@ -115,7 +115,7 @@ class EnvSpec(metaclass=ABCMeta):
     def __post_init__(self) -> None:
         self.namespace, self.name, self.version = _base.parse_env_id(self.id)
 
-    def make(self, **kwargs: t.Any) -> Problem:
+    def make(self, **kwargs: t.Any) -> protocols.Problem:
         """Call `cernml.coi.make` using this spec."""
         # Delayed import to avoid a cyclic dependency between modules.
         from ._make import make

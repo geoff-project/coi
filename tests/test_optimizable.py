@@ -17,7 +17,7 @@ from cernml import coi
 
 class TestSingleOptProtocol:
     def test_protocol_attrs(self) -> None:
-        assert getattr(coi.SingleOptimizable, "__protocol_attrs__", None) == {
+        assert getattr(coi.protocols.SingleOptimizable, "__protocol_attrs__", None) == {
             "close",
             "compute_single_objective",
             "constraint_names",
@@ -37,7 +37,7 @@ class TestSingleOptProtocol:
 
     def test_non_callable_proto_members(self) -> None:
         assert getattr(
-            coi.SingleOptimizable, "__non_callable_proto_members__", None
+            coi.protocols.SingleOptimizable, "__non_callable_proto_members__", None
         ) == {
             "constraint_names",
             "constraints",
@@ -52,12 +52,17 @@ class TestSingleOptProtocol:
         }
 
     def test_proto_classmethods__(self) -> None:
-        assert getattr(coi.SingleOptimizable, "__proto_classmethods__", None) == set()
+        assert (
+            getattr(coi.protocols.SingleOptimizable, "__proto_classmethods__", None)
+            == set()
+        )
 
 
 class TestFunctionOptProtocol:
     def test_protocol_attrs(self) -> None:
-        assert getattr(coi.FunctionOptimizable, "__protocol_attrs__", None) == {
+        assert getattr(
+            coi.protocols.FunctionOptimizable, "__protocol_attrs__", None
+        ) == {
             "close",
             "compute_function_objective",
             "constraints",
@@ -77,7 +82,7 @@ class TestFunctionOptProtocol:
 
     def test_non_callable_proto_members(self) -> None:
         assert getattr(
-            coi.FunctionOptimizable, "__non_callable_proto_members__", None
+            coi.protocols.FunctionOptimizable, "__non_callable_proto_members__", None
         ) == {
             "constraints",
             "metadata",
@@ -88,11 +93,18 @@ class TestFunctionOptProtocol:
         }
 
     def test_proto_classmethods__(self) -> None:
-        assert getattr(coi.FunctionOptimizable, "__proto_classmethods__", None) == set()
+        assert (
+            getattr(coi.protocols.FunctionOptimizable, "__proto_classmethods__", None)
+            == set()
+        )
 
 
-@pytest.mark.parametrize("cls", [coi.SingleOptimizable, coi.BaseSingleOptimizable])
-def test_single_optimizable_defaults(cls: type[coi.SingleOptimizable]) -> None:
+@pytest.mark.parametrize(
+    "cls", [coi.protocols.SingleOptimizable, coi.SingleOptimizable]
+)
+def test_single_optimizable_defaults(
+    cls: type[coi.protocols.SingleOptimizable],
+) -> None:
     assert cls.metadata["render_modes"] == []
     assert cls.render_mode is None
     assert getattr(cls, "optimization_space", None) is None
@@ -103,8 +115,12 @@ def test_single_optimizable_defaults(cls: type[coi.SingleOptimizable]) -> None:
     assert len(cls.constraint_names) == 0
 
 
-@pytest.mark.parametrize("cls", [coi.FunctionOptimizable, coi.BaseFunctionOptimizable])
-def test_function_optimizable_defaults(cls: type[coi.FunctionOptimizable]) -> None:
+@pytest.mark.parametrize(
+    "cls", [coi.protocols.FunctionOptimizable, coi.FunctionOptimizable]
+)
+def test_function_optimizable_defaults(
+    cls: type[coi.protocols.FunctionOptimizable],
+) -> None:
     class Subclass(cls):  # type: ignore[misc,valid-type]
         def get_optimization_space(self, cycle_time: float) -> Box:
             return Box(-1, 1, ())
@@ -126,10 +142,8 @@ def test_function_optimizable_defaults(cls: type[coi.FunctionOptimizable]) -> No
     assert problem.override_skeleton_points() is None
 
 
-@pytest.mark.parametrize(
-    "cls", [coi.BaseSingleOptimizable, coi.BaseFunctionOptimizable]
-)
-def test_base_optimizable_sets_render_mode(cls: type[coi.SingleOptimizable]) -> None:
+@pytest.mark.parametrize("cls", [coi.SingleOptimizable, coi.FunctionOptimizable])
+def test_optimizable_sets_render_mode(cls: type[coi.AnyOptimizable]) -> None:
     class Subclass(cls):  # type: ignore[misc,valid-type]
         metadata = {"render_modes": ["rgb_array"]}
 

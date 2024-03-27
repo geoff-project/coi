@@ -14,15 +14,13 @@ from ._configurable import Configurable
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._extra_envs import SeparableEnv
 from ._extra_goal_envs import SeparableGoalEnv
-from ._func_opt import FunctionOptimizable
 from ._goalenv import GoalEnv
-from ._problem import Problem
-from ._single_opt import SingleOptimizable
+from .protocols import FunctionOptimizable, Problem, SingleOptimizable
 
 if t.TYPE_CHECKING:
     from typing_extensions import TypeAlias, TypeGuard
 
-    from ._single_opt import ParamType  # noqa: F401
+    from .protocols import ParamType  # noqa: F401
 
 __all__ = (
     "AnyOptimizable",

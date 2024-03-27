@@ -11,8 +11,7 @@ import typing as t
 import numpy as np
 from scipy.optimize import LinearConstraint, NonlinearConstraint
 
-from cernml.coi._func_opt import Constraint, FunctionOptimizable
-
+from ..protocols import Constraint, FunctionOptimizable
 from ._generic import assert_human_render_called, assert_range, is_box, is_reward
 
 

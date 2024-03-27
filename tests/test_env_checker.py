@@ -199,7 +199,7 @@ class MultiGoalParabola(
         pass
 
 
-class FunctionParabola(coi.BaseFunctionOptimizable, CallStatsMixin):
+class FunctionParabola(coi.FunctionOptimizable, CallStatsMixin):
     optimization_space = gym.spaces.Box(-2, 2, (2,))
     objective_range = (0.0, np.sqrt(4**2 + 4**2))
     metadata: dict[str, t.Any] = {
@@ -211,7 +211,7 @@ class FunctionParabola(coi.BaseFunctionOptimizable, CallStatsMixin):
 
     def __init__(self, *, render_mode: str | None = None) -> None:
         # Don't use super(), `typing.Protocol` breaks MRO.
-        coi.BaseFunctionOptimizable.__init__(self, render_mode=render_mode)
+        coi.FunctionOptimizable.__init__(self, render_mode=render_mode)
         CallStatsMixin.__init__(self)
         self.pos = np.zeros(2)
         self.time = 0.0

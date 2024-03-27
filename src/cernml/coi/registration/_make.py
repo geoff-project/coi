@@ -20,7 +20,7 @@ from . import _base, errors
 from ._spec import EnvSpec
 
 if t.TYPE_CHECKING:
-    from .._problem import Problem
+    from .. import protocols
 
 __all__ = ("make",)
 
@@ -34,7 +34,7 @@ def make(
     apply_api_compatibility: bool | None = None,
     disable_env_checker: bool | None = None,
     **kwargs: t.Any,
-) -> Problem:
+) -> protocols.Problem:
     """Reimplementation of `gymnasium.make`.
 
     This implementation differs from the canonical one in `gymnasium` in
@@ -189,9 +189,9 @@ def _create_env(
     *,
     kwargs: dict[str, t.Any],
     apply_human_rendering: bool,
-) -> Problem:
+) -> protocols.Problem:
     try:
-        env = t.cast("Problem", creator(**kwargs))
+        env = t.cast("protocols.Problem", creator(**kwargs))
     except TypeError as exc:
         if (
             apply_human_rendering
@@ -220,7 +220,7 @@ def _create_env(
 
 
 def _add_wrappers(
-    env: Problem,
+    env: protocols.Problem,
     *,
     disable_env_checker: bool,
     autoreset: bool,
@@ -232,7 +232,7 @@ def _add_wrappers(
     max_episode_steps: int | None,
     additional_wrappers: tuple[_base.WrapperSpec, ...],
     stacklevel: int,
-) -> Problem:
+) -> protocols.Problem:
     assert env.spec is not None
     num_prior_wrappers = len(env.spec.additional_wrappers)
     prior_wrappers = additional_wrappers[:num_prior_wrappers]
@@ -288,13 +288,13 @@ def _verify_prior_wrappers(
             raise errors.WrapperMismatchError(expected=exp_spec, actual=act_spec)
 
 
-def _wrap_compatibility(env: Problem, render_mode: str | None) -> Env:
+def _wrap_compatibility(env: protocols.Problem, render_mode: str | None) -> Env:
     if not isinstance(env, wrappers.compatibility.LegacyEnv):
         raise errors.ApiCompatError(problem=env)
     return wrappers.EnvCompatibility(env, render_mode)
 
 
-P = t.TypeVar("P", bound="Problem")
+P = t.TypeVar("P", bound="protocols.Problem")
 
 
 def _wrap_if_env(

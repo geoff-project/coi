@@ -12,8 +12,8 @@ import typing as t
 import warnings
 
 from .._machine import Machine
-from .._problem import Problem
 from .._typeguards import is_problem
+from ..protocols import Problem
 from ._generic import bump_warn_arg
 from ._render import get_render_mode_checks
 
@@ -61,7 +61,6 @@ def assert_render_mode_valid(problem: Problem, *, warn: int = True) -> None:
 
     Example:
 
-        >>> from cernml.coi import BaseProblem, Problem
         >>> from warnings import simplefilter
         >>> simplefilter("error")
         >>> class Foo:
@@ -84,7 +83,8 @@ def assert_render_mode_valid(problem: Problem, *, warn: int = True) -> None:
         AssertionError: ...uses render mode 'human', which is not
         among the declared render modes: []
 
-        >>> class Foo(BaseProblem):
+        >>> from cernml.coi import Problem
+        >>> class Foo(Problem):
         ...     metadata = {"render_modes": ["human"]}
         >>> assert_render_mode_valid(Foo(render_mode="human"))
     """
@@ -110,25 +110,24 @@ def assert_execute_render(
 
     Example:
 
-        >>> from cernml.coi import BaseProblem
+        >>> from cernml.coi import Problem
         >>> from warnings import simplefilter
         >>> simplefilter("error")
-        >>> class Foo(BaseProblem):
+        >>> class Foo(Problem):
         ...     metadata = {"render_modes": ["human"]}
         >>> assert_execute_render(Foo(render_mode="human"))
         Traceback (most recent call last):
         ...
         UserWarning: ...cannot be run while headless=True
 
-        >>> from cernml.coi import BaseProblem
-        >>> class Foo(BaseProblem):
+        >>> class Foo(Problem):
         ...     metadata = {"render_modes": ["ansi"]}
         >>> assert_execute_render(Foo(render_mode="ansi"))
         Traceback (most recent call last):
         ...
         AssertionError: render mode 'ansi' declared ...
 
-        >>> class Foo(BaseProblem):
+        >>> class Foo(Problem):
         ...     metadata = {"render_modes": ["ansi", "custom"]}
         ...     def __init__(self, render_mode=None):
         ...         self.render_mode = render_mode
