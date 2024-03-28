@@ -118,7 +118,7 @@ class MultiGoalParabola(
 
     def reset(
         self, seed: int | None = None, options: coi.InfoDict | None = None
-    ) -> tuple[dict[str, NDArray[np.double]], coi.InfoDict]:
+    ) -> tuple[coi.GoalObs, coi.InfoDict]:
         super().reset(seed=seed)
         self.pos = self.action_space.sample()
         self.goal = self.action_space.sample()

@@ -148,14 +148,49 @@ def _check_obs(obs: np.ndarray, env: Env) -> None:
 
 
 def assert_env_no_nan(env: Env) -> None:
-    """Check that the environment never produces infinity or NaN."""
+    """Check that the environment never produces infinity or NaN.
+
+    Example:
+        >>> from warnings import simplefilter
+        >>> simplefilter("ignore")
+        >>> class ExampleEnv(Env):
+        ...     def __init__(self):
+        ...         self.reset_called = False
+        ...         self.steps_remaining = 0
+        ...         self.step_count = 0
+        ...         self.action_space = spaces.Box(-1, 1, (1,))
+        ...     def reset(self):
+        ...         if self.reset_called:
+        ...             raise RuntimeError
+        ...         self.reset_called = True
+        ...         self.steps_remaining = 10
+        ...         return np.zeros(()), {}
+        ...     def step(self, action):
+        ...         self.steps_remaining -= 1
+        ...         self.step_count += 1
+        ...         reward = 1.0 / np.double(self.steps_remaining)
+        ...         return np.zeros(()), reward, False, False, {}
+        >>> env = ExampleEnv()
+        >>> assert_env_no_nan(env)
+        Traceback (most recent call last):
+        ...
+        AssertionError: NaN or inf in reward: nan
+        >>> env.reset_called
+        True
+        >>> env.step_count
+        10
+        >>> env.steps_remaining
+        0
+    """
     terminated = truncated = True
     for _ in range(10):
         if terminated or truncated:
             obs, _ = env.reset()
         if is_goal_env(env):
-            obs = obs["observation"]
-        assert np.all(np.isfinite(obs)), f"NaN or inf in observation: {obs}"
+            nested = obs["observation"]
+            assert np.all(np.isfinite(nested)), f"NaN or inf in observation: {obs}"
+        else:
+            assert np.all(np.isfinite(obs)), f"NaN or inf in observation: {obs}"
         obs, reward, terminated, truncated, _ = env.step(env.action_space.sample())
         assert np.isfinite(float(reward)), f"NaN or inf in reward: {reward}"
 

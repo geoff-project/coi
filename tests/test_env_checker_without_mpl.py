@@ -84,19 +84,19 @@ def test_sep_env(no_matplotlib: None) -> None:
 
         def compute_terminated(
             self,
-            achieved_goal: NDArray[np.double],
-            desired_goal: None,
+            obs: NDArray[np.double],
+            reward: float,
             info: coi.InfoDict,
         ) -> bool:
-            return self.distance < 0.05
+            return reward < 0.05
 
         def compute_truncated(
             self,
-            achieved_goal: NDArray[np.double],
-            desired_goal: None,
+            obs: NDArray[np.double],
+            reward: float,
             info: coi.InfoDict,
         ) -> bool:
-            return achieved_goal not in self.observation_space
+            return obs not in self.observation_space
 
         def render(self) -> t.Any:
             if self.render_mode == "ansi":

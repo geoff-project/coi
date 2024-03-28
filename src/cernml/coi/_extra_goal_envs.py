@@ -69,7 +69,7 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
         achieved_goal = t.cast(GoalType, obs["achieved_goal"])
         desired_goal = t.cast(GoalType, obs["desired_goal"])
         reward = self.compute_reward(achieved_goal, desired_goal, info)
-        info["reward"] = reward
+        info["reward"] = float(reward)
         terminated = self.compute_terminated(achieved_goal, desired_goal, info)
         truncated = self.compute_truncated(achieved_goal, desired_goal, info)
         return obs, reward, terminated, truncated, info

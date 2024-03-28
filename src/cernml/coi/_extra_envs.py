@@ -67,9 +67,9 @@ class SeparableEnv(Env[ObsType, ActType]):
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(obs, None, info)
-        info["reward"] = reward
-        terminated = self.compute_terminated(obs, None, info)
-        truncated = self.compute_truncated(obs, None, info)
+        info["reward"] = freward = float(reward)
+        terminated = self.compute_terminated(obs, freward, info)
+        truncated = self.compute_truncated(obs, freward, info)
         return obs, reward, terminated, truncated, info
 
     def compute_observation(self, action: ActType, info: InfoDict) -> ObsType:
@@ -122,9 +122,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
-    # TODO: Change this to pass the reward instead of the goal. Keep
-    # harmony with GoalEnv in mind.
-    def compute_terminated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
+    def compute_terminated(self, obs: ObsType, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
         This externalizes the decision whether the agent has reached the
@@ -155,7 +153,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
-    def compute_truncated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
+    def compute_truncated(self, obs: ObsType, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
         This externalizes the decision whether a condition outside of
