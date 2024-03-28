@@ -15,13 +15,14 @@ from types import MappingProxyType
 
 import numpy as np
 from gymnasium import Env
+from gymnasium.envs.registration import EnvSpec as GymEnvSpec
 from gymnasium.spaces import Space
 from gymnasium.utils import seeding
 
 from . import protocols
 from ._machine import Machine
 from .protocols import Constraint, ParamType
-from .registration import EnvSpec, errors
+from .registration import errors
 
 if t.TYPE_CHECKING:
     from typing_extensions import Self
@@ -99,7 +100,17 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
         ),
     )
     render_mode: str | None = None
-    spec: EnvSpec | None = None
+
+    # HACK: We say this is a Gym EnvSpec, but in fact it will almost
+    # always be a COI EnvSpec. This is so that `OptEnv` can be
+    # a subclass of both `gym.Env` and `coi.SingleOptimizable` without
+    # conflicts.
+    #
+    # The two spec classes are nearly identical and Gym's specs are
+    # a virtual subclass of the COI's. If it is important to you to get
+    # the typing of this attribute right, use `coi.protocols.Problem`
+    # as annotation instead of this class.
+    spec: GymEnvSpec | None = None
 
     def __init__(self, render_mode: str | None = None) -> None:
         super().__init__()

@@ -17,7 +17,7 @@ from abc import ABCMeta
 
 from gymnasium.core import ActType, Env, ObsType
 
-from .protocols import ParamType, SingleOptimizable
+from ._classes import ParamType, SingleOptimizable
 
 __all__ = (
     "ActType",

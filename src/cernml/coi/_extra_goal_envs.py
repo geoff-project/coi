@@ -16,9 +16,9 @@ from abc import ABCMeta
 
 from gymnasium.core import ActType, ObsType
 
+from ._classes import ParamType, SingleOptimizable
 from ._extra_envs import InfoDict
 from ._goalenv import GoalEnv, GoalType
-from .protocols import ParamType, SingleOptimizable
 
 if sys.version_info < (3, 11):
     from typing_extensions import TypedDict
