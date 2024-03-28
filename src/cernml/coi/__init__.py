@@ -4,43 +4,49 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Common Optimization Interfaces for optimizers and RL agents.
+"""This is the API documentation for the Common Optimization Interfaces.
 
-The most primitive interface provided by this package is the `Problem`,
-and it isn't very interesting on its own. More important are three
-interfaces that extend `Problem`:
+This documentation lists every function and every class, including every
+method, that is stably supported by this project. It has been written in
+such a way as to support both browsing and targeted lookups.
+Nonetheless, new readers might feel more comfortable reading the
+:doc:`/guide/index` first.
 
-- `gym.Env`, as provided by `OpenAI Gym
-  <https://github.com/openai/gym/>`_;
-- `SingleOptimizable` and `FunctionOptimizable`, provided by this
-  package.
+The documentation is sorted thematically. It begins by listing the
+:doc:`classes`, which are what users are expected to interact with most
+of the time. This includes `SingleOptimizable` and `gymnasium.Env`, the
+base classes from which most user classes should derive. After that
+comes :doc:`registration`, which is what users need to use both in order
+to publish their optimization problems, and to instantiate them. The
+next section covers :doc:`configurable`, a mechanism through which an
+optimization problem may declare which parts of it can be configured via
+a graphical application.
 
-The former is implemented by classes that describe reinforcement
-learning (RL) problems; the latter by classes that describe
-numerical-optimization problems. A class may implement both, either
-explicitly or through the convenience class `OptEnv`.
+After these topics of general interest, the documentation covers more
+specialized tools and conveniences provided by this package.
+:doc:`cancellation` is a method through which optimization problems may
+wait for incoming data in a way that can still be interrupted by the
+user in a safe manner. :doc:`checkers` allow authors of optimization
+problems to test their classes for compliance with certain restrictions
+and assumptions that we place on the more general :doc:`Gymnasium API
+<gym:README>`. After that, we list :doc:`extras`, which contains useful
+but less commonly used interfaces – most notably
+`CustomOptimizerProvider`. The :doc:`goalenv` are based on on the
+multi-goal API that used to be part of Gymnasium but has since been
+moved to :doc:`Gymnasium-Robotics <gymrob:content/multi-goal_api>`.
+Finally, for all users of `static type checking`_, a large number of
+:doc:`typeguards` is provided to narrow this package's interfaces as
+necessary.
 
-This package comes with its own :doc:`registry <registry>`; it is
-similar to Gym's :class:`~gym.envs.registration.EnvRegistry`, but makes
-it possible to register both RL and numerical-optimization problems in
-one common list. To make your problem findable by other applications,
-never forget the following line:
+.. _static type checking: https://mypy.readthedocs.io/en/stable/
 
-.. code-block:: python
-
-    coi.register("name", entry_point=Class)
-
-For reasons of portability, this API does not support the full range of
-`~gym.Env` classes, but rather puts several restrictions on them. This
-is inspired by the :doc:`sb3:common/env_checker` designed by
-:doc:`Stable Baselines <sb3:index>`, but comes with additional
-requirements. For more information, please refer to our
-:doc:`/guide/index`.
-
-Finally, for the purpose of embedding optimization problems as *plugins*
-into a *host application*, this package also provides an interface for
-pre-run :doc:`configuration <config>` of optimization problems and for
-the :doc:`cancellation <cancellation>` of running algorithms.
+The last two sections document implementation details of this package.
+We don't expect the general user to read or even acknowledge them;
+rather, they are provided for the curious and for contributors who want
+to become more familiar with this package. The :doc:`protocols` document
+the pure protocols upon which the :doc:`core classes <classes>` are
+built. :doc:`machinery` describes in detail the internal classes that
+make the package work the way it does.
 """
 
 from . import cancellation

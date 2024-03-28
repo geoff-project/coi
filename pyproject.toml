@@ -69,6 +69,7 @@ all = [
 doc = [
     'sphinx >= 4.0',
     'sphinx-inline-tabs',
+    'python_docs_theme',
 ]
 examples = [
     'cernml-coi[all]',
@@ -123,6 +124,8 @@ ignore = [
     'TRY003', # Avoid specifying long messages outside the exception class
     'UP037',  # Remove quotes from type annotation
 ]
+# Allow non-breaking space and en-dash in docstrings.
+allowed-confusables = [' ', '–']
 flake8-pytest-style.fixture-parentheses = false
 isort.split-on-trailing-comma = true
 isort.known-first-party = ['cernml']

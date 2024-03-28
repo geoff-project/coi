@@ -8,6 +8,8 @@
 Waiting for New Data Without Blocking the GUI
 =============================================
 
+.. currentmodule:: cernml.coi.cancellation
+
 A typical use case for COI problems is optimization of parameters of various
 CERN accelerators. Doing so naturally requires communication with these
 machines. This communication may take take a long time – especially when the
@@ -51,19 +53,19 @@ Cancellation
 
 In order to cancel long-running data acquisition tasks, the COI have adopted
 the concept of `cancellation tokens from C#`_. A cancellation token is a small
-object that is handed to your `~cernml.coi.Problem` subclass on which you may
-check whether the user has requested a cancellation of your operation. If this
-is the case, you have the ability to cleanly shut down operations – usually by
-raising an exception.
+object that is handed to your `~.coi.Problem` subclass on which you may check
+whether the user has requested a cancellation of your operation. If this is the
+case, you have the ability to cleanly shut down operations – usually by raising
+an exception.
 
 .. _cancellation tokens from C#:
    https://docs.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads
 
 To use this feature, your problem must first declare that its support it by
 setting the ``"cern.cancellable"`` :ref:`metadata <Metadata>`. When it does so,
-a host application will pass a `~cernml.coi.cancellation.Token` to the
-constructor. On this token, the problem should check whether cancellation has
-been requested whenever it enters a loop that may run for a long time.
+a host application will pass a `Token` to the constructor. On this token, the
+problem should check whether cancellation has been requested whenever it enters
+a loop that may run for a long time.
 
 This sounds complicated, but luckily, :ref:`parameter streams
 <Synchronization>` already support cancellation tokens:
@@ -119,8 +121,7 @@ This sounds complicated, but luckily, :ref:`parameter streams
             return value
 
 If you have your own data acquisition logic, you can use the token yourself by
-regularly calling
-`~cernml.coi.cancellation.Token.raise_if_cancellation_requested()` on it:
+regularly calling `~Token.raise_if_cancellation_requested()` on it:
 
 .. code-block:: python
     :linenos:
@@ -143,9 +144,9 @@ regularly calling
         ...
 
 If you are writing a **host application** (i.e. something that runs other
-people's optimization problems), you will usually want to create a
-`~cernml.coi.cancellation.TokenSource` and pass its token to the optimization
-problem if it is cancellable:
+people's optimization problems), you will usually want to create
+a `TokenSource` and pass its token to the optimization problem if it is
+cancellable:
 
 .. code-block:: python
     :linenos:

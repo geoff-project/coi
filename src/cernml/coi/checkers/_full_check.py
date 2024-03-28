@@ -33,8 +33,8 @@ def check(env: Problem, warn: int = True, headless: bool = True) -> None:
     Args:
         env: The object whose API is to be checked. Must at least be a
             `Problem`. If it satisfies other interfaces, like
-            `SingleOptimizable` or `~gym.Env`, all of their APIs are
-            checked as well.
+            `SingleOptimizable` or `~gymnasium.Env`, all of their APIs
+            are checked as well.
         headless: If True (the default), do not run tests that require a
             GUI.
         warn: If True (the default), run additional tests that might be
@@ -44,18 +44,13 @@ def check(env: Problem, warn: int = True, headless: bool = True) -> None:
     Raises:
         AssertionError: if any check fails.
 
-    This method provides a plugin interface via the :ref:`entry point
-    <setuptools:dynamic discovery of services and plugins>`
-    ``"cernml.coi.checkers"``. This means that other packages may
-    provide additional checkers. Upon each call, this method will load
-    all plugins and call them with the signature ``checker(problem,
-    warn=warn, headless=headless)``.
-
     .. note::
         The *warn* parameter is actually an integer. If it's nonzero,
-        ``max(2, warn)`` is used to calculate the *stacklevel* passed to
-        `~warnings.warn()`. Higher values push the reported offending
-        location further up the stack trace.
+        :samp:`max(2, {warn})` is used to calculate the *stacklevel*
+        passed to :func:`~warnings.warn()`. Higher values push the
+        reported offending location further up the stack trace. This
+        allows you to attribute a warning to the correct optimization
+        problem even when calling this function from a wrapper.
     """
     unwrapped_env = getattr(env, "unwrapped", None)
     assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'

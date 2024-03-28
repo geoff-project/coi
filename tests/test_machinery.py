@@ -59,8 +59,8 @@ class MyProtocol(Base, t.Protocol):
         (1, False),
     ],
 )
-def test_is_subprotocol(obj: object, expected: bool) -> None:
-    assert _machinery.is_subprotocol(obj) == expected
+def test_is_protocol(obj: object, expected: bool) -> None:
+    assert _machinery.is_protocol(obj) == expected
 
 
 @pytest.mark.parametrize("cls", [MyAttrProtocol, MyProtocol])

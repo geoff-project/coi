@@ -8,49 +8,81 @@
 The Core API
 ============
 
+.. currentmodule:: cernml.coi
+
 .. digraph:: inheritance_diagram
     :caption: "Fig. 1: Inheritance diagram of the core interfaces"
 
     rankdir = "BT";
     bgcolor = "#00000000";
-    node [shape=record, fontname="Latin Modern Sans", style=filled, fillcolor="white"];
+    node [shape=plaintext, fontname="Open Sans", style=filled, fillcolor="white"];
     edge [style=dashed];
 
-    problem[label=<{
-        cernml.coi.<b>Problem</b>|
-        render(<i>mode</i>: str) → Any<br/>close() → None|
-        <i>metadata</i>: Dict[str, Any]<br/><i>unwrapped</i>: Problem}>,
-    ];
+    problem[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>Problem</b></td></tr>
+            <tr>
+                <td>render() → Any<br
+                />close() → None</td>
+            </tr>
+            <tr>
+                <td><i>metadata</i>: dict<br
+                /><i>render_mode</i>: str | None = None<br
+                /><i>unwrapped</i>: Problem</td>
+            </tr>
+        </table>
+    >];
 
-    sopt[label=<{
-        cernml.coi.<b>SingleOptimizable</b>|
-        get_initial_params() → Params<br/>compute_single_objective(<i>p</i>: Params) → float|
-        <i>optimization_space</i><br/><i>objective_range</i><br/><i>constraints</i>}>,
-    ];
+    sopt[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>SingleOptimizable</b></td></tr>
+            <tr>
+                <td>get_initial_params(<i>seed</i>=None, <i>options</i>=None) → Params<br
+                />compute_single_objective(<i>p</i>: Params) → float</td>
+            </tr>
+            <tr>
+                <td><i>optimization_space</i><br
+                /><i>objective_range</i><br
+                /><i>constraints</i></td>
+            </tr>
+        </table>
+    >];
 
-    env[label=<{
-        gym.<b>Env</b>|
-        reset() → Obs<br/>step(<i>a</i>: Action) → Obs, …<br/>seed(…) → …|
-        <i>action_space</i><br/><i>observation_space</i><br/><i>reward_range</i>}>,
-    ];
+    env[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>gymnasium.<b>Env</b></td></tr>
+            <tr>
+                <td>reset(<i>seed</i>=None, <i>options</i>=None) → tuple[Obs, dict]<br
+                />step(<i>action</i>: Action) → tuple[Obs, float, bool, bool, dict]</td>
+            </tr>
+            <tr>
+                <td><i>action_space</i><br
+                /><i>observation_space</i><br
+                /><i>reward_range</i></td>
+            </tr>
+        </table>
+    >];
 
-    optenv[label=<cernml.coi.<b>OptEnv</b>>];
+    optenv[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>OptEnv</b></td></tr>
+        </table>
+    >];
 
     optenv -> sopt -> problem;
     optenv -> env -> problem;
 
 The interfaces are designed in a modular fashion: depending on the algorithms
-that an optimization problem supports, it either implements
-`~cernml.coi.SingleOptimizable` (for classical single-objective optimization),
-`~gym.Env` (for reinforcement learning) or both. The `~cernml.coi.Problem`
-interface captures the greatest common denominator – that, which all interfaces
-have in common.
+that an optimization problem supports, it either implements `SingleOptimizable`
+(for classical single-objective optimization), `Env` (for reinforcement
+learning) or both. The `Problem` interface captures the greatest common
+denominator – that, which all interfaces have in common.
 
-As a convenience, this package also provides the `~cernml.coi.OptEnv`
-interface. It is simply an intersection of `~cernml.coi.SingleOptimizable` and
-`~gym.Env`. This means that implementing it is the same as implementing both of
-its bases. At the same time, every class that implements both base interfaces
-also implements `~cernml.coi.OptEnv`. A demonstration:
+As a convenience, this package also provides the `OptEnv` interface. It is
+simply an intersection of `SingleOptimizable` and `Env`. This means that
+implementing it is the same as implementing both of its bases. At the same
+time, every class that implements both base interfaces also implements
+`OptEnv`. A demonstration:
 
 
 .. code-block:: python
@@ -68,9 +100,9 @@ Metadata
 --------
 
 Every optimization problem should have a class attribute called
-`~cernml.coi.Problem.metadata`, which is a dict with string keys. The
-dict must be defined at the class level and immutable. It communicates
-fundamental properties of the class and how a host application can use it.
+`Problem.metadata`, which is a dict with string keys. The dict must be defined
+at the class level and immutable. It communicates fundamental properties of the
+class and how a host application can use it.
 
 The following keys are defined and understood by this package:
 
@@ -90,7 +122,7 @@ The following keys are defined and understood by this package:
     argument named *cancellation_token* of type `cancellation.Token
     <cernml.coi.cancellation.Token>` (see :ref:`Cancellation`).
 
-See the :attr:`API docs<cernml.coi.Problem.metadata>` for a full spec.
+See the :attr:`API docs<Problem.metadata>` for a full spec.
 
 Rendering
 ---------
@@ -98,8 +130,8 @@ Rendering
 The metadata entry ``"render_modes"`` allows a problem to declare that its
 internal state can be visualized. It should be a list of strings where each
 string is a supported render mode. Host applications may pick one of these
-strings and pass it to the problems {meth}`~cernml.coi.Problem.render()`
-method. For this to work, render modes need to have well-defined semantics.
+strings and pass it to the problems {meth}`~Problem.render()` method. For this
+to work, render modes need to have well-defined semantics.
 
 The following render modes are standardized by either Gym or this package:
 
@@ -133,8 +165,8 @@ from a detector on the accelerator.
 
 In such cases, it is useful to declare the meaning of your quantities. A host
 application may use this to annotate its graphs of the parameters and objective
-function. The `~cernml.coi.SingleOptimizable` class provides three attributes
-for this purpose:
+function. The `SingleOptimizable` class provides three attributes for this
+purpose:
 
 .. code-block:: python
 
@@ -159,9 +191,9 @@ for this purpose:
             ...
 
 Note that these three values need not be defined inside the class scope. You
-are free to define them inside your ``__init__()`` method or change them at
-run-time. This is useful because some optimization problems might decide to be
-configurable in the exact devices they talk to.
+are free to define them inside your :meth:`~object.__init__()` method or change
+them at run-time. This is useful because some optimization problems might
+decide to be configurable in the exact devices they talk to.
 
 You are free not to define these attributes at all. In this case, the host
 application will see the inherited default values and assume no particular
@@ -178,24 +210,25 @@ perform their tasks. Examples include:
 - subscribing to JAPC parameters.
 
 While Python garbage-collects objects which are no longer accessible (including
-`~cernml.coi.Problem` instances), some of these resources require manual
-function calls in order to be properly cleaned up.
+`Problem` instances), some of these resources require manual function calls in
+order to be properly cleaned up.
 
 If such is the case for an optimization problem, it should override the
-`~cernml.coi.Problem.close()` method and define all such actions in it. A host
-application is required to call `~cernml.coi.Problem.close()` when it has no more
-need for an optimization problem.
+`~Problem.close()` method and define all such actions in it. A host application
+is required to call `~Problem.close()` when it has no more need for an
+optimization problem.
 
 .. warning::
-    The `~cernml.coi.Problem.close()` method is *not* called after an
-    optimization procedure is done. In particular, a host application may
-    perform several optimization runs on the same problem and call
-    `~cernml.coi.Problem.close()` only at the very end. Furthermore, an
-    arbitrary amount of time may pass between the last call to
-    `~cernml.coi.SingleOptimizable.compute_single_objective()` and the call to
-    `~cernml.coi.Problem.close()`.
+
+    The `~Problem.close()` method is *not* called after an optimization
+    procedure is done. In particular, a host application may perform several
+    optimization runs on the same problem and call `~Problem.close()` only at
+    the very end. Furthermore, an arbitrary amount of time may pass between the
+    last call to `~SingleOptimizable.compute_single_objective()` and the call
+    to `~Problem.close()`.
 
 .. note::
+
     If you want to use an optimization problem in your own application or
     script, consider using the :func:`~contextlib.closing()` context manager:
 
@@ -206,65 +239,62 @@ need for an optimization problem.
         with closing(MyProblem(...)) as problem:
             optimize(problem)
 
-    The context manager ensures that `~cernml.coi.Problem.close()` is called
-    under all circumstances – even if an exception occurs.
+    The context manager ensures that `~Problem.close()` is called under all
+    circumstances – even if an exception occurs.
 
 Spaces
 ------
 
 Optimization is always executed over a certain numeric *domain*, i.e. a space
-of allowed values. These domains are encapsulated by Gym's concept of a
-`~gym.spaces.Space`. While Gym provides many different kinds of spaces
-(discrete, continuous, aggregate, …), this package for now only supports
-`~gym.spaces.Box` for maximum portability. This restriction may be lifted in
-the future.
+of allowed values. These domains are encapsulated by Gym's concept of
+a `Space`. While Gym provides many different kinds of spaces (discrete,
+continuous, aggregate, …), this package for now only supports
+`~gymnasium.spaces.Box` for maximum portability. This restriction may be lifted
+in the future.
 
 In addition, box spaces are for now restricted to the bounds [−1; +1]. This
 restriction, too, may be lifted in the future.
 
 The interfaces make use of spaces as follows:
 
-`SingleOptimizable.optimization_space<cernml.coi.SingleOptimizable.optimization_space>`
+`SingleOptimizable.optimization_space`
     the domain of valid inputs to
-    `~cernml.coi.SingleOptimizable.compute_single_objective()`;
+    `~SingleOptimizable.compute_single_objective()`;
 
-`Env.action_space<gym.Env>`
-    the domain of valid inputs to `~gym.Env.step()`;
+`Env.action_space <gymnasium.Env.action_space>`
+    the domain of valid inputs to :func:`~gymnasium.Env.step()`;
 
-`Env.observation_space<gym.Env>`
-    the domain of valid observations returned by `~gym.Env.reset()` and
-    `~gym.Env.step()`.
+`Env.observation_space <gymnasium.Env.observation_space>`
+    the domain of valid observations returned by :func:`~gymnasium.Env.reset()`
+    and :func:`~gymnasium.Env.step()`.
 
 Control Flow for ``SingleOptimizable``
 --------------------------------------
 
-The `~cernml.coi.SingleOptimizable` interface provides two methods that a host
-application can interact with:
-`~cernml.coi.SingleOptimizable.get_initial_params()` and
-`~cernml.coi.SingleOptimizable.compute_single_objective()`.
+The `SingleOptimizable` interface provides two methods that a host application
+can interact with: `~SingleOptimizable.get_initial_params()` and
+`~SingleOptimizable.compute_single_objective()`.
 
-The `~cernml.coi.SingleOptimizable.get_initial_params()` method should return a
-reasonable point in phase space from where to start optimization. E.g. this may
-be the current state of the machine; a constant, known-good point; or a
-randomly-chosen point in phase space.
+The `~SingleOptimizable.get_initial_params()` method should return a reasonable
+point in phase space from where to start optimization. E.g. this may be the
+current state of the machine; a constant, known-good point; or
+a randomly-chosen point in phase space.
 
-It must always be safe to call
-`~cernml.coi.SingleOptimizable.compute_single_objective()` directly with the
-result of `~cernml.coi.SingleOptimizable.get_initial_params()`. Afterwards, an
-optimizer may choose any point in the phase space defined by the
-`~cernml.coi.SingleOptimizable.optimization_space` and pass it to
-`~cernml.coi.SingleOptimizable.compute_single_objective()`. This will typically
-happen in a loop until the optimizer has found a minimum of the objective
-function.
+It must always be safe to call `~SingleOptimizable.compute_single_objective()`
+directly with the result of `~SingleOptimizable.get_initial_params()`.
+Afterwards, an optimizer may choose any point in the phase space defined by the
+`~SingleOptimizable.optimization_space` and pass it to
+`~SingleOptimizable.compute_single_objective()`. This will typically happen in
+a loop until the optimizer has found a minimum of the objective function.
 
 Even after optimization is completed, a host application may call
-`~cernml.coi.SingleOptimizable.compute_single_objective()` again with the value
-returned by `~cernml.coi.SingleOptimizable.get_initial_params()` before
-optimization. A use case is that optimization has failed and the user wishes to
-reset the machine to the state before optimization.
+`~SingleOptimizable.compute_single_objective()` again with the value returned
+by `~SingleOptimizable.get_initial_params()` before optimization. A use case is
+that optimization has failed and the user wishes to reset the machine to the
+state before optimization.
 
 In addition, this basic control flow can be interleaved arbitrarily with calls
-to `~cernml.coi.Problem.render()` in order to visualize progress to the user.
+to `~Problem.render()` in order to visualize progress to the user.
 
 Thus, typical control flow looks as follows:
 
@@ -289,23 +319,24 @@ Thus, typical control flow looks as follows:
 Control Flow for ``Env``
 ------------------------
 
-The `~gym.Env` interface provides three methods that a host application can
-interact with: `~gym.Env.reset()`, `~gym.Env.step()` and
-`~cernml.coi.Problem.close()`. In contrast to `~cernml.coi.SingleOptimizable`,
-the `~gym.Env` interface is typically called many times in *episodes*,
-especially during training. Each episode follows the same protocol.
+The `Env` interface provides three methods that a host application can interact
+with: :func:`~gymnasium.Env.reset()`, :func:`~gymnasium.Env.step()` and
+`~Problem.close()`. In contrast to `SingleOptimizable`, the `Env` interface is
+typically called many times in *episodes*, especially during training. Each
+episode follows the same protocol.
 
-The `~gym.Env.reset()` method is called at the start of an episode. It
-typically picks a random, known-bad initial state and clears any state from the
-previous episode. It eventually must return an initial observation to seed the
-agent. Though an environment may pick a constant initial state or re-use the
-current state, (see :ref:`the above section <Control Flow for
-\`\`SingleOptimizable\`\`>`), this is often reduces the amount of experience a
-reinforcement learner can gather.
+The :func:`~gymnasium.Env.reset()` method is called at the start of an episode.
+It typically picks a random, known-bad initial state and clears any state from
+the previous episode. It eventually must return an initial observation to seed
+the agent. Though an environment may pick a constant initial state or re-use
+the current state, (see :ref:`the above section <Control Flow for
+\`\`SingleOptimizable\`\`>`), this is often reduces the amount of experience
+a reinforcement learner can gather.
 
 Afterwards, the host application calls an agent to decide on an action given
-the current observation. This action is then passed to `~gym.Env.step()`, which
-must return a 4-tuple of the following values:
+the current observation. This action is then passed to
+:func:`~gymnasium.Env.step()`, which must return a 5-tuple of the following
+values:
 
 *obs*
     the next observation after the action has been applied;
@@ -314,18 +345,25 @@ must return a 4-tuple of the following values:
     the reward for the given action (a reinforcement learner's goal is to
     maximize the expected cumulative reward over an episode);
 
-*done*
-    a boolean flag indicating whether the episode has ended;
+*terminated*
+    a boolean flag indicating whether the agent has reached a terminal state of
+    the environment (e.g. game won/lost).
+
+*truncated*
+    a boolean flag indicating whether the episode has been ended due to
+    a reason external to the environment (e.g. training time limit expired).
 
 *info*
     a dict mapping from strings to arbitrary values.
 
-This is done in a loop until the episode is ended by passing a True value as
-*done*. Once the episode is over, the host application will make no further
-call to `~gym.Env.step()` until the next episode is started via
-`~gym.Env.reset()`. A host application is also free to end an episode
-prematurely, e.g. to call `~gym.Env.reset()` before an episode is over. There
-is no guarantee that any episode is ever driven to completion.
+This is done in a loop until the episode is ended by passing a True value for
+either of *terminated* or *truncated* (or both). Once the episode is over, the
+host application will make no further call to :func:`~gymnasium.Env.step()`
+until the next episode is started via :func:`~gymnasium.Env.reset()`. A host
+application is also free to end an episode prematurely, e.g. to call
+:func:`~gymnasium.Env.reset()` before an episode is over (though doing so
+during training would be bad for the trained agent). There is no guarantee that
+any episode is ever driven to completion.
 
 The *info* dict is free to return any additional information. There is
 currently only one standardized key:
@@ -336,13 +374,13 @@ currently only one standardized key:
     ended, that a "bad" terminal state has been reached, or that there is not
     difference between terminal states.
 
-The `~cernml.coi.Problem.close()` method is called at the end of the lifetime
-of an environment. No further calls to the environment will be made afterwards.
-It should use this method to release any resources it has acquired in its
+The `~Problem.close()` method is called at the end of the lifetime of an
+environment. No further calls to the environment will be made afterwards. It
+should use this method to release any resources it has acquired in its
 constructor.
 
 In addition, this basic control flow can be interleaved arbitrarily with calls
-to `~cernml.coi.Problem.render()` in order to visualize progress to the user.
+to `~Problem.render()` in order to visualize progress to the user.
 
 Thus, typical control flow looks as follows:
 
@@ -376,31 +414,31 @@ Additional Restrictions
 For maximum compatibility, this API puts the following *additional*
 restrictions on environments:
 
-- The `observation_space<gym.Env>`, `action_space<gym.Env>` and
-  `~cernml.coi.SingleOptimizable.optimization_space` must all be
-  `Boxes<gym.spaces.Box>`. The only exception is if the environment is a
-  `~gym.GoalEnv`: in that case, `observation_space<gym.Env>` must be
-  `gym.spaces.Dict` (with exactly the three expected keys) and the
-  ``"observation"`` sub-space must be a `gym.spaces.Box`.
-- The `action_space<gym.Env>` and the
-  `~cernml.coi.SingleOptimizable.optimization_space`  must have the same shape;
-  They must only differ in their bounds. The bounds of the action space must be
-  symmetric around zero and normalized (equal to or less than one).
+- The `~gymnasium.Env.observation_space`, `~gymnasium.Env.action_space` and
+  `~SingleOptimizable.optimization_space` must all be `Boxes
+  <gymnasium.spaces.Box>`. The only exception is if the environment is
+  a `GoalEnv`: in that case, `~gymnasium.Env.observation_space` must be
+  `~gymnasium.spaces.Dict` (with exactly the three expected keys) and the
+  ``"observation"`` sub-space must be a `~gymnasium.spaces.Box`.
+- The `~gymnasium.Env.action_space` and the
+  `~SingleOptimizable.optimization_space`  must have the same shape; They must
+  only differ in their bounds. The bounds of the action space must be symmetric
+  around zero and normalized (equal to or less than one).
 - If the environment supports any rendering at all, it should support at least
   the *human*, *ansi* and *matplotlib_figures*. The former two facilitate
   debugging and stand-alone usage, the latter makes it possible to embed the
   environment into a GUI.
-- The environment metadata must contain a key ``cern.machine`` with a value of
-  type `~cernml.coi.Machine`. It tells users which CERN accelerator the
-  environment belongs to.
+- The environment metadata must contain a key ``"cern.machine"`` with a value
+  of type `Machine`. It tells users which CERN accelerator the environment
+  belongs to.
 - Rewards must always lie within the defined reward range and objectives within
   the defined objective range. Both ranges are unbounded by default.
 - The problems must never diverge to NaN or infinity.
 
 For the convenience of problem authors, this package provides a function
-`~cernml.coi.check()` that verifies these requirements on a best-effort basis.
-If you package your problem, we recommend adding a unit test to your package
-that calls this function and exercise it on every CI job. See the `Acc-Py
+`check()` that verifies these requirements on a best-effort basis. If you
+package your problem, we recommend adding a unit test to your package that
+calls this function and exercise it on every CI job. See the `Acc-Py
 guidelines`_ on testing for more information.
 
 .. _Acc-Py guidelines: https://wikis.cern.ch/display/ACCPY/Testing

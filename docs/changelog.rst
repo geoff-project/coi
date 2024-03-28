@@ -21,8 +21,8 @@ work with version 0.8.11, but may break with version 0.9.0.
 Unreleased
 ----------
 
-- ADD: The *warn* parameter of the :doc:`api/checkers` now is an integer instead of a bool. The meaning stays largely the same. Values greater than 2 now represent the *stacklevel* parameter passed to `warnings.warn()` to adjust the reported code location when a warning is issued. Internally, the checkers adjust *warn* so that warnings are never reported within the :doc:`api/checkers` package itself.
-- FIX: For `~cernml.coi.FunctionOptimizable`, the type of the `~cernml.coi.FunctionOptimizable.constraints` attribute has been changed from `~typing.list` to `~typing.Sequence`. It has also been marked as a `~typing.ClassVar` and the default value has been changed from the empty list ``[]`` to the empty tuple ``()``.
+- ADD: The *warn* parameter of the :doc:`api/checkers` now is an integer instead of a bool. The meaning stays largely the same. Values greater than 2 now represent the *stacklevel* parameter passed to :func:`warnings.warn()` to adjust the reported code location when a warning is issued. Internally, the checkers adjust *warn* so that warnings are never reported within the :doc:`api/checkers` package itself.
+- FIX: For `~cernml.coi.FunctionOptimizable`, the type of the `~cernml.coi.FunctionOptimizable.constraints` attribute has been changed from `~typing.List` to `~typing.Sequence`. It has also been marked as a `~typing.ClassVar` and the default value has been changed from the empty list ``[]`` to the empty tuple ``()``.
 
   The same has been done in `~cernml.coi.SingleOptimizable` for its attributes `~cernml.coi.SingleOptimizable.param_names`, `~cernml.coi.SingleOptimizable.constraints`, and `~cernml.coi.SingleOptimizable.constraint_names`
 
@@ -43,7 +43,7 @@ v0.8.14
 -------
 
 - ADD: `Config.add() <cernml.coi.Config.add()>` now has a different default value for the *type* parameter in cases where *value* is a `bool` or `numpy.bool_`. The new value treats most inputs as before, but specifically the string ``"False"`` is converted to the boolean `False` of the correct type. This ensures that bools roundtrip through string conversion and makes config handling in host applications less error-prone.
-- FIX: The :doc:`/api/checkers` now run their :func:`isinstance()` checks on the `~cernml.coi.Problem.unwrapped` optimization problem instead of the problem itself. This solves a bug where a `~cernml.coi.SingleOptimizable` inside a `~gym.Wrapper` is mistaken for an `~gym.Env`.
+- FIX: The :doc:`/api/checkers` now run their :func:`isinstance()` checks on the `~cernml.coi.Problem.unwrapped` optimization problem instead of the problem itself. This solves a bug where a `~cernml.coi.SingleOptimizable` inside a `~gymnasium.Wrapper` is mistaken for an `~gymnasium.Env`.
 - FIX: Add missing argument *order_enforce* to `~cernml.coi.register()` for compatibility with the equivalent Gym function.
 
 v0.8.13
@@ -117,7 +117,7 @@ v0.8.3
 ------
 
 - ADD: Add install extra ``doc_only`` to build docs in a non-CERN environment. (This skips the PyJapc dependency.)
-- FIX: Restrict Gym compatibility, as `Gym v0.22`_ removes :class:`~gym.GoalEnv`.
+- FIX: Restrict Gym compatibility, as `Gym v0.22`_ removes :class:`.GoalEnv`.
 - FIX: :ref:`v0.8.0` nominally increased the minimum required version of :doc:`importlib-metadata<importlib_metadata:index>`, but this was never enforced. Now, at least version 3.6 is required.
 
 .. _Gym v0.22: https://github.com/openai/gym/releases/tag/0.22.0
@@ -172,7 +172,7 @@ v0.7.3
 ------
 
 - ADD: Split the COI tutorial into a :doc:`tutorial on packaging <tutorials/packaging>` and a :doc:`tutorial on the COI proper <tutorials/implement-singleoptimizable>`.
-- FIX: Improve the documentation of :class:`~gym.Env` and other Gym classes.
+- FIX: Improve the documentation of :class:`~cernml.coi.Env` and other Gym classes.
 - OTHER: Upgraded docs. Switch markdown parser from Recommonmark to Myst. Change theme from *Read the Docs* to *Sphinxdoc*.
 - OTHER: Changes to the CI pipeline. Version of code checkers are pinned now. Added Pycodestyle to the list of checkers to run.
 
@@ -296,7 +296,7 @@ v0.3.0
 - BREAKING: Rename ``Optimizable`` to :class:`~cernml.coi.SingleOptimizable`.
 - BREAKING: Add dependency on Numpy.
 - ADD: :class:`~cernml.coi.Problem` interface.
-- ADD: :doc:`Environment registry<api/registry>`.
+- ADD: :doc:`Environment registry<api/registration>`.
 - FIX: Check inheritance of :attr:`env.unwrapped<cernml.coi.Problem.unwrapped>` in :func:`check_env()<cernml.coi.check()>`.
 
 v0.2.1

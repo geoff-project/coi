@@ -8,31 +8,61 @@
 Optimizing Points on an LSA Function
 ====================================
 
+.. currentmodule:: cernml.coi
+
 .. digraph:: inheritance_diagram
     :caption: "Fig. 4: Inheritance diagram of FunctionOptimizable"
 
     rankdir = "BT";
     bgcolor = "#00000000";
-    node [shape=record, fontname="Latin Modern Sans", style=filled, fillcolor="white"];
+    node [shape=plaintext, fontname="Open Sans", style=filled, fillcolor="white"];
     edge [style=dashed];
 
-    problem[label=<{
-        cernml.coi.<b>Problem</b>|
-        render(<i>mode</i>: str) → Any<br/>close() → None|
-        <i>metadata</i>: Dict[str, Any]<br/><i>unwrapped</i>: Problem}>,
-    ];
+    problem[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>Problem</b></td></tr>
+            <tr>
+                <td>render() → Any<br
+                />close() → None</td>
+            </tr>
+            <tr>
+                <td><i>metadata</i>: dict<br
+                /><i>render_mode</i>: str | None = None<br
+                /><i>unwrapped</i>: Problem</td>
+            </tr>
+        </table>
+    >];
 
-    sopt[label=<{
-        cernml.coi.<b>SingleOptimizable</b>|
-        get_initial_params() → Params<br/>compute_single_objective(<i>p</i>: Params) → float|
-        <i>optimization_space</i><br/><i>objective_range</i><br/><i>constraints</i>}>,
-    ];
+    sopt[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>SingleOptimizable</b></td></tr>
+            <tr>
+                <td>get_initial_params(<i>seed</i>=None, <i>options</i>=None) → Params<br
+                />compute_single_objective(<i>p</i>: Params) → float</td>
+            </tr>
+            <tr>
+                <td><i>optimization_space</i><br
+                /><i>objective_range</i><br
+                /><i>constraints</i></td>
+            </tr>
+        </table>
+    >];
 
-    fopt[label=<{
-        cernml.coi.<b>FunctionOptimizable</b>|
-        get_initial_params(<i>t</i>: float) → Params<br/>compute_function_objective(<i>p</i>: Params, <i>t</i>: float) → float<br/>get_optimization_space(<i>t</i>: float) → Space|
-        <i>objective_range</i><br/><i>constraints</i>}>,
-    ];
+    fopt[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>FunctionOptimizable</b></td></tr>
+            <tr>
+                <td>get_initial_params(<i>t</i>: float, <i>seed</i
+                >=None, <i>options</i>=None) → Params<br
+                />compute_function_objective(<i>p</i>: Params, <i>t</i
+                >: float) → float<br
+                />get_optimization_space(<i>t</i>: float) → Space</td>
+            </tr>
+            <tr>
+                <td><i>objective_range</i><br/><i>constraints</i></td>
+            </tr>
+        </table>
+    >];
 
     sopt -> problem;
     fopt -> problem;
@@ -63,12 +93,11 @@ from its ideal trajectory *at all times*.
 Solution
 --------
 
-The `~cernml.coi.FunctionOptimizable` solves the problem of optimization
-over time by reducing it to multiple subsequent optimizations. It does so by
-introducting the concept of *skeleton points*. A skeleton point need not just
-be a single point in time, it may also be a time *interval*. This makes sense
-e.g. in the flat bottom or flat top of a current curve, where the function is
-constant.
+The `FunctionOptimizable` solves the problem of optimization over time by
+reducing it to multiple subsequent optimizations. It does so by introducting
+the concept of *skeleton points*. A skeleton point need not just be a single
+point in time, it may also be a time *interval*. This makes sense e.g. in the
+flat bottom or flat top of a current curve, where the function is constant.
 
 Given these skeleton points, temporal optimization reduces to regular
 optimization at each skeleton point. If the cost is a function over time as
@@ -100,26 +129,26 @@ such, these utilities only work within the CERN network.
 Custom Skeleton Points
 ----------------------
 
-The default and expected behavior of a `~cernml.coi.FunctionOptimizable` is
-that it lets the user choose the skeleton points at which to optimize the
-functions, and to be agnostic over the specific points at which it runs. Some
-authors might wish to customize this choice, however.
+The default and expected behavior of a `FunctionOptimizable` is that it lets
+the user choose the skeleton points at which to optimize the functions, and to
+be agnostic over the specific points at which it runs. Some authors might wish
+to customize this choice, however.
 
 Function optimization problems may override the method
-`~cernml.coi.FunctionOptimizable.override_skeleton_points()` and return a list
-of skeleton points from it. In such a case, a host application should only
-optimize the problem at these points and none other. It's still advisable to
-let a user *review* these skeleton points before starting optimization. An
-optimization problem should still handle the case that only a *subset* of the
-given skeleton points are optimized.
+`~FunctionOptimizable.override_skeleton_points()` and return a list of skeleton
+points from it. In such a case, a host application should only optimize the
+problem at these points and none other. It's still advisable to let a user
+*review* these skeleton points before starting optimization. An optimization
+problem should still handle the case that only a *subset* of the given skeleton
+points are optimized.
 
 An optimization problem that overrides this function should also be
-`~cernml.coi.Configurable` and let the user configure the skeleton points in
-some *customized* manner. For example, it could define a fixed interval, but
-let the user choose a number of points *N*. The function
-`~cernml.coi.FunctionOptimizable.override_skeleton_points()` could then split
-the interval into *N−1* equal sub-intervals and return their edges as skeleton
-points. This could look like this:
+`Configurable` and let the user configure the skeleton points in some
+*customized* manner. For example, it could define a fixed interval, but let the
+user choose a number of points *N*. The function
+`~FunctionOptimizable.override_skeleton_points()` could then split the interval
+into *N−1* equal sub-intervals and return their edges as skeleton points. This
+could look like this:
 
 .. code-block:: python
 

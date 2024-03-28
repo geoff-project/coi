@@ -4,20 +4,24 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Provide cooperative task cancellation.
+"""Tools for cooperative multitasking in synchronous code.
 
 Cancellation is implemented as two classes with two-way communication
 between them: `TokenSource` and `Token`:
 
     >>> import threading, time
+    ...
     >>> def loop(token: Token) -> None:
+    ...     # Regularly check the token for a cancellation request.
     ...     while not token.cancellation_requested:
     ...         # Something that takes a long time:
     ...         time.sleep(0.01)
+    ...
     >>> source = TokenSource()
     >>> thread = threading.Thread(target=loop, args=(source.token,))
     >>> thread.start()
     >>> source.cancel()
+    ...
     >>> # This line would deadlock if we had
     >>> # not sent a cancellation request.
     >>> thread.join()
@@ -201,10 +205,11 @@ class _State(enum.Enum):
 
 
 class TokenSource:
-    """Sending half of a cancellation channel.
+    '''Sending half of a cancellation channel.
 
-    This half is usually created by a host application. It then sends
-    the token to a `~cernml.coi.Problem` upon instantiation.
+    This half is usually created by a host application. It contains
+    a `token` that the application can send to a `~cernml.coi.Problem`
+    upon instantiation.
 
     Whenever a `~cernml.coi.Problem` enters a long-running calculation,
     it should periodically check the token for a cancellation request.
@@ -216,19 +221,22 @@ class TokenSource:
     cancel it when leaving the context:
 
         >>> import threading, time
-        >>> # An infinite loop that can be cancelled:
+        ...
         >>> def loop(token: Token) -> None:
+        ...     """An infinite loop that can be cancelled."""
         ...     while not token.cancellation_requested:
         ...         time.sleep(0.01)
+        ...
         >>> # Create source + token and start the thread.
         >>> with TokenSource() as token:
         ...     thread = threading.Thread(target=loop, args=(token,))
         ...     thread.start()
         ...     # Do something complex or just wait ...
         ...     time.sleep(0.01)
+        ...
         >>> # Leaving the `with` block cancels the token.
         >>> thread.join()  # No deadlock!
-    """
+    '''
 
     # Developer note: In C#, which directly inspires this class, the
     # cancellation state is on the source and the token maintains a
@@ -255,10 +263,10 @@ class TokenSource:
 
     @property
     def token(self) -> "Token":
-        """The token associated with source.
+        """The token associated with this source.
 
-        Pass this token to a `~cernml.coi.Problem` to be able to
-        communicate a cancellation to it.
+        Pass this token to a `~.coi.Problem` to be able to communicate
+        a cancellation to it.
         """
         return self._token
 
@@ -284,7 +292,7 @@ class TokenSource:
             >>> source.token.cancellation_requested
             True
 
-        Cancelling the same token twice is a no-op::
+        Cancelling the same token twice is a no-op:
 
             >>> source.cancel()
             >>> source.token.cancellation_requested
@@ -324,7 +332,7 @@ class TokenSource:
         been completed by the holder of the token. It resets the state
         back to as if there never was a cancellation.
 
-        If not cancellation has been requested, this does nothing.
+        If no cancellation has been requested, this does nothing.
 
         Raises:
             CannotReset: if a cancellation has been requested but not
@@ -419,11 +427,13 @@ class Token:
             ...     with token.wait_handle:
             ...         while not token.cancellation_requested:
             ...             token.wait_handle.wait()
+            ...
             >>> source = TokenSource()
             >>> thread = threading.Thread(
             ...     target=loop,
             ...     args=(source.token,),
             ... )
+            ...
             >>> thread.start()
             >>> source.cancel()
             >>> # Doesn't deadlock, thread got notified by `cancel()`.
