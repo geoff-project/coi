@@ -14,12 +14,18 @@ from scipy.optimize import LinearConstraint, NonlinearConstraint
 
 from .._typeguards import is_single_optimizable
 from ..protocols import Constraint, SingleOptimizable
-from ._generic import assert_human_render_called, assert_range, is_box, is_reward
+from ._generic import (
+    assert_human_render_called,
+    assert_range,
+    bump_warn_arg,
+    is_box,
+    is_reward,
+)
+from ._reseed import assert_reseed
 
 
 def check_single_optimizable(opt: SingleOptimizable, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
-    _ = warn  # Flag is currently unused, keep it for forward compatibility.
     assert is_single_optimizable(
         opt
     ), f"doesn't implement the SingleOptimizable API: {opt!r}"
@@ -28,6 +34,7 @@ def check_single_optimizable(opt: SingleOptimizable, warn: int = True) -> None:
     assert_constraints(opt.constraints)
     assert_matching_names(opt)
     assert_opt_return_values(opt)
+    assert_reseed(opt, opt.get_initial_params, warn=bump_warn_arg(warn))
 
 
 def assert_optimization_space(env: SingleOptimizable) -> None:

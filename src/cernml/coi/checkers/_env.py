@@ -20,18 +20,21 @@ from ._generic import (
     is_box,
     is_reward,
 )
+from ._reseed import assert_reseed
 
 
 def check_env(env: Env, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
+    warn = bump_warn_arg(warn)
     assert is_env(env), f"{type(env)} must inherit from gymnasium.Env"
     assert_observation_space(env)
     assert_action_space(env)
     assert_range(env.reward_range, "reward")
     assert_env_return_values(env)
+    assert_reseed(env, env.reset, warn=warn)
     assert_env_no_nan(env)
     if warn:
-        warn_observation_space(env, warn=bump_warn_arg(warn))
+        warn_observation_space(env, warn=warn)
 
 
 def assert_observation_space(env: Env) -> None:

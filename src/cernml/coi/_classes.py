@@ -38,12 +38,7 @@ __all__ = (
 
 
 class HasNpRandom:
-    """Protocol for classes that manage their own RNG.
-
-    This abstracts out the `gymnasium.Env.np_random` property. The
-    `Problem` protocol does not depend on it, but the :term:`abstract
-    base class` `BaseProblem` subclasses it as a mixin for convenience.
-    """
+    """Mixin that replicates the `gymnasium.Env.np_random` property."""
 
     _np_random: np.random.Generator | None = None
 
@@ -202,12 +197,14 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
     param_names: t.Sequence[str] = []
     constraint_names: t.Sequence[str] = []
 
-    # TODO: If `get_initial_params()` gains new arguments, those should
-    # be used by default in this method.
     @abstractmethod
-    def get_initial_params(self) -> ParamType:
+    def get_initial_params(
+        self, *, seed: int | None = None, options: dict[str, t.Any] | None = None
+    ) -> ParamType:
         """See `SingleOptimizable.get_initial_params()`."""  # noqa: D402
-        raise NotImplementedError
+        if seed is not None:
+            self._np_random, _ = seeding.np_random(seed)
+        return  # type: ignore[return-value]
 
     @abstractmethod
     def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
@@ -265,12 +262,18 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
         """See `FunctionOptimizable.get_optimization_space()`."""  # noqa: D402
         raise NotImplementedError
 
-    # TODO: If `get_initial_params()` gains new arguments, those should
-    # be used by default in this method.
     @abstractmethod
-    def get_initial_params(self, cycle_time: float) -> ParamType:
+    def get_initial_params(
+        self,
+        cycle_time: float,
+        *,
+        seed: int | None = None,
+        options: dict[str, t.Any] | None = None,
+    ) -> ParamType:
         """See `FunctionOptimizable.get_initial_params()`."""  # noqa: D402
-        raise NotImplementedError
+        if seed is not None:
+            self._np_random, _ = seeding.np_random(seed)
+        return  # type: ignore[return-value]
 
     @abstractmethod
     def compute_function_objective(self, cycle_time: float, params: ParamType) -> float:

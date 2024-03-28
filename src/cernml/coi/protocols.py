@@ -35,6 +35,18 @@ __all__ = (
 
 
 @t.runtime_checkable
+class HasNpRandom(AttrCheckProtocol, t.Protocol):
+    """Protocol for classes that manage their own RNG.
+
+    This abstracts out the `gymnasium.Env.np_random` property. The
+    `Problem` protocol does not depend on it, but the :term:`abstract
+    base class` `BaseProblem` subclasses it as a mixin for convenience.
+    """
+
+    np_random: np.random.Generator
+
+
+@t.runtime_checkable
 class Problem(AttrCheckProtocol, t.Protocol):
     """Root protocol for all optimization problems.
 
@@ -337,9 +349,10 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
     param_names: t.Sequence[str] = ()
     constraint_names: t.Sequence[str] = ()
 
-    # TODO: Add optional `seed` and `options` arguments.
     @abstractmethod
-    def get_initial_params(self) -> ParamType:
+    def get_initial_params(
+        self, *, seed: int | None = None, options: dict[str, t.Any] | None = None
+    ) -> ParamType:
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space,
@@ -423,7 +436,13 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         raise NotImplementedError
 
     @abstractmethod
-    def get_initial_params(self, cycle_time: float) -> ParamType:
+    def get_initial_params(
+        self,
+        cycle_time: float,
+        *,
+        seed: int | None = None,
+        options: dict[str, t.Any] | None = None,
+    ) -> ParamType:
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space
@@ -449,7 +468,6 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         """
         raise NotImplementedError
 
-    # TODO: Add optional `seed` and `options` arguments.
     @abstractmethod
     def compute_function_objective(
         self,

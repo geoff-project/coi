@@ -119,6 +119,7 @@ class MultiGoalParabola(
     def reset(
         self, seed: int | None = None, options: coi.InfoDict | None = None
     ) -> tuple[dict[str, NDArray[np.double]], coi.InfoDict]:
+        super().reset(seed=seed)
         self.pos = self.action_space.sample()
         self.goal = self.action_space.sample()
         if self.render_mode == "human":
@@ -166,9 +167,15 @@ class MultiGoalParabola(
     ) -> bool:
         return achieved_goal not in self.observation_space
 
-    def get_initial_params(self) -> NDArray[np.double]:
-        obs, _ = self.reset()
-        return obs["achieved_goal"]
+    def get_initial_params(
+        self, *, seed: int | None = None, options: dict[str, t.Any] | None = None
+    ) -> NDArray[np.double]:
+        super().get_initial_params(seed=seed)
+        self.pos = self.action_space.sample()
+        self.goal = self.action_space.sample()
+        if self.render_mode == "human":
+            self.render()
+        return self.pos
 
     def compute_single_objective(self, params: NDArray[np.double]) -> t.SupportsFloat:
         assert params in self.optimization_space
@@ -225,7 +232,14 @@ class FunctionParabola(coi.FunctionOptimizable, CallStatsMixin):
     def get_optimization_space(self, cycle_time: float) -> gym.Space:
         return self.optimization_space
 
-    def get_initial_params(self, cycle_time: float) -> NDArray[np.double]:
+    def get_initial_params(
+        self,
+        cycle_time: float,
+        *,
+        seed: int | None = None,
+        options: dict[str, t.Any] | None = None,
+    ) -> NDArray[np.double]:
+        super().get_initial_params(cycle_time, seed=seed)
         space = self.get_optimization_space(cycle_time)
         self.time = cycle_time
         self.pos = space.sample()
@@ -267,7 +281,7 @@ def test_opt_env(pyplot: Mock, render_mode: str | None) -> None:
     coi.check(env, headless=False)
     assert env.call_count["reset"] > 10
     assert env.call_count["step"] > 10
-    assert env.call_count["get_initial_params"] == 1
+    assert env.call_count["get_initial_params"] == 3
     assert env.call_count["compute_single_objective"] == 1
     assert env.call_count["get_config"] == 1
     assert env.call_count["apply_config"] == 1
@@ -292,7 +306,7 @@ def test_func_opt(pyplot: Mock, render_mode: str | None) -> None:
     coi.check(env, headless=False)
     assert env.call_count["get_optimization_space"] > 0
     assert env.call_count["override_skeleton_points"] > 0
-    assert env.call_count["get_initial_params"] == 3
+    assert env.call_count["get_initial_params"] == 9
     assert env.call_count["compute_function_objective"] == 3
     if render_mode:
         assert env.call_count["render"] > 0

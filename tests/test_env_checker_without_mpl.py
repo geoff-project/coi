@@ -62,6 +62,7 @@ def test_sep_env(no_matplotlib: None) -> None:
         def reset(
             self, seed: int | None = None, options: coi.InfoDict | None = None
         ) -> tuple[NDArray[np.double], coi.InfoDict]:
+            super().reset(seed=seed)
             self.pos = self.action_space.sample()
             self.goal = self.action_space.sample()
             return self.pos - self.goal, {}

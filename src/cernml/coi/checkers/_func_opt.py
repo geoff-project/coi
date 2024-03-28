@@ -7,22 +7,32 @@
 """Checker for the `FunctionOptimizable` ABC."""
 
 import typing as t
+from functools import partial
 
 import numpy as np
 from scipy.optimize import LinearConstraint, NonlinearConstraint
 
 from ..protocols import Constraint, FunctionOptimizable
-from ._generic import assert_human_render_called, assert_range, is_box, is_reward
+from ._generic import (
+    assert_human_render_called,
+    assert_range,
+    bump_warn_arg,
+    is_box,
+    is_reward,
+)
+from ._reseed import assert_reseed
 
 
 def check_function_optimizable(opt: FunctionOptimizable, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
-    _ = warn  # Flag is currently unused, keep it for forward compatibility.
     assert_optimization_space(opt)
     assert_range(opt.objective_range, "objective")
     assert_constraints(opt.constraints)
     assert_matching_names(opt)
     assert_opt_return_values(opt)
+    for point in _select_skeleton_points(opt):
+        reseed = partial(opt.get_initial_params, point)
+        assert_reseed(opt, reseed, warn=bump_warn_arg(warn))
 
 
 def _select_skeleton_points(opt: FunctionOptimizable) -> list[float]:
