@@ -4,7 +4,67 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Provide `Configurable`, an interface for GUI compatibility."""
+"""These classes provide an interface for GUI configurability.
+
+.. currentmodule:: cernml.coi
+
+Some `Problem` classes have several parameters that determine certain
+details of how they are solved. A classic configurable parameter of
+environments is the *reward objective*, i.e. the minimum reward for
+a step upon which an episode is considered solved.
+
+While these parameters can be set through the initializer, this has the
+problem that it is difficult to annotate them with limits, invariants,
+etc.
+
+For this reason, this package provides `Configurable`, a uniform way for
+problem authors to declare which parameters of their class are
+configurable and what each parameter's invariants are. It is very easy
+to use for problem authors:
+
+1. Define your configurable parameters in your initializer.
+2. Implement `~Configurable.get_config()` and return a declaration of
+   configurable parameters. Certain invariants, limits, etc. may be
+   declared for each parameter.
+3. Implement `~Configurable.apply_config()` which is given a collection
+   of new configured values. Transfer each value into your object. Apply
+   any further checks and raise an exception if any fail.
+
+Usage example:
+
+    >>> class ExampleEnv(Configurable):
+    ...     def __init__(self):
+    ...         self.action_scale = 1.0
+    ...     def get_config(self):
+    ...         config = Config()
+    ...         config.add(
+    ...             'action_scale',
+    ...             self.action_scale,
+    ...             label='Action scale (mrad)',
+    ...             range=(0.0, 2.0),
+    ...             default=1.0,
+    ...         )
+    ...         return config
+    ...     def apply_config(self, values):
+    ...         self.action_scale = values.action_scale
+    >>> issubclass(ExampleEnv, Configurable)
+    True
+
+A host application can use this interface as follows:
+
+    >>> env = ExampleEnv()
+    >>> config = env.get_config()
+    >>> # Present configs to the user.
+    >>> {field.dest: str(field.value) for field in config.fields()}
+    {'action_scale': '1.0'}
+    >>> # Transfer a user choice back to the env.
+    >>> values = config.validate_all({"action_scale": "1.5"})
+    >>> values
+    namespace(action_scale=1.5)
+    >>> env.apply_config(values)
+    >>> env.action_scale
+    1.5
+"""
 
 from __future__ import annotations
 
@@ -17,8 +77,17 @@ from types import SimpleNamespace
 
 import numpy as np
 
+__all__ = (
+    "BadConfig",
+    "Config",
+    "ConfigValues",
+    "Configurable",
+    "DuplicateConfig",
+    "StrSafeBool",
+    "deduce_type",
+)
+
 T = typing.TypeVar("T")
-# T.__module__ = ""  # TODO(docs): Re-evaluate this one when making docs.
 
 ConfigValues = SimpleNamespace
 
@@ -34,22 +103,20 @@ class BadConfig(Exception):
 class Config:
     """Declaration of configurable parameters.
 
-    This is the return type of `Configurable.get_config()`. It is used
+    This is the return type of `~Configurable.get_config()`. It is used
     by environments to *declare* their configurable parameters,
     including each parameter's validity invariants. This makes it
     possible for users of the environment to automatically generate an
     interface that prevents invalid values as early as possible.
 
-    For more information, see `Configurable`.
-
-    Usage:
+    Usage example:
 
         >>> config = Config()
         >>> config
         <Config: []>
-        >>> config.add("foo", 3)
-        <Config: ['foo']>
-        >>> values = config.validate_all({"foo": "3"})
+        >>> config.add("foo", 3).add("bar", 4)
+        <Config: ['foo', 'bar']>
+        >>> values = config.validate_all({"foo": "3", "bar": "4"})
         >>> values.foo
         3
         >>> config.validate_all({"foo": "a"})
@@ -67,30 +134,39 @@ class Config:
         >>> class Kicker(Configurable):
         ...     def __init__(self) -> None:
         ...         self.scale = 0.1
+        ...
         ...     def get_config(self) -> Config:
         ...         return Config().add("scale", self.scale)
+        ...
         ...     def apply_config(self, values: ConfigValues) -> None:
         ...         self.scale = values.scale
+        ...
         >>> class LossMonitor(Configurable):
         ...     def __init__(self) -> None:
         ...         self.min_reading = 1.0
+        ...
         ...     def get_config(self) -> Config:
         ...         return Config().add("min_reading", self.min_reading)
+        ...
         ...     def apply_config(self, values: ConfigValues) -> None:
         ...         self.min_reading = values.min_reading
+        ...
         >>> class Problem(Configurable):
         ...     def __init__(self) -> None:
         ...         self.kicker = Kicker()
         ...         self.monitor = LossMonitor()
+        ...
         ...     def get_config(self) -> Config:
         ...         return (
         ...             Config()
         ...             .extend(self.kicker.get_config())
         ...             .extend(self.monitor.get_config())
         ...         )
+        ...
         ...     def apply_config(self, values: ConfigValues):
         ...         self.kicker.apply_config(values)
         ...         self.monitor.apply_config(values)
+        ...
         >>> problem = Problem()
         >>> config = problem.get_config()
         >>> config
@@ -200,10 +276,6 @@ class Config:
         """
         return {dest: field.value for dest, field in self._fields.items()}
 
-    # TODO(docs): Can we fix this mess?
-    # Escape the generic parameter `T` here so that Sphinx does not
-    # parse it. If it did, this would mess up all references to built-in
-    # types in the docs.
     def add(
         self,
         dest: str,
@@ -224,15 +296,16 @@ class Config:
                 in `~Configurable.apply_config()`.
             value: The value to initialize this parameter with.
                 Typically, this is the current setting for this field.
-            label: The display name of the parameter. This will be
-                displayed to the user. If not passed, *dest* is used.
-            help: A string that further explains this configurable
-                parameter. In contrast to *label*, this may be one or
-                more sentences.
-            type: A function that type-checks each user input (always a
-                string) and converts it to the same type as *value*. If
-                the given string is not a valid input, this function
-                should raise an exception. See also the **note** below.
+            label: Optional. The name under which the parameter will be
+                shown to the user. If not passed, *dest* is used.
+            help: Optional. If passed, should be a string that further
+                explains this configurable parameter. In contrast to
+                *label*, this may be one or more sentences.
+            type: Optional. A function that type-checks the user input
+                and converts it to the same type as *value*. This should
+                raise an exception if the given input is invalid. See
+                also the **note** below. If not passed, the type of
+                *value* is used.
             range: If passed, must be a tuple (*low*, *high*). A
                 user-chosen value for this field must be within the
                 closed interval described by these values.
@@ -244,7 +317,7 @@ class Config:
                 if there is a single obvious choice for this field.
 
         Returns:
-            This config object itself to allow method-chaining.
+            This object itself, to allow method-chaining_.
 
         Raises:
             DuplicateConfig: if a config parameter with this *dest*
@@ -268,6 +341,9 @@ class Config:
                 >>> c = Config().add("field", True, type=bool)
                 >>> vars(c.validate_all({"field": "False"}))
                 {'field': True}
+
+        .. _method-chaining:
+            https://en.wikipedia.org/wiki/Method_chaining
         """
         # pylint: disable = redefined-builtin
         if dest in self._fields:
@@ -373,72 +449,16 @@ class Config:
 class Configurable(typing.Protocol):
     """Interface for problems that are configurable.
 
-    Some `Problem` classes have several parameters that determine
-    certain details of how they are solved. A classic configurable
-    parameter of environments is the *reward objective*, i.e. the
-    minimum reward for a step upon which an episode is considered
-    solved.
+    This protocol is defined by two methods: `get_config()` and
+    `apply_config()`. Because it is a protocol, you need not inherit
+    from it to implement its interface:
 
-    While these parameters can be set through the initializer, this has
-    the problem that it is difficult to annotate them with limits,
-    invariants, etc.
-
-    For this reason, this interface provides a uniform way for problem
-    authors to declare which parameters of their class are configurable
-    and what each parameter's invariants are. It is very easy to use for
-    problem authors:
-
-    1. Implement `get_config()` and return a declaration of configurable
-       parameters. Certain invariants, limits, etc. may be declared for
-       each parameter.
-    2. Implement `apply_config()` which is given a collection of new
-       configured values. Transfer each value into your object. Apply
-       any further checks and raise an exception if any fail.
-
-    Usage example:
-
-        >>> class ExampleEnv(Configurable):
-        ...     def __init__(self):
-        ...         self.action_scale = 1.0
-        ...     def get_config(self):
-        ...         config = Config()
-        ...         config.add(
-        ...             'action_scale',
-        ...             self.action_scale,
-        ...             label='Action scale (mrad)',
-        ...             range=(0.0, 2.0),
-        ...             default=1.0,
-        ...         )
-        ...         return config
-        ...     def apply_config(self, values):
-        ...         self.action_scale = values.action_scale
-        >>> issubclass(ExampleEnv, Configurable)
-        True
-
-    A host application can use this interface as follows:
-
-        >>> env = ExampleEnv()
-        >>> config = env.get_config()
-        >>> # Present configs to the user.
-        >>> {field.dest: str(field.value) for field in config.fields()}
-        {'action_scale': '1.0'}
-        >>> # Transfer a user choice back to the env.
-        >>> values = config.validate_all({"action_scale": "1.5"})
-        >>> values
-        namespace(action_scale=1.5)
-        >>> env.apply_config(values)
-        >>> env.action_scale
-        1.5
-
-    `Configurable` is an :term:`abstract base class`. You need not
-    inherit from it to implement its interface:
-
-        >>> class AbstractChild:
+        >>> class VirtualSubclass:
         ...     def get_config(self):
         ...         return Config()
         ...     def apply_config(self, values):
         ...         pass
-        >>> issubclass(AbstractChild, Configurable)
+        >>> issubclass(VirtualSubclass, Configurable)
         True
         >>> issubclass(int, Configurable)
         False

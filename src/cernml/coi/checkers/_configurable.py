@@ -13,7 +13,7 @@ from unittest.mock import Mock, PropertyMock
 
 import numpy as np
 
-from .._configurable import Config, Configurable
+from ..configurable import Config, Configurable
 from ._generic import bump_warn_arg
 
 

@@ -131,7 +131,7 @@ pydocstyle.convention = 'google'
 pydocstyle.ignore-decorators = ['overload', 'overrides']
 
 [tool.ruff.lint.per-file-ignores]
-'src/cernml/coi/_configurable.py' = ['A']
+'src/cernml/coi/configurable.py' = ['A']
 '**/{tests,docs}/*' = ['A001', 'ARG', 'D', 'INP']
 
 [tool.pylint]

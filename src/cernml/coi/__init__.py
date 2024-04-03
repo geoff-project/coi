@@ -52,13 +52,6 @@ from ._classes import (
     Problem,
     SingleOptimizable,
 )
-from ._configurable import (
-    BadConfig,
-    Config,
-    Configurable,
-    ConfigValues,
-    DuplicateConfig,
-)
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._custom_policy_provider import CustomPolicyProvider, Policy
 from ._extra_envs import (
@@ -102,6 +95,13 @@ from ._typeguards import (
     is_single_optimizable_class,
 )
 from .checkers import check
+from .configurable import (
+    BadConfig,
+    Config,
+    Configurable,
+    ConfigValues,
+    DuplicateConfig,
+)
 from .registration import (
     make,
     make_vec,
@@ -112,7 +112,7 @@ from .registration import (
     spec,
 )
 
-__all__ = [
+__all__ = (
     "ActType",
     "AnyOptimizable",
     "BadConfig",
@@ -144,6 +144,7 @@ __all__ = [
     "SingleOptimizable",
     "check",
     "checkers",
+    "configurable",
     "is_configurable",
     "is_configurable_class",
     "is_custom_optimizer_provider",
@@ -172,4 +173,4 @@ __all__ = [
     "register_envs",
     "registry",
     "spec",
-]
+)
