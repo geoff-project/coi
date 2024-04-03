@@ -199,6 +199,14 @@ def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
     If an attribute is neither a method nor a classmethod, any value is
     accepted on *obj*.
     """
+    return find_mismatched_attr(proto, obj) is None
+
+
+def find_mismatched_attr(proto: AttrCheckProtocolMeta, obj: object) -> t.Optional[str]:
+    """Return the name of the first mismatched attribute.
+
+    This helps to debug issues with `attrs_match()`.
+    """
     getattr_static = lazy_load_getattr_static()
     for attr in protocol_attrs(proto):
         is_classmethod = attr in proto_classmethods(proto)
@@ -208,14 +216,14 @@ def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
             )
         except AttributeError:
             if not (is_subprotocol(obj) and attr_in_annotations(obj, attr)):
-                return False
+                return attr
         else:
             if is_classmethod:
                 if not isinstance(val, classmethod):
-                    return False
+                    return attr
             elif val is None and attr not in non_callable_proto_members(proto):
-                return False
-    return True
+                return attr
+    return None
 
 
 def is_subprotocol(obj: object) -> "TypeGuard[AttrCheckProtocolMeta]":
