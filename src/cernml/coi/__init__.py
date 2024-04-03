@@ -43,6 +43,7 @@ pre-run :doc:`configuration <config>` of optimization problems and for
 the :doc:`cancellation <cancellation>` of running algorithms.
 """
 
+from . import cancellation
 from ._classes import (
     Constraint,
     Env,
@@ -142,6 +143,7 @@ __all__ = (
     "SeparableOptEnv",
     "SeparableOptGoalEnv",
     "SingleOptimizable",
+    "cancellation",
     "check",
     "checkers",
     "configurable",

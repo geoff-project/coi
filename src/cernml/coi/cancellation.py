@@ -123,12 +123,12 @@ import threading
 import typing as t
 import weakref
 
-__all__ = [
+__all__ = (
     "CancelledError",
     "CannotReset",
     "Token",
     "TokenSource",
-]
+)
 
 
 class CancelledError(Exception):
