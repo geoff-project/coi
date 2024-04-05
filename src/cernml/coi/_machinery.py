@@ -83,6 +83,20 @@ except KeyError:  # pragma: no cover
     get_class_annotations = get_class_annotations_impl
 
 
+class _AlwaysContainsProtocol(tuple):
+    """Hack to force base class checks in `typing._ProtocolMeta.__new__()`.
+
+    This is a simple subclass of `tuple`. Its only custom behavior is
+    that `~object.__contains__()` always returns True for `Protocol`.
+    See `AttrCheckProtocolMeta.__new__()` for why we need that behavior.
+    """
+
+    __slots__ = ()
+
+    def __contains__(self, obj: object, /) -> bool:
+        return obj is t.Protocol or super().__contains__(obj)
+
+
 class AttrCheckProtocolMeta(t._ProtocolMeta):
     """The metaclass of `AttrCheckProtocol`.
 
@@ -112,7 +126,15 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
             namespace["_is_protocol"] = True
             namespace["_is_runtime_protocol"] = False
         elif not namespace.get("_is_protocol", False):
-            namespace["_is_protocol"] = any(b is AttrCheckProtocol for b in bases)
+            is_protocol = any(b is AttrCheckProtocol for b in bases)
+            namespace["_is_protocol"] = is_protocol
+            if is_protocol:
+                if not isinstance(bases, tuple):
+                    raise TypeError(
+                        f"type.__new__() argument 2 must be tuple, "
+                        f"not {bases.__class__.__name__}"
+                    )
+                bases = _AlwaysContainsProtocol(bases)
         namespace.setdefault("__subclasshook__", _proto_hook)
         return super().__new__(mcs, name, bases, namespace, **kwargs)
 
