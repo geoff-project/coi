@@ -134,8 +134,10 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
         if cls is AttrCheckProtocol:
             return type.__instancecheck__(cls, instance)
         if not getattr(cls, "_is_protocol", False):
-            # i.e., it's a concrete subclass of a protocol
-            return issubclass(instance.__class__, cls)
+            # Our cls is not a protocol, it's a concrete subclass of
+            # a protocol. Run the ABC instance check. We could call
+            # `super()` here, but that would lead to the same result.
+            return ABCMeta.__instancecheck__(cls, instance)
         if not getattr(cls, "_is_runtime_protocol", False):
             raise TypeError(
                 "Instance and class checks can only be used with"
