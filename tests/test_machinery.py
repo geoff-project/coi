@@ -239,6 +239,16 @@ class TestAttrCheckProtocolEdgeCases:
         assert not isinstance(UnrelatedImpl(), MyImpl)
         assert not isinstance(UnrelatedImpl(), Subclass)
 
+    @pytest.mark.parametrize("mcs", [type, _machinery.AttrCheckProtocolMeta])
+    def test_bases_no_tuple(self, mcs: type[type]) -> None:
+        # Inherit from AttrCheckProtocol instead of Protocol to enter
+        # the section of `__new__` that we want to test.
+        bad_bases = {_machinery.AttrCheckProtocol, object}
+        with pytest.raises(
+            TypeError, match=r"^type\.__new__\(\) argument 2 must be tuple, not set$"
+        ):
+            mcs("name", t.cast(tuple, bad_bases), {})
+
 
 class TestAttrsMatch:
     def test_works_direct(self) -> None:
