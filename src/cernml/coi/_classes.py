@@ -408,6 +408,7 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
     `~gymnasium.Env.action_space`. This attribute is required."""
 
     # TODO: Deprecated in Gymnasium.
+    # https://gitlab.cern.ch/geoff/cernml-coi/-/issues/14
     objective_range: tuple[float, float] = (-float("inf"), float("inf"))
     """Optional. Specifies the range in which the return value of
     `compute_single_objective()` will lie. The default is to allow any

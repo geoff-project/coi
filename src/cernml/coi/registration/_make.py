@@ -264,8 +264,8 @@ def _add_wrappers(
         env = wrappers.HumanRendering(env)
     if apply_render_collection:
         env = _wrap_if_env(env, wrappers.RenderCollection)
-    # TODO: Compatibility wrapper for SingleOptimizable and
-    # FunctionOptimizable.
+    # TODO: Wrappers for SingleOptimizable and FunctionOptimizable.
+    # https://gitlab.cern.ch/geoff/cernml-coi/-/issues/13
     return env
 
 
