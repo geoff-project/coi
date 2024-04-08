@@ -97,8 +97,7 @@ def get_class_annotations_impl(obj: type, /) -> dict[str, object]:
     obj_dict = _get_dunder_dict_of_class(obj)
     ann = obj_dict.get("__annotations__", None)
     if isinstance(ann, GetSetDescriptorType):
-        # This is the case e.g. when `obj` is `type` on
-        # Python 3.10+.
+        # This is the case e.g. when `obj` is `types.FunctionType`.
         ann = None
     if ann is None:
         ann = {}
@@ -219,10 +218,15 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
         """
         super().__init__(*args, **kwargs)
         if getattr(cls, "_is_protocol", False):
-            if "__protocol_attrs__" not in vars(cls):
-                cls.__protocol_attrs__ = protocol_attrs(cls)
-            else:
+            # Annotate here, not in class scope, to keep __annotations__
+            # clean.
+            cls.__protocol_attrs__: set[str]  # noqa: B032
+            if "__protocol_attrs__" in vars(cls):
+                # Python 3.11 and above.
                 cls.__protocol_attrs__ -= _SPECIAL_NAMES
+            else:
+                # Python 3.10 and lower.
+                cls.__protocol_attrs__ = protocol_attrs(cls)
 
     def __instancecheck__(cls, instance: t.Any) -> bool:
         """Overload for :func:`isinstance()`.
