@@ -296,8 +296,6 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
             `compute_single_objective()` in order to reset the problem's
             internal state.
         """
-        # TODO: Replace with nothing.
-        raise NotImplementedError
 
     @abstractmethod
     def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
@@ -315,8 +313,6 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
             as loss or cost. Numerical optimizers may want to minimize
             this value.
         """
-        # TODO: Replace with nothing.
-        raise NotImplementedError
 
 
 @t.runtime_checkable
@@ -389,8 +385,6 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
             this value to `compute_function_objective()` in order to
             reset the problem's internal state.
         """
-        # TODO: Replace with nothing.
-        raise NotImplementedError
 
     @abstractmethod
     def compute_function_objective(
@@ -416,8 +410,6 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
             as loss or cost. Numerical optimizers may want to minimize
             this value.
         """
-        # TODO: Replace with nothing.
-        raise NotImplementedError
 
     def get_objective_function_name(self) -> str:
         """Return the name of the objective function, if any."""
