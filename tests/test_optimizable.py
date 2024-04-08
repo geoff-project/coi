@@ -137,8 +137,8 @@ def test_function_optimizable_defaults(
     assert problem.metadata["render_modes"] == []
     assert problem.objective_range == (-float("inf"), float("inf"))
     assert len(problem.constraints) == 0
-    assert problem.get_objective_function_name() is None
-    assert problem.get_param_function_names() == []
+    assert problem.get_objective_function_name() == ""
+    assert problem.get_param_function_names() == ()
     assert problem.override_skeleton_points() is None
 
 

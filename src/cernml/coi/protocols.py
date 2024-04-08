@@ -252,8 +252,7 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
     """The range in which the return value of
     `compute_single_objective()` will lie."""
 
-    # TODO: Make this a tuple.
-    constraints: t.Sequence[Constraint] = []
+    constraints: t.Sequence[Constraint] = ()
     """The constraints that apply to this optimization problem. Not all
     optimization algorithms are able to handle constraints and they may
     be violated by an algorithm."""
@@ -420,17 +419,15 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         # TODO: Replace with nothing.
         raise NotImplementedError
 
-    def get_objective_function_name(self) -> str | None:
+    def get_objective_function_name(self) -> str:
         """Return the name of the objective function, if any."""
-        # TODO Replace with empty string.
-        return None
+        return ""
 
-    def get_param_function_names(self) -> list[str]:
+    def get_param_function_names(self) -> t.Sequence[str]:
         """Return the names of the functions being modified."""
-        # TODO: Replace with tuple and list with sequence
-        return []
+        return ()
 
-    def override_skeleton_points(self) -> list[float] | None:
+    def override_skeleton_points(self) -> t.Sequence[float] | None:
         """Hook to let the problem choose the skeleton points.
 
         Note that returning an empty sequence means that there are no

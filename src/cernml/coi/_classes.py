@@ -414,7 +414,7 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
     finite float value, but subclasses may restrict this, e.g. for
     normalization purposes."""
 
-    constraints: t.Sequence[Constraint] = []
+    constraints: t.Sequence[Constraint] = ()
     """Optional. The constraints that apply to this optimization
     problem. For now, each constraint must be either
     a `~scipy.optimize.LinearConstraint` or
@@ -427,13 +427,13 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
     objective. By default, host applications should pick a neutral name
     like "objective function"."""
 
-    param_names: t.Sequence[str] = []
+    param_names: t.Sequence[str] = ()
     """Optional. Custom names for each of the parameters of the problem.
     If set, this list should have exactly as many elements as the
     `optimization_space`. By default, host applications should pick
     neutral names, e.g. "Parameter 1…N"."""
 
-    constraint_names: t.Sequence[str] = []
+    constraint_names: t.Sequence[str] = ()
     """Optional. Custom names for each of the `constraints` of the
     problem. If set, this list should have exactly as many elements as
     the `constraints`. By default, host applications should pick neutral
@@ -556,7 +556,7 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
     float value, but subclasses may restrict this e.g. for normalization
     purposes."""
 
-    constraints: t.Sequence[Constraint] = []
+    constraints: t.Sequence[Constraint] = ()
     """The constraints that apply to this optimization problem. For now,
     each constraint must be either
     a :class:`~scipy.optimize.LinearConstraint` or
@@ -668,7 +668,7 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
         """
         raise NotImplementedError
 
-    def get_objective_function_name(self) -> str | None:
+    def get_objective_function_name(self) -> str:
         """Return the name of the objective function.
 
         By default, this method returns None. If it returns a non-empty
@@ -677,9 +677,9 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
         to label a graph of the objective function's value as it is
         being optimized.
         """
-        return None
+        return ""
 
-    def get_param_function_names(self) -> list[str]:
+    def get_param_function_names(self) -> t.Sequence[str]:
         """Return the names of the functions being modified.
 
         By default, this method returns an empty list. If the list is
@@ -691,9 +691,9 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
         A host application may use these names to show the functions
         that are being modified to the user.
         """
-        return []
+        return ()
 
-    def override_skeleton_points(self) -> list[float] | None:
+    def override_skeleton_points(self) -> t.Sequence[float] | None:
         """Hook to let the problem choose the skeleton points.
 
         You should only override this method if your problem cannot be
