@@ -51,7 +51,7 @@ def bump_stacklevel(kwargs: dict[str, t.Any]) -> int:
 
 if sys.version_info < (3, 10):
     decorator = dc.dataclass(frozen=True)
-else:
+else:  # pragma: no cover
     decorator = dc.dataclass(frozen=True, match_args=False)
 
 

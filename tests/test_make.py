@@ -8,9 +8,7 @@
 
 from __future__ import annotations
 
-import sys
 import typing as t
-from contextlib import AbstractContextManager
 from unittest.mock import DEFAULT, Mock, call
 
 import gymnasium as gym
@@ -79,6 +77,10 @@ def test_require_entry_point() -> None:
 
 
 def test_api_compat_requires_legacy_env(entry_point: Mock) -> None:
+    # We _have_ to add a spec here! Protocol before Python 3.12 used
+    # `getattr()` instead of `inspect.getattr_static()` and so `Mock`
+    # objects would match any protocol.
+    entry_point.return_value.mock_add_spec(object)
     spec = EnvSpec(
         "ns/name-v1",
         entry_point=entry_point,
@@ -87,19 +89,7 @@ def test_api_compat_requires_legacy_env(entry_point: Mock) -> None:
         apply_api_compatibility=True,
     )
     with (
-        t.cast(
-            AbstractContextManager,
-            (
-                # Protocol before Python 3.12 used `getattr()` instead
-                # of `inspect.getattr_static()` and so `Mock` objects
-                # would match any protocol.
-                pytest.raises(errors.ApiCompatError)
-                if sys.version_info >= (3, 12)
-                else pytest.warns(DeprecationWarning)
-            ),
-        ),
-        # This must come before `warns(DeprecationWarning)`; that one
-        # would also catch `GymDep(DeprecationWarning`.
+        pytest.raises(errors.ApiCompatError),
         pytest.warns(errors.GymDeprecationWarning),
     ):
         spec.make()
