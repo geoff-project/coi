@@ -42,7 +42,6 @@ __all__ = (
     "RegistryError",
     "RegistryWarning",
     "RenderModeWarning",
-    "TypeWarning",
     "UnversionedExistsError",
     "VersionNotFoundError",
     "VersionedExistsError",
@@ -204,10 +203,6 @@ class AmbiguousNamespaceWarning(RegistryWarning, RuntimeWarning):
             )
         self.current_ns = current_ns
         self.arg_ns = arg_ns
-
-
-class TypeWarning(RegistryWarning, RuntimeWarning):
-    """An object has an unexpected type or attribute."""
 
 
 class RenderModeWarning(RegistryWarning):

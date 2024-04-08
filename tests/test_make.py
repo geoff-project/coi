@@ -8,7 +8,6 @@
 
 from __future__ import annotations
 
-import re
 import sys
 import typing as t
 from contextlib import AbstractContextManager
@@ -118,26 +117,10 @@ def test_ignore_non_env_wrappers(entry_point: Mock) -> None:
         disable_env_checker=False,
     )
     # When:
-    with (
-        pytest.warns(errors.GymDeprecationWarning, match="autoreset"),
-        pytest.warns(errors.TypeWarning, match="ignored attempt") as warn_log,
-    ):
+    with pytest.warns(errors.GymDeprecationWarning, match="autoreset"):
         env = spec.make(render_mode="rgb_array_list")
     # Then:
     assert env == entry_point.return_value
-    wrapper_name = re.compile("'(\\w+)'")
-    attempted_wrappers = [
-        (match := wrapper_name.search(str(msg.message))) and match.group(1)
-        for msg in warn_log.list
-        if msg.category is errors.TypeWarning
-    ]
-    assert attempted_wrappers == [
-        "PassiveEnvChecker",
-        "OrderEnforcing",
-        "TimeLimit",
-        "AutoResetWrapper",
-        "RenderCollection",
-    ]
 
 
 @pytest.mark.render_modes("rgb_array")
