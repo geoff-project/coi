@@ -50,6 +50,11 @@ Advanced Registration Features
 
 .. autofunction:: downcast_spec
 
+.. autoclass:: cernml.coi.registration._sentinel.Sentinel
+
+.. autodata:: cernml.coi.registration._sentinel.MISSING
+    :no-value:
+
 .. function:: gymnasium.envs.registration.EnvCreator(**kwargs: typing.Any) -> ~gymnasium.Env
     :single-line-parameter-list:
 

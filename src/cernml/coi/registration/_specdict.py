@@ -11,13 +11,13 @@ from __future__ import annotations
 import difflib
 import operator as op
 import typing as t
-from enum import Enum
 from functools import partial
 from io import StringIO
 from operator import attrgetter
 
 from . import errors
 from ._base import get_env_id
+from ._sentinel import MISSING, Sentinel
 
 if t.TYPE_CHECKING:
     from ._spec import EnvSpec
@@ -25,19 +25,8 @@ if t.TYPE_CHECKING:
 __all__ = (
     "EnvSpecDict",
     "EnvSpecMapping",
-    "_Empty",
-    "_empty",
     "raise_env_not_found",
 )
-
-
-class _Empty(Enum):
-    """Sentinel value type, see :pep:`484` for this pattern."""
-
-    token = 0
-
-
-_empty = _Empty.token
 
 
 class EnvSpecMapping(t.Mapping[str, "EnvSpec"]):
@@ -50,9 +39,9 @@ class EnvSpecMapping(t.Mapping[str, "EnvSpec"]):
     def select(
         self,
         *,
-        ns: str | None | _Empty = _empty,
-        name: str | _Empty = _empty,
-        version: int | bool | None | _Empty = _empty,
+        ns: str | None | Sentinel = MISSING,
+        name: str | Sentinel = MISSING,
+        version: int | bool | None | Sentinel = MISSING,
     ) -> t.Iterator[EnvSpec]:
         """Yield all environment specs that match a given filter.
 
@@ -73,8 +62,8 @@ class EnvSpecMapping(t.Mapping[str, "EnvSpec"]):
                 yielded. If passed and False or None, only environment
                 specs *without* a version are yielded.
         """
-        if version is _empty:
-            check_version = partial(op.is_not, _empty)
+        if version is MISSING:
+            check_version = partial(op.is_not, MISSING)
         elif version is True:
             check_version = partial(op.is_not, None)
         elif version is False or version is None:
@@ -84,8 +73,8 @@ class EnvSpecMapping(t.Mapping[str, "EnvSpec"]):
         return (
             spec
             for spec in self.values()
-            if (ns is _empty or spec.namespace == ns)
-            and (name is _empty or spec.name == name)
+            if (ns is MISSING or spec.namespace == ns)
+            and (name is MISSING or spec.name == name)
             and check_version(spec.version)
         )
 

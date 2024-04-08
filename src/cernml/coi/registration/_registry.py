@@ -19,8 +19,9 @@ from gymnasium import make_vec as make_vec_impl
 from . import _base, errors
 from ._make import make as make_impl
 from ._plugins import Plugins
+from ._sentinel import MISSING, Sentinel
 from ._spec import EnvSpec, bump_stacklevel, downcast_spec
-from ._specdict import EnvSpecDict, _Empty, _empty, raise_env_not_found
+from ._specdict import EnvSpecDict, raise_env_not_found
 
 if t.TYPE_CHECKING:
     from contextlib import AbstractContextManager
@@ -69,17 +70,12 @@ class EnvRegistry:
         finally:
             vars(self)["current_namespace"] = old_ns
 
-    @t.overload  # type: ignore[misc]
-    def all(
-        self, *, ns: str | None = ..., name: str = ..., version: int | bool | None = ...
-    ) -> t.Iterator[EnvSpec]: ...
-
     def all(
         self,
         *,
-        ns: str | None | _Empty = _empty,
-        name: str | _Empty = _empty,
-        version: int | bool | None | _Empty = _empty,
+        ns: str | None | Sentinel = MISSING,
+        name: str | Sentinel = MISSING,
+        version: int | bool | None | Sentinel = MISSING,
     ) -> t.Iterator[EnvSpec]:
         """Yield all environment specs that match a given filter.
 
