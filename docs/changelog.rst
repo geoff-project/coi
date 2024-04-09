@@ -50,8 +50,9 @@ v0.8.15
 ^^^^^^^
 
 - ADD: `CustomOptimizerProvider` and a :ref:`user guide section
-  <CustomOptimizerProvider>` about it.
-- ADD: A :ref:`user guide section <Configurable>` on the `Configurable` API.
+  <guide/otherenvs:CustomOptimizerProvider>` about it.
+- ADD: A :ref:`user guide section <guide/otherenvs:Configurable>` on the
+  `Configurable` API.
 
 v0.8.14
 ^^^^^^^
@@ -154,8 +155,8 @@ v0.8.3
 - FIX: Restrict Gym compatibility, as `Gym v0.22
   <https://github.com/openai/gym/releases/tag/0.22.0>`_ removes
   :class:`.GoalEnv`.
-- FIX: :ref:`v0.8.0` nominally increased the minimum required version of
-  :doc:`importlib-metadata <importlib_metadata:index>`, but this was never
+- FIX: :ref:`changelog:v0.8.0` nominally increased the minimum required version
+  of :doc:`importlib-metadata <importlib_metadata:index>`, but this was never
   enforced. Now, at least version 3.6 is required.
 
 v0.8.2
@@ -195,7 +196,7 @@ v0.8.0
 - BREAKING: Remove ``unstable.renderer`` and ``mpl_utils``. Both are now
   provided by :doc:`cernml-coi-utils <utils:index>`'s :mod:`cernml.mpl_utils`.
 - BREAKING: Remove ``unstable.cancellation``. The module is now available as
-  :mod:`cancellation`.
+  :mod:`cernml.coi.cancellation`.
 - BREAKING: Remove ``unstable``. The module is now empty.
 - BREAKING: Change :class:`~Config.Field` from a :class:`~typing.NamedTuple`
   into a :func:`~dataclasses.dataclass`.
@@ -215,8 +216,8 @@ v0.7.6
 v0.7.5
 ^^^^^^
 
-- FIX: Increase the stacklevel of the :ref:`v0.7.4` deprecation warnings so
-  that they appear more reliably.
+- FIX: Increase the stacklevel of the :ref:`changelog:v0.7.4` deprecation
+  warnings so that they appear more reliably.
 
 v0.7.4
 ^^^^^^
@@ -226,8 +227,8 @@ v0.7.4
 - ADD: Deprecate ``unstable.japc_utils``, :doc:`renderer<utils:api/mpl_utils>`
   and :doc:`mpl_utils<utils:api/mpl_utils>`. The same features are provided by
   the :doc:`cernml-coi-utils<utils:index>` package.
-- ADD: Stabilize the :mod:`cancellation` module. It is now available under
-  ``cancellation``. The old location at ``unstable.cancellation`` remains
+- ADD: Stabilize the :mod:`cernml.coi.cancellation` module. It is now available
+  under ``cancellation``. The old location at ``unstable.cancellation`` remains
   available but is deprecated.
 - FIX: Correct the type annotation on
   :class:`~SingleOptimizable.get_initial_params()` from :data:`~std:typing.Any`
@@ -266,11 +267,11 @@ v0.7.1
 v0.7.0
 ^^^^^^
 
-- BREAKING: Remove :ref:`Cancellation tokens <Cancellation>`. The stable API
-  did not accommodate all required use cases and could not be fixed in
-  a backwards-compatible manner.
-- ADD: Re-add :ref:`Cancellation tokens <Cancellation>` as an unstable module.
-  The new API supports cancellation completion and resets.
+- BREAKING: Remove :ref:`Cancellation tokens
+  <guide/cancellation:Cancellation>`. The stable API did not accommodate all
+  required use cases and could not be fixed in a backwards-compatible manner.
+- ADD: Re-add :ref:`Cancellation tokens <guide/cancellation:Cancellation>` as
+  an unstable module. The new API supports cancellation completion and resets.
 
 v0.6
 ----
@@ -280,12 +281,12 @@ v0.6.2
 
 - ADD: Rename all variants of :class:`Machine` to ``SCREAMING_SNAKE_CASE``. The
   ``PascalCase`` names remain available, but issue a deprecation warning.
-- ADD: :ref:`Cancellation tokens <Cancellation>`.
+- ADD: :ref:`Cancellation tokens <guide/cancellation:Cancellation>`.
 - ADD: Cancellation support to :func:`parameter streams
   <cernml.japc_utils.subscribe_stream>`.
 - ADD: Property :attr:`~cernml.japc_utils.ParamStream.locked` to parameter
   streams.
-- ADD: Document :ref:`parameter streams <Synchronization>`.
+- ADD: Document :ref:`parameter streams <guide/cancellation:Synchronization>`.
 - ADD: Document plugin support in :func:`check`.
 - FIX: Add default values for all known :attr:`~Problem.metadata` keys.
 - FIX: Missing ``figure.show()`` when calling

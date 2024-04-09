@@ -167,14 +167,14 @@ definition: Instead of being its own independent class, it now subclasses the
 The interface **requires** the following information from us:
 
 - :ref:`metadata`
-- :ref:`the optimization space`
-- :ref:`the initial point *x₀*`
-- :ref:`the objective function`
+- :ref:`tutorials/implement-singleoptimizable:the optimization space`
+- :ref:`tutorials/implement-singleoptimizable:the initial point *x₀*`
+- :ref:`tutorials/implement-singleoptimizable:the objective function`
 
 and the following ones are **optional** (i.e. we'll get to them later):
 
-- :ref:`constraints`
-- :ref:`custom rendering output`
+- :ref:`tutorials/implement-singleoptimizable:constraints`
+- :ref:`tutorials/implement-singleoptimizable:custom rendering output`
 
 The Metadata
 ^^^^^^^^^^^^
@@ -206,7 +206,8 @@ have conventional meaning. The full list is given :attr:`elsewhere
 
 ``render_modes``
     This must be present and it must be a collection of strings. We'll get to
-    the details :ref:`further down <custom rendering output>`, but this
+    the details :ref:`further down
+    <tutorials/implement-singleoptimizable:custom rendering output>`, but this
     declares the ways in which a user can visualize your problem. Because this
     list is empty right now, it means our problem can't be visualized at all.
     (We'll change this later.)

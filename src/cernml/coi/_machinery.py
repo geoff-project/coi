@@ -40,12 +40,13 @@ been implemented.
     their respective superclasses to determine whether a given class
     subclasses them.
 
-The first section documents the :ref:`Classes Provided by This Module`
-as a public API of this private module. The following section describes
-the :ref:`Attribute-Matching Logic` in detail. After this, several
-:ref:`Compatibility Shims` are described that ensure that this module
-works on all Python versions starting from 3.9. Finally, :ref:`Utilities
-and Dark Magic` documents a few particularly obscure hacks.
+The first section documents the :ref:`api/machinery:Classes Provided by
+This Module` as a public API of this private module. The following
+section describes the :ref:`api/machinery:Attribute-Matching Logic` in
+detail. After this, several :ref:`api/machinery:Compatibility Shims` are
+described that ensure that this module works on all Python versions
+starting from 3.9. Finally, :ref:`api/machinery:Utilities and Dark
+Magic` documents a few particularly obscure hacks.
 """
 
 import functools

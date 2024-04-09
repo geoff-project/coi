@@ -103,7 +103,7 @@ The following keys are defined and understood by this package:
 
 ``"render_modes"``
     the render modes that the optimization problem understands (see
-    :ref:`Rendering`);
+    :ref:`guide/core:Rendering`);
 
 ``"cern.machine"``
     the accelerator that an optimization problem is associated with;
@@ -115,7 +115,8 @@ The following keys are defined and understood by this package:
 ``"cern.cancellable"``
     A boolean flag indicating whether the problem's constructor expects an
     argument named *cancellation_token* of type `cancellation.Token
-    <cernml.coi.cancellation.Token>` (see :ref:`Cancellation`).
+    <cernml.coi.cancellation.Token>` (see
+    :ref:`guide/cancellation:Cancellation`).
 
 See the :attr:`API docs<Problem.metadata>` for a full spec.
 
@@ -324,7 +325,7 @@ The :func:`~gymnasium.Env.reset()` method is called at the start of an episode.
 It typically picks a random, known-bad initial state and clears any state from
 the previous episode. It eventually must return an initial observation to seed
 the agent. Though an environment may pick a constant initial state or re-use
-the current state, (see :ref:`the above section <Control Flow for
+the current state, (see :ref:`the above section <guide/core:Control Flow for
 \`\`SingleOptimizable\`\`>`), this is often reduces the amount of experience
 a reinforcement learner can gather.
 

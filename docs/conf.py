@@ -143,6 +143,10 @@ napoleon_attr_annotations = True
 graphviz_output_format = "svg"
 graphviz_dot_args = ["-Tsvg:cairo"]
 
+# -- Options for Autosectionlabel --------------------------------------
+
+autosectionlabel_prefix_document = True
+
 # -- Options for Intersphinx -------------------------------------------
 
 
