@@ -248,10 +248,6 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
     merely annotated, not defaulted. Implementors *must* provide it
     themselves."""
 
-    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    """The range in which the return value of
-    `compute_single_objective()` will lie."""
-
     constraints: t.Sequence[Constraint] = ()
     """The constraints that apply to this optimization problem. Not all
     optimization algorithms are able to handle constraints and they may
@@ -330,10 +326,6 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
     `Protocol`, this is a regular attribute. Nonetheless, this attribute
     is expected to be set inside ``__init__()`` and then not changed
     again."""
-
-    objective_range: tuple[float, float] = (-np.inf, np.inf)
-    """The range in which the return value of
-    `compute_function_objective()` will lie."""
 
     constraints: t.Sequence[Constraint] = []
     """Custom names for each of the `constraints` of the problem. If not

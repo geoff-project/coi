@@ -407,14 +407,6 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
     This may be the same or different from the
     `~gymnasium.Env.action_space`. This attribute is required."""
 
-    # TODO: Deprecated in Gymnasium.
-    # https://gitlab.cern.ch/geoff/cernml-coi/-/issues/14
-    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    """Optional. Specifies the range in which the return value of
-    `compute_single_objective()` will lie. The default is to allow any
-    finite float value, but subclasses may restrict this, e.g. for
-    normalization purposes."""
-
     constraints: t.Sequence[Constraint] = ()
     """Optional. The constraints that apply to this optimization
     problem. For now, each constraint must be either
@@ -550,12 +542,6 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
     - a property `~Problem.np_random` for convenient random-number
       generation.
     """
-
-    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    """Specifies the range in which the return value of
-    `compute_function_objective()` will lie. The default is to allow any
-    float value, but subclasses may restrict this e.g. for normalization
-    purposes."""
 
     constraints: t.Sequence[Constraint] = ()
     """The constraints that apply to this optimization problem. For now,

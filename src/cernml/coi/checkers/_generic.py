@@ -18,6 +18,15 @@ if t.TYPE_CHECKING:
 
     from .. import protocols
 
+__all__ = (
+    "assert_human_render_called",
+    "bump_warn_arg",
+    "is_bool",
+    "is_box",
+    "is_iterable",
+    "is_reward",
+)
+
 
 def bump_warn_arg(warn: int) -> int:
     """Increase the warn argument if it's nonzero.
@@ -49,13 +58,6 @@ def bump_warn_arg(warn: int) -> int:
     return warn and max(warn, 2) + 1
 
 
-def assert_range(reward_range: tuple[float, float], name: str) -> None:
-    """Check that the reward range is actually a range."""
-    assert len(reward_range) == 2, f"{name} reward range must be tuple `(low, high)`."
-    low, high = reward_range
-    assert low <= high, f"lower bound of {name} range must be lower than upper bound"
-
-
 @contextmanager
 def assert_human_render_called(problem: "protocols.Problem") -> t.Iterator[None]:
     """Context manager that asserts automatic `render()` calls.
@@ -68,7 +70,6 @@ def assert_human_render_called(problem: "protocols.Problem") -> t.Iterator[None]
 
     Example:
         >>> class Foo:
-        ...     reward_range = (-1.0, 1.0)
         ...     observation_space = gym.spaces.Box(-1, 1, ())
         ...     action_space = observation_space
         ...     def __init__(self, render_mode=None):

@@ -91,8 +91,6 @@ class MultiGoalParabola(
         desired_goal=gym.spaces.Box(-2, 2, (2,), dtype=np.double),
     )
     optimization_space = gym.spaces.Box(-2, 2, (2,), dtype=np.double)
-    reward_range = (-np.sqrt(16.0), 0.0)
-    objective_range = (0.0, np.sqrt(3**2 + 3**2))
     metadata: dict[str, t.Any] = {
         "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
@@ -147,7 +145,7 @@ class MultiGoalParabola(
         desired_goal: NDArray[np.double],
         info: coi.InfoDict,
     ) -> float:
-        return max(-self.distance, self.reward_range[0])
+        return -self.distance
 
     def compute_terminated(
         self,
@@ -206,7 +204,6 @@ class MultiGoalParabola(
 
 class FunctionParabola(coi.FunctionOptimizable, CallStatsMixin):
     optimization_space = gym.spaces.Box(-2, 2, (2,))
-    objective_range = (0.0, np.sqrt(4**2 + 4**2))
     metadata: dict[str, t.Any] = {
         "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,

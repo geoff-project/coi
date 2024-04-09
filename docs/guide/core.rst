@@ -40,11 +40,7 @@ The Core API
                 <td>get_initial_params(<i>seed</i>=None, <i>options</i>=None) → Params<br
                 />compute_single_objective(<i>p</i>: Params) → float</td>
             </tr>
-            <tr>
-                <td><i>optimization_space</i><br
-                /><i>objective_range</i><br
-                /><i>constraints</i></td>
-            </tr>
+            <tr><td><i>optimization_space</i></td></tr>
         </table>
     >];
 
@@ -57,8 +53,7 @@ The Core API
             </tr>
             <tr>
                 <td><i>action_space</i><br
-                /><i>observation_space</i><br
-                /><i>reward_range</i></td>
+                /><i>observation_space</i></td>
             </tr>
         </table>
     >];

@@ -42,7 +42,6 @@ def test_sep_env(no_matplotlib: None) -> None:
     class SeparableParabola(coi.SeparableEnv[NDArray[np.double], NDArray[np.double]]):
         action_space = gym.spaces.Box(-1, 1, (2,))
         observation_space = gym.spaces.Box(-2, 2, (2,))
-        reward_range = (-np.sqrt(16.0), 0.0)
         metadata: dict[str, t.Any] = {
             "render_modes": ["ansi"],
             "cern.machine": coi.Machine.NO_MACHINE,
@@ -80,7 +79,7 @@ def test_sep_env(no_matplotlib: None) -> None:
         def compute_reward(
             self, obs: NDArray[np.double], goal: None, info: coi.InfoDict
         ) -> float:
-            return max(-np.linalg.norm(obs), self.reward_range[0])
+            return float(-np.linalg.norm(obs))
 
         def compute_terminated(
             self,

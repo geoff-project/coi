@@ -14,7 +14,6 @@ from gymnasium import Env, spaces
 from .._typeguards import is_env, is_goal_env, is_separable_env
 from ._generic import (
     assert_human_render_called,
-    assert_range,
     bump_warn_arg,
     is_bool,
     is_box,
@@ -29,7 +28,6 @@ def check_env(env: Env, warn: int = True) -> None:
     assert is_env(env), f"{type(env)} must inherit from gymnasium.Env"
     assert_observation_space(env)
     assert_action_space(env)
-    assert_range(env.reward_range, "reward")
     assert_env_return_values(env)
     assert_reseed(env, env.reset, warn=warn)
     assert_env_no_nan(env)
@@ -76,7 +74,6 @@ def assert_env_return_values(env: Env) -> None:
 
     Example:
         >>> class Foo:
-        ...     reward_range = (-1.0, 1.0)
         ...     observation_space = spaces.Box(-1, 1, ())
         ...     action_space = observation_space
         ...     def __init__(self, render_mode=None):
@@ -117,12 +114,7 @@ def _check_env_step(env: Env) -> None:
     obs, reward, terminated, truncated, info = data
     _check_obs(obs, env)
     assert is_reward(reward), "reward must be a float or integer"
-    low, high = env.reward_range
-    assert is_reward(low), "reward range must be float: {low!r}"
-    assert is_reward(high), "reward range must be float: {high!r}"
-    assert (
-        float(low) <= float(reward) <= float(high)
-    ), f"reward is out of range [{low}, {high}]: {reward!r}"
+    assert np.isfinite(float(reward)), f"reward should be finite, not {reward!r}"
     assert is_bool(terminated), f"`terminated` signal must be a bool: {terminated!r}"
     assert is_bool(truncated), f"`truncated` signal must be a bool: {truncated!r}"
     assert isinstance(

@@ -81,11 +81,6 @@ class ConfParabola(
         self.observation_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.optimization_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.pos = np.zeros((dim,))
-        max_distance = float(
-            np.linalg.norm(self.optimization_space.high, ord=self.norm)
-        )
-        self.reward_range = (-max_distance, 0.0)
-        self.objective_range = (0.0, max_distance)
         self.figure: Figure | None = None
 
     @override
@@ -109,11 +104,6 @@ class ConfParabola(
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(dim,))
         self.optimization_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.pos = np.zeros((dim,))
-        max_distance = float(
-            np.linalg.norm(self.optimization_space.high, ord=self.norm)
-        )
-        self.reward_range = (-max_distance, 0.0)
-        self.objective_range = (0.0, max_distance)
 
     @override
     def reset(

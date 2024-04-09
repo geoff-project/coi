@@ -11,6 +11,8 @@ import inspect
 import typing as t
 import warnings
 
+import gymnasium
+
 from .._machine import Machine
 from .._typeguards import is_problem
 from ..protocols import Problem
@@ -27,6 +29,7 @@ def check_problem(problem: Problem, *, warn: int = True, headless: bool = True) 
     assert_render_mode_valid(problem, warn=warn)
     assert_execute_render(problem, headless=headless)
     if warn:
+        warn_deprecated_attrs(problem, warn)
         warn_japc(problem, warn)
         warn_cancellable(problem, warn)
         warn_render_modes(problem, warn)
@@ -161,6 +164,39 @@ def assert_execute_render(
         ) from exc
     if additional_check := additional_checks.get(mode):
         additional_check(result)
+
+
+def warn_deprecated_attrs(problem: Problem, warn: int = True) -> None:
+    """Check that the problem doesn't define deprecated attributes.
+
+    Example:
+
+        >>> from warnings import simplefilter
+        >>> simplefilter("error")
+        >>> class Foo:
+        ...     reward_range = (0.0, 1.0)
+        >>> warn_deprecated_attrs(Foo())
+        Traceback (most recent call last):
+        ...
+        UserWarning: attribute 'reward_range' is deprecated, ...
+        >>> class Bar:
+        ...     objective_range = (0.0, 1.0)
+        >>> warn_deprecated_attrs(Bar())
+        Traceback (most recent call last):
+        ...
+        UserWarning: attribute 'objective_range' is deprecated, ...
+        >>> class Baz:
+        ...     pass
+        >>> warn_deprecated_attrs(Baz())
+    """
+    for attr in ("objective_range", "reward_range"):
+        attr_from_problem = getattr(problem, attr, None)
+        attr_from_env = getattr(gymnasium.Env, attr, None)
+        if attr_from_problem is not None and attr_from_problem is not attr_from_env:
+            warnings.warn(
+                f"attribute {attr!r} is deprecated, you should not define it anymore",
+                stacklevel=max(2, warn),
+            )
 
 
 def warn_render_modes(problem: Problem, warn: int = True) -> None:

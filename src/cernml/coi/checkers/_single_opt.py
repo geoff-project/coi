@@ -14,13 +14,7 @@ from scipy.optimize import LinearConstraint, NonlinearConstraint
 
 from .._typeguards import is_single_optimizable
 from ..protocols import Constraint, SingleOptimizable
-from ._generic import (
-    assert_human_render_called,
-    assert_range,
-    bump_warn_arg,
-    is_box,
-    is_reward,
-)
+from ._generic import assert_human_render_called, bump_warn_arg, is_box, is_reward
 from ._reseed import assert_reseed
 
 
@@ -30,7 +24,6 @@ def check_single_optimizable(opt: SingleOptimizable, warn: int = True) -> None:
         opt
     ), f"doesn't implement the SingleOptimizable API: {opt!r}"
     assert_optimization_space(opt)
-    assert_range(opt.objective_range, "objective")
     assert_constraints(opt.constraints)
     assert_matching_names(opt)
     assert_opt_return_values(opt)
@@ -124,12 +117,7 @@ def assert_opt_return_values(opt: SingleOptimizable) -> None:
     assert params in opt.optimization_space, "parameters outside of space"
     assert isinstance(params, np.ndarray), "parameters must be NumPy array"
     params = opt.optimization_space.sample()
-    low, high = opt.objective_range
     with assert_human_render_called(opt):
         loss = opt.compute_single_objective(params)
     assert is_reward(loss), "loss must be a float or integer"
-    assert is_reward(low), "loss range must be float: {low!r}"
-    assert is_reward(high), "loss range must be float: {high!r}"
-    assert (
-        float(low) <= float(loss) <= float(high)
-    ), f"loss is out of range [{low}, {high}]: {loss!r}"
+    assert np.isfinite(float(loss)), f"loss should be finite, not {loss!r}"

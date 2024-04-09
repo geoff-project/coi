@@ -26,7 +26,6 @@ class TestSingleOptProtocol:
             "get_wrapper_attr",
             "metadata",
             "objective_name",
-            "objective_range",
             "optimization_space",
             "param_names",
             "render",
@@ -43,7 +42,6 @@ class TestSingleOptProtocol:
             "constraints",
             "metadata",
             "objective_name",
-            "objective_range",
             "optimization_space",
             "param_names",
             "render_mode",
@@ -72,7 +70,6 @@ class TestFunctionOptProtocol:
             "get_param_function_names",
             "get_wrapper_attr",
             "metadata",
-            "objective_range",
             "override_skeleton_points",
             "render",
             "render_mode",
@@ -86,7 +83,6 @@ class TestFunctionOptProtocol:
         ) == {
             "constraints",
             "metadata",
-            "objective_range",
             "render_mode",
             "spec",
             "unwrapped",
@@ -108,7 +104,6 @@ def test_single_optimizable_defaults(
     assert cls.metadata["render_modes"] == []
     assert cls.render_mode is None
     assert getattr(cls, "optimization_space", None) is None
-    assert cls.objective_range == (-float("inf"), float("inf"))
     assert len(cls.constraints) == 0
     assert cls.objective_name == ""
     assert len(cls.param_names) == 0
@@ -135,7 +130,6 @@ def test_function_optimizable_defaults(
 
     problem = Subclass()
     assert problem.metadata["render_modes"] == []
-    assert problem.objective_range == (-float("inf"), float("inf"))
     assert len(problem.constraints) == 0
     assert problem.get_objective_function_name() == ""
     assert problem.get_param_function_names() == ()

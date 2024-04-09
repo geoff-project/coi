@@ -23,18 +23,14 @@ from ._configurable import check_configurable
 from ._env import check_env
 from ._full_check import check
 from ._func_opt import check_function_optimizable
-from ._generic import assert_range, is_box, is_reward
 from ._problem import check_problem
 from ._single_opt import check_single_optimizable
 
-__all__ = [
-    "assert_range",
+__all__ = (
     "check",
     "check_configurable",
     "check_env",
     "check_function_optimizable",
     "check_problem",
     "check_single_optimizable",
-    "is_box",
-    "is_reward",
-]
+)
