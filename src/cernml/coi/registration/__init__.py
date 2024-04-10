@@ -21,8 +21,8 @@ users to instantiate them in a convenient and uniform manner:
     ...
     >>> env = coi.make("MyOptProblem-v1")
 
-See the page :doc:`/guide/registry` for a more detailed description of
-the concepts.
+See the page :doc:`/guide/registration` for a more detailed description
+of the concepts.
 
 This mechanism is largely copied from the :doc:`gym:api/registry`
 mechanism of Gymnasium. Adjustments have been made here and there to

@@ -129,8 +129,8 @@ With it as a superclass, you only have to fill in three missing pieces:
    a minimization problem by flipping the sign of the figure of interest.
 
 You also have to *register* your class so that the central function
-`cernml.coi.make()` can instantiate it. The page on :doc:`registry` has more
-information.
+`cernml.coi.make()` can instantiate it. The page on :doc:`registration` has
+more information.
 
 This is a minimal, runnable example problem:
 
@@ -154,8 +154,8 @@ X missing pieces:
    for more information.
 
 You also have to *register* your class so that the central function
-`cernml.coi.make()` can instantiate it. The page on :doc:`registry` has more
-information.
+`cernml.coi.make()` can instantiate it. The page on :doc:`registration` has
+more information.
 
 This is a minimal, runnable example problem:
 
