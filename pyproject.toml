@@ -125,7 +125,7 @@ ignore = [
     'UP037',  # Remove quotes from type annotation
 ]
 # Allow non-breaking space and en-dash in docstrings.
-allowed-confusables = [' ', '–']
+allowed-confusables = [' ', '–', '×']
 flake8-pytest-style.fixture-parentheses = false
 isort.split-on-trailing-comma = true
 isort.known-first-party = ['cernml']
@@ -138,6 +138,7 @@ pydocstyle.ignore-decorators = ['overload', 'overrides']
 '**/{tests,docs}/*' = ['A001', 'ARG', 'D', 'INP']
 
 [tool.pylint]
+main.ignore-paths = ['docs']
 main.ignore-patterns = ['.*\.pyi$', 'test_.*\.py$']
 master.extension-pkg-whitelist = 'PyQt5'
 'messages control'.disable = ['all']
@@ -186,6 +187,7 @@ exclude_also = [
 disallow_untyped_defs = true
 explicit_package_bases = true
 mypy_path = '$MYPY_CONFIG_FILE_DIR/src'
+exclude = ['^docs/']
 
 [[tool.mypy.overrides]]
 module = ['scipy.*']
