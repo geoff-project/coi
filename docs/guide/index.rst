@@ -24,6 +24,9 @@ application must be able to query such properties.
 
     core
     registry
+    custom_optimizers
+    configurable
+    control_flow
     cancellation
     otherenvs
     funcopt

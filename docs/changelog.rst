@@ -49,10 +49,10 @@ v0.8.16
 v0.8.15
 ^^^^^^^
 
-- ADD: `CustomOptimizerProvider` and a :ref:`user guide section
-  <guide/otherenvs:CustomOptimizerProvider>` about it.
-- ADD: A :ref:`user guide section <guide/otherenvs:Configurable>` on the
-  `Configurable` API.
+- ADD: `CustomOptimizerProvider` and a :doc:`user guide section
+  <guide/custom_optimizers>` about it.
+- ADD: A :doc:`user guide section <guide/configurable>` on the `Configurable`
+  API.
 
 v0.8.14
 ^^^^^^^
