@@ -159,6 +159,7 @@ class EnvRegistry:
         autoreset: bool | None = None,
         apply_api_compatibility: bool | None = None,
         disable_env_checker: bool | None = None,
+        order_enforce: bool | None = None,
         **kwargs: t.Any,
     ) -> protocols.Problem:
         """Implementation of `~.coi.make()`."""  # noqa: D402
@@ -176,6 +177,7 @@ class EnvRegistry:
             autoreset=autoreset,
             apply_api_compatibility=apply_api_compatibility,
             disable_env_checker=disable_env_checker,
+            order_enforce=order_enforce,
             **kwargs,
         )
 

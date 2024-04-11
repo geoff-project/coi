@@ -33,6 +33,7 @@ def make(
     autoreset: bool | None = None,
     apply_api_compatibility: bool | None = None,
     disable_env_checker: bool | None = None,
+    order_enforce: bool | None = None,
     **kwargs: t.Any,
 ) -> protocols.Problem:
     """Reimplementation of `gymnasium.make`.
@@ -42,6 +43,8 @@ def make(
 
     - `isinstance` checks of *env_spec* and *env_creator.metadata* have
       been removed or adjusted;
+    - parameter *order_enforce* has been added with the same override
+      semantics as *disable_env_checker*;
     - a warning about the deprecated metadata key ``render.modes`` has
       been added;
     - env wrappers are only added if the wrapped environment is actually
@@ -63,6 +66,9 @@ def make(
         disable_env_checker
         if disable_env_checker is not None
         else env_spec.disable_env_checker
+    )
+    order_enforce = (
+        order_enforce if order_enforce is not None else env_spec.order_enforce
     )
     max_episode_steps = (
         max_episode_steps
@@ -93,8 +99,8 @@ def make(
     return _add_wrappers(
         env,
         disable_env_checker=disable_env_checker,
+        order_enforce=order_enforce,
         autoreset=autoreset,
-        order_enforce=env_spec.order_enforce,
         apply_api_compatibility=apply_api_compatibility,
         compatibility_render_mode=flags.render_mode,
         apply_human_rendering=flags.apply_human_rendering,

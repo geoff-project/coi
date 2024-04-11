@@ -64,6 +64,9 @@ def test_forwarding(registry: Mock, funcname: str) -> None:
     if funcname != "spec":
         # Set by `bump_stacklevel`.
         kwargs["stacklevel"] = 3
+    if funcname == "make":
+        # Documented as deviation from gymnasium.make().
+        kwargs["order_enforce"] = None
     func = getattr(coi, funcname)
     target: Mock = getattr(registry, funcname)
     arg = Mock(name="arg")

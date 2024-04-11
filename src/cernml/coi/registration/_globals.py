@@ -211,6 +211,7 @@ def make(
     autoreset: bool | None = None,
     apply_api_compatibility: bool | None = None,
     disable_env_checker: bool | None = None,
+    order_enforce: bool | None = None,
     **kwargs: t.Any,
 ) -> protocols.Problem:
     """Create an environment according to the given ID.
@@ -250,6 +251,9 @@ def make(
         disable_env_checker: Override the same parameter of
             `register()`. Implemented via
             `~gymnasium.wrappers.PassiveEnvChecker`.
+        order_enforce: Override the same parameter of
+            `register()`. Implemented via
+            `~gymnasium.wrappers.OrderEnforcing`.
         kwargs: Additional arguments to pass to the environment
             constructor.
 
@@ -267,6 +271,7 @@ def make(
         autoreset=autoreset,
         apply_api_compatibility=apply_api_compatibility,
         disable_env_checker=disable_env_checker,
+        order_enforce=order_enforce,
         **kwargs,
     )
 

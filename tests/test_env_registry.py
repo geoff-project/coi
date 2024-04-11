@@ -191,6 +191,7 @@ def test_make_default_args(registry: EnvRegistry, make: Mock) -> None:
         autoreset=None,
         apply_api_compatibility=None,
         disable_env_checker=None,
+        order_enforce=None,
         stacklevel=3,
     )
 
