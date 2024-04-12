@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Test the `cernml.coi.checkers` entry poiny."""
+"""Test the `cernml.checkers` entry point."""
 
 import typing as t
 from unittest.mock import MagicMock, Mock, patch
@@ -43,7 +43,7 @@ def test_check_plugins(
     # Then:
     mock_check_problem.assert_called_once_with(problem, warn=3, headless=headless)
     mock_entry_points.assert_called_once_with()
-    all_entry_points.select.assert_called_once_with(group="cernml.coi.checkers")
+    all_entry_points.select.assert_called_once_with(group="cernml.checkers")
     for entry_point in our_entry_points:
         entry_point.load.assert_called_once_with()
         checker = entry_point.load.return_value

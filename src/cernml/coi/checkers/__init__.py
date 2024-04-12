@@ -13,7 +13,7 @@ youself with `check_env()`, etc.
 
 The generic `.check()` function also provides a plugin interface via the
 :ref:`entry point <setuptools:dynamic discovery of services and
-plugins>` ``"cernml.coi.checkers"``. This means that other packages may
+plugins>` ``"cernml.checkers"``. This means that other packages may
 provide additional checkers. Upon each call, this method will load all
 plugins and call each of them with the signature
 :samp:`checker({problem}, warn={warn}, headless={headless})`.
