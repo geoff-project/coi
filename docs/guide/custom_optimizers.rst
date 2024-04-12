@@ -24,121 +24,16 @@ There are two ways to declare a custom optimizer provider:
 
 1. Your optimization problem defines the
    `~CustomOptimizerProvider.get_optimizers()` method of the
-   `CustomOptimizerProvider` abstract base class.
+   `CustomOptimizerProvider` protocol.
 
 2. You define an an :doc:`entry point <pkg:specifications/entry-points>` in the
-   group ``cernml.custom_optimizers`` that has the same `registry` name as the
-   optimization problem that it is appropriate for. This entry point should
-   either point at a subclass of `CustomOptimizerProvider` or at a bare
-   function that acts like `~CustomOptimizerProvider.get_optimizers()`.
+   group ``cernml.custom_optimizers`` that whose name is the :ref:`registry ID
+   <guide/registration:Registry IDs>` of the matching optimization problem.
+   This entry point should either point at a subclass of
+   `CustomOptimizerProvider` or at a bare function that acts like
+   `~CustomOptimizerProvider.get_optimizers()`.
 
 Examples for both approaches are shown below.
-
-.. tab:: Entry points (pyproject.toml)
-
-   .. code-block:: toml
-
-        # pyproject.toml
-
-        [project.entry-points.'cernml.envs']
-        MyOptimizationProblem-v1 = 'mypackage:MyEnv1'
-        MyOptimizationProblem-v2 = 'mypackage:MyEnv2'
-
-        [project.entry-points.'cernml.custom_optimizers']
-        MyOptimizationProblem-v1 = 'mypackage:ProviderClass'
-        MyOptimizationProblem-v2 = 'mypackage:provider_func'
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        from cernml import coi
-
-        class MyEnv1(coi.SingleOptimizable): ...
-
-        class MyEnv2(coi.OptEnv): ...
-
-        class ProviderClass(coi.CustomOptimizerProvider):
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v1": ...}
-
-        def provider_func():
-                return {"MyCustomOptimizer-v2": ...}
-
-.. tab:: Entry points (setup.cfg)
-
-   .. code-block:: cfg
-
-        # setup.cfg
-
-        [options.entry_points]
-        cernml.envs =
-            MyOptimizationProblem-v1 = mypackage:MyEnv1
-            MyOptimizationProblem-v2 = mypackage:MyEnv2
-        cernml.custom_optimizers =
-            MyOptimizationProblem-v1 = mypackage:ProviderClass
-            MyOptimizationProblem-v2 = mypackage:provider_func
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        from cernml import coi
-
-        class MyEnv1(coi.SingleOptimizable): ...
-
-        class MyEnv2(coi.OptEnv): ...
-
-        class ProviderClass(coi.CustomOptimizerProvider):
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v1": ...}
-
-        def provider_func():
-                return {"MyCustomOptimizer-v2": ...}
-
-.. tab:: Entry points (setup.py)
-
-   .. code-block:: py
-
-        # setup.py
-
-        from setuptools import setup
-
-        # ...
-
-        setup(
-            # ...,
-            entry_points={
-                "cernml.envs": [
-                    "MyOptimizationProblem-v1 = mypackage:MyEnv1",
-                    "MyOptimizationProblem-v2 = mypackage:MyEnv2",
-                ],
-                "cernml.custom_optimizers": [
-                    "MyOptimizationProblem-v1 = mypackage:ProviderClass",
-                    "MyOptimizationProblem-v2 = mypackage:provider_func",
-                ],
-            },
-        )
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        from cernml import coi
-
-        class MyEnv1(coi.SingleOptimizable): ...
-
-        class MyEnv2(coi.OptEnv): ...
-
-        class ProviderClass(coi.CustomOptimizerProvider):
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v1": ...}
-
-        def provider_func():
-                return {"MyCustomOptimizer-v2": ...}
 
 .. tab:: Inheritance
 
@@ -167,3 +62,118 @@ Examples for both approaches are shown below.
                 return {"MyCustomOptimizer-v2": ...}
 
         coi.register("MyOptimizationProblem-v2", entry_point=MyEnv2)
+
+.. tab:: Entry points (pyproject.toml)
+
+   .. code-block:: toml
+
+        # pyproject.toml
+
+        [project.entry-points.'cernml.envs']
+        MyNamespace = 'mypackage'
+
+        [project.entry-points.'cernml.custom_optimizers']
+        'MyNamespace/MyOptimizationProblem-v1' = 'mypackage:ProviderClass'
+        'MyNamespace/MyOptimizationProblem-v2' = 'mypackage:provider_func'
+
+   .. code-block:: py
+
+        # mypackage/__init__.py
+
+        from cernml import coi
+
+        class MyEnv1(coi.SingleOptimizable): ...
+
+        coi.register("MyNamespace/MyEnv1", MyEnv1)
+
+        class MyEnv2(coi.OptEnv): ...
+
+        coi.register("MyNamespace/MyEnv2", MyEnv2)
+
+        class ProviderClass(coi.CustomOptimizerProvider):
+            @classmethod
+            def get_optimizers(cls):
+                return {"MyCustomOptimizer-v1": ...}
+
+        def provider_func():
+                return {"MyCustomOptimizer-v2": ...}
+
+.. tab:: Entry points (setup.cfg)
+
+   .. code-block:: cfg
+
+        # setup.cfg
+
+        [options.entry_points]
+        cernml.envs =
+            MyNamespace = mypackage
+        cernml.custom_optimizers =
+            MyNamespace/MyOptimizationProblem-v1 = mypackage:ProviderClass
+            MyNamespace/MyOptimizationProblem-v2 = mypackage:provider_func
+
+   .. code-block:: py
+
+        # mypackage/__init__.py
+
+        from cernml import coi
+
+        class MyEnv1(coi.SingleOptimizable): ...
+
+        coi.register("MyNamespace/MyEnv1", MyEnv1)
+
+        class MyEnv2(coi.OptEnv): ...
+
+        coi.register("MyNamespace/MyEnv2", MyEnv2)
+
+        class ProviderClass(coi.CustomOptimizerProvider):
+            @classmethod
+            def get_optimizers(cls):
+                return {"MyCustomOptimizer-v1": ...}
+
+        def provider_func():
+                return {"MyCustomOptimizer-v2": ...}
+
+.. tab:: Entry points (setup.py)
+
+   .. code-block:: py
+
+        # setup.py
+
+        from setuptools import setup
+
+        # ...
+
+        setup(
+            # ...,
+            entry_points={
+                "cernml.envs": [
+                    "MyNamespace = mypackage",
+                ],
+                "cernml.custom_optimizers": [
+                    "MyNamespace/MyOptimizationProblem-v1 = mypackage:ProviderClass",
+                    "MyNamespace/MyOptimizationProblem-v2 = mypackage:provider_func",
+                ],
+            },
+        )
+
+   .. code-block:: py
+
+        # mypackage/__init__.py
+
+        from cernml import coi
+
+        class MyEnv1(coi.SingleOptimizable): ...
+
+        coi.register("MyNamespace/MyEnv1", MyEnv1)
+
+        class MyEnv2(coi.OptEnv): ...
+
+        coi.register("MyNamespace/MyEnv2", MyEnv2)
+
+        class ProviderClass(coi.CustomOptimizerProvider):
+            @classmethod
+            def get_optimizers(cls):
+                return {"MyCustomOptimizer-v1": ...}
+
+        def provider_func():
+                return {"MyCustomOptimizer-v2": ...}
