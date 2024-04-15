@@ -83,4 +83,4 @@ class Quadratic(Env):
 
 
 # Never forget to register your optimization problem!
-coi.register("QuadraticSearch-v1", entry_point=Quadratic)
+coi.register("QuadraticSearch-v2", entry_point=Quadratic)
