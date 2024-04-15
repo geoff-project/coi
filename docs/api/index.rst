@@ -31,8 +31,8 @@ Intermediate Features and Interfaces
 
     cancellation
     checkers
-    goalenv
-    extras
+    sep_goal_env
+    intersections
     typeguards
 
 Implementation Details

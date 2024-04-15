@@ -45,8 +45,12 @@ This Module` as a public API of this private module. The following
 section describes the :ref:`api/machinery:Attribute-Matching Logic` in
 detail. After this, several :ref:`api/machinery:Compatibility Shims` are
 described that ensure that this module works on all Python versions
-starting from 3.9. Finally, :ref:`api/machinery:Utilities and Dark
-Magic` documents a few particularly obscure hacks.
+starting from 3.9. Following this, :ref:`api/machinery:Utilities and
+Dark Magic` documents a few particularly obscure hacks. Finally, we
+conclude with notes on various tricky implementation details surrounding
+:ref:`api/machinery:The Instance Check of ABCMeta`,
+:ref:`api/machinery:The Subclass Hook of the Core Classes`, and
+:ref:`api/machinery:The Implementation of Intersection Protocols`.
 """
 
 import functools
@@ -261,17 +265,18 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
            only regards regular subclassing.
 
         2. If this gets called via a concrete class, we defer to
-           `~abc.ABCMeta` [#typeclass]_. We could defer to our direct
-           superclass `_ProtocolMeta` since it would lead to the same
-           result; however, we *must* skip it in the following case, so
-           we might as well maintain symmetry between both cases.
+           :ref:`api/machinery:the instance check of ABCMeta`. We could
+           defer to our direct superclass `_ProtocolMeta` since it would
+           lead to the same result; however, we *must* skip it in the
+           following case, so we might as well maintain symmetry between
+           both cases.
 
         3. If this wasn't called on `AttrCheckProtocol` itself nor on
            a concrete class, it must've been called on a protocol class.
-           Ask `~abc.ABCMeta` for its instance check. This covers
-           subclasses via inheritance and via
+           Run :ref:`api/machinery:the instance check of ABCMeta`. This
+           covers subclasses via inheritance and via
            :meth:`~abc.ABCMeta.register()`. Unless the result is cached,
-           this will run our `__subclasscheck__()` [#typeclass]_.
+           this will run our `__subclasscheck__()`.
 
         4. Only if that check fails do we check the attributes via
            `attrs_match()`. We want to do this last because it's the
@@ -383,7 +388,8 @@ def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
     `proto_classmethods()`), we only look it up on *obj* if *obj* is
     a type. If it isn't a type, we look it up on :samp:`type({obj})`. We
     *don't* use `~instance.__class__` because `type` is what is used in
-    the :term:`method resolution order` [#typeclass]_.
+    the :term:`method resolution order`. (See :ref:`api/machinery:the
+    instance check of ABCMeta`.)
 
     If the attribute is found on *obj*, further tests depend on the
     nature of the protocol member:

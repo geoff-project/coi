@@ -5,18 +5,18 @@
 
     SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-Additional Interfaces
-=====================
+Intersection Interfaces
+=======================
 
-.. automodule:: cernml.coi._extra_envs
+.. automodule:: cernml.coi._intersections
     :no-members:
 
 .. currentmodule:: cernml.coi
 
-.. autoclass:: SeparableEnv
-
 .. autoclass:: OptEnv
+
+.. autoclass:: OptGoalEnv
 
 .. autoclass:: SeparableOptEnv
 
-.. autoclass:: InfoDict
+.. autoclass:: SeparableOptGoalEnv
