@@ -9,61 +9,23 @@
 .. currentmodule:: cernml.coi
 
 Some `Problem` classes have several parameters that determine certain
-details of how they are solved. A classic configurable parameter of
-environments is the *reward objective*, i.e. the minimum reward for
-a step upon which an episode is considered solved.
+details of how they are solved, e.g. the bounds within which to search,
+or a subset of parameters which are to be optimized.
 
-While these parameters can be set through the initializer, this has the
-problem that it is difficult to annotate them with limits, invariants,
-etc.
+These parameters are often set through the initializer method
+:meth:`~object.__init__()`. However, this can usually not well be
+annotated with limits, invariants, or other metadata.
 
-For this reason, this package provides `Configurable`, a uniform way for
-problem authors to declare which parameters of their class are
-configurable and what each parameter's invariants are. It is very easy
-to use for problem authors:
+The `Configurable` interface provides a uniform way for problem authors
+to declare which parameters of their class are configurable and what
+each parameter's invariants are. It's implemented as follows:
 
-1. Define your configurable parameters in your initializer.
-2. Implement `~Configurable.get_config()` and return a declaration of
-   configurable parameters. Certain invariants, limits, etc. may be
-   declared for each parameter.
-3. Implement `~Configurable.apply_config()` which is given a collection
-   of new configured values. Transfer each value into your object. Apply
+1. Define your configurable parameters in :meth:`~object.__init__()`.
+2. Implement `~Configurable.get_config()` and return a `Config` object.
+   This declares your configurable parameters and their invariants.
+3. Implement `~Configurable.apply_config()`, which receives
+   a `ConfigValues` object. Transfer each value into your object. Apply
    any further checks and raise an exception if any fail.
-
-Usage example:
-
-    >>> class ExampleEnv(Configurable):
-    ...     def __init__(self):
-    ...         self.action_scale = 1.0
-    ...     def get_config(self):
-    ...         config = Config()
-    ...         config.add(
-    ...             'action_scale',
-    ...             self.action_scale,
-    ...             label='Action scale (mrad)',
-    ...             range=(0.0, 2.0),
-    ...             default=1.0,
-    ...         )
-    ...         return config
-    ...     def apply_config(self, values):
-    ...         self.action_scale = values.action_scale
-    >>> issubclass(ExampleEnv, Configurable)
-    True
-
-A host application can use this interface as follows:
-
-    >>> env = ExampleEnv()
-    >>> config = env.get_config()
-    >>> # Present configs to the user.
-    >>> {field.dest: str(field.value) for field in config.fields()}
-    {'action_scale': '1.0'}
-    >>> # Transfer a user choice back to the env.
-    >>> values = config.validate_all({"action_scale": "1.5"})
-    >>> values
-    namespace(action_scale=1.5)
-    >>> env.apply_config(values)
-    >>> env.action_scale
-    1.5
 """
 
 from __future__ import annotations
@@ -127,57 +89,6 @@ class Config:
         Traceback (most recent call last):
         ...
         DuplicateConfig: foo
-
-    If your class consists of multiple configurable components, you can
-    combine their individual configs as long as the names don't overlap:
-
-        >>> class Kicker(Configurable):
-        ...     def __init__(self) -> None:
-        ...         self.scale = 0.1
-        ...
-        ...     def get_config(self) -> Config:
-        ...         return Config().add("scale", self.scale)
-        ...
-        ...     def apply_config(self, values: ConfigValues) -> None:
-        ...         self.scale = values.scale
-        ...
-        >>> class LossMonitor(Configurable):
-        ...     def __init__(self) -> None:
-        ...         self.min_reading = 1.0
-        ...
-        ...     def get_config(self) -> Config:
-        ...         return Config().add("min_reading", self.min_reading)
-        ...
-        ...     def apply_config(self, values: ConfigValues) -> None:
-        ...         self.min_reading = values.min_reading
-        ...
-        >>> class Problem(Configurable):
-        ...     def __init__(self) -> None:
-        ...         self.kicker = Kicker()
-        ...         self.monitor = LossMonitor()
-        ...
-        ...     def get_config(self) -> Config:
-        ...         return (
-        ...             Config()
-        ...             .extend(self.kicker.get_config())
-        ...             .extend(self.monitor.get_config())
-        ...         )
-        ...
-        ...     def apply_config(self, values: ConfigValues):
-        ...         self.kicker.apply_config(values)
-        ...         self.monitor.apply_config(values)
-        ...
-        >>> problem = Problem()
-        >>> config = problem.get_config()
-        >>> config
-        <Config: ['scale', 'min_reading']>
-        >>> values = {'scale': 0.0, 'min_reading': 0.0}
-        >>> values = config.validate_all(values)
-        >>> problem.apply_config(values)
-        >>> problem.kicker.scale
-        0.0
-        >>> problem.monitor.min_reading
-        0.0
     """
 
     @dataclass(frozen=True)
