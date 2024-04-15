@@ -358,8 +358,10 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
         if other is protocols.Problem or cls is not Problem:
             return NotImplemented
         # Run `issubclass(other, protocol)` but skip
-        # `ABCMeta.__subclasscheck__()`, since that would lead to
-        # infinite recursion.
+        # `ABCMeta.__subclasscheck__()`. ABCMeta checks if `other` is
+        # subclass of any subclass (recursively!), which would
+        # eventually call this hook again, leading to infinite
+        # recursion.
         return protocols.Problem.__subclasshook__(other)
 
 
@@ -509,8 +511,10 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
         if other is protocols.SingleOptimizable or cls is not SingleOptimizable:
             return NotImplemented
         # Run `issubclass(other, protocol)` but skip
-        # `ABCMeta.__subclasscheck__()`, since that would lead to
-        # infinite recursion.
+        # `ABCMeta.__subclasscheck__()`. ABCMeta checks if `other` is
+        # subclass of any subclass (recursively!), which would
+        # eventually call this hook again, leading to infinite
+        # recursion.
         return protocols.SingleOptimizable.__subclasshook__(other)
 
 
@@ -715,6 +719,8 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
         if other is protocols.FunctionOptimizable or cls is not FunctionOptimizable:
             return NotImplemented
         # Run `issubclass(other, protocol)` but skip
-        # `ABCMeta.__subclasscheck__()`, since that would lead to
-        # infinite recursion.
+        # `ABCMeta.__subclasscheck__()`. ABCMeta checks if `other` is
+        # subclass of any subclass (recursively!), which would
+        # eventually call this hook again, leading to infinite
+        # recursion.
         return protocols.FunctionOptimizable.__subclasshook__(other)

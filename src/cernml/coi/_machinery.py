@@ -59,13 +59,26 @@ if t.TYPE_CHECKING:
     from typing_extensions import TypeGuard
 
 __all__ = (
-    "AttrCheckProtocolMeta",
     "AttrCheckProtocol",
+    "AttrCheckProtocolMeta",
+    "attr_in_annotations",
+    "attrs_match",
+    "find_mismatched_attr",
+    "get_class_annotations",
+    "get_class_annotations_impl",
+    "get_dunder_dict_of_class",
+    "get_static_mro",
+    "is_protocol",
+    "lazy_load_getattr_static",
+    "non_callable_proto_members",
+    "proto_classmethods",
+    "proto_hook",
+    "protocol_attrs",
 )
 
 
-_static_mro: t.Callable[[type], tuple[type, ...]] = vars(type)["__mro__"].__get__
-_get_dunder_dict_of_class: t.Callable[[type], dict[str, object]] = vars(type)[
+get_static_mro: t.Callable[[type], tuple[type, ...]] = vars(type)["__mro__"].__get__
+get_dunder_dict_of_class: t.Callable[[type], dict[str, object]] = vars(type)[
     "__dict__"
 ].__get__
 
@@ -95,7 +108,7 @@ def get_class_annotations_impl(obj: type, /) -> dict[str, object]:
     only used on Python 3.9. Under this name, however, it is available
     on all versions. This is for documentation and testing purposes.
     """
-    obj_dict = _get_dunder_dict_of_class(obj)
+    obj_dict = get_dunder_dict_of_class(obj)
     ann = obj_dict.get("__annotations__", None)
     if isinstance(ann, GetSetDescriptorType):
         # This is the case e.g. when `obj` is `types.FunctionType`.
@@ -199,7 +212,7 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
                         f"not {bases.__class__.__name__}"
                     )
                 bases = _AlwaysContainsProtocol(bases)
-        namespace.setdefault("__subclasshook__", _proto_hook)
+        namespace.setdefault("__subclasshook__", proto_hook)
         return super().__new__(mcs, name, bases, namespace, **kwargs)
 
     def __init__(cls, *args: t.Any, **kwargs: t.Any) -> None:
@@ -320,10 +333,10 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
 
 
 @classmethod  # type: ignore[misc]
-def _proto_hook(cls: AttrCheckProtocolMeta, other: type) -> t.Any:
+def proto_hook(cls: AttrCheckProtocolMeta, other: type) -> t.Any:
     """The subclasshook for all attribute-checking protocols.
 
-    This is actually defined outside of the class as ``_proto_hook()``.
+    This is actually defined outside of the class as ``proto_hook()``.
     It is injected by `AttrCheckProtocolMeta.__new__()` and prevents
     `Protocol` from injecting its own `typing._proto_hook`.
 
@@ -437,7 +450,7 @@ def attr_in_annotations(proto: AttrCheckProtocolMeta, attr: str) -> bool:
 
     This code is modified from Python 3.12 `typing._proto_hook()`.
     """
-    for base in _static_mro(proto):
+    for base in get_static_mro(proto):
         try:
             annotations = get_class_annotations(base)
         except AttributeError:
@@ -473,7 +486,7 @@ def non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
     # Don't use `getattr()` to avoid lookup in super classes.
     members = t.cast(
         t.Union[set[str], None],
-        _get_dunder_dict_of_class(cls).get("__non_callable_proto_members__"),
+        get_dunder_dict_of_class(cls).get("__non_callable_proto_members__"),
     )
     if members is None:
         members = set()
@@ -513,13 +526,13 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
     # Don't use `getattr()` to avoid lookup in super classes.
     members = t.cast(
         t.Union[set[str], None],
-        _get_dunder_dict_of_class(cls).get("__proto_classmethods__"),
+        get_dunder_dict_of_class(cls).get("__proto_classmethods__"),
     )
     if members is None:
         # Access the attributes via the class dictionary; access
         # via `getattr()` would bind them and give us bound-method
         # objects, not classmethod objects!
-        cvars = _get_dunder_dict_of_class(cls)
+        cvars = get_dunder_dict_of_class(cls)
         members = set()
         for attr in protocol_attrs(cls):
             try:
@@ -562,7 +575,7 @@ def protocol_attrs(cls: type) -> set[str]:
     # Don't use `getattr()` to avoid lookup in super classes.
     attrs = t.cast(
         t.Union[set[str], None],
-        _get_dunder_dict_of_class(cls).get("__protocol_attrs__"),
+        get_dunder_dict_of_class(cls).get("__protocol_attrs__"),
     )
     if attrs is not None:
         return attrs

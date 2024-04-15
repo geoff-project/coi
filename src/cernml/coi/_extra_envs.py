@@ -13,11 +13,16 @@
 from __future__ import annotations
 
 import typing as t
-from abc import ABCMeta
 
 from gymnasium.core import ActType, Env, ObsType
 
 from ._classes import ParamType, SingleOptimizable
+from ._machinery import (
+    AttrCheckProtocolMeta,
+    get_static_mro,
+    non_callable_proto_members,
+    proto_hook,
+)
 
 __all__ = (
     "ActType",
@@ -186,25 +191,42 @@ class SeparableEnv(Env[ObsType, ActType]):
         raise NotImplementedError
 
 
-class OptEnv(Env[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCMeta):
+class OptEnv(
+    Env[ObsType, ActType], SingleOptimizable[ParamType], metaclass=AttrCheckProtocolMeta
+):
     """An optimizable environment.
 
     This is an intersection of `~.Env` and `SingleOptimizable`. Any
     class that inherits from both also inherits from this class.
     """
 
+    # Lie about being a protocol. We can't subclass Protocol directly
+    # because `Env` is not a protocol class. This also prevents us from
+    # using `@runtime_checkable`, so we lie about that as well.
+    _is_protocol = True
+    _is_runtime_protocol = True
+
     @classmethod
     def __subclasshook__(cls, other: type) -> bool:
-        # Circumvent `issubclass()` to prevent recursion;
-        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
-        proto = SingleOptimizable.__subclasshook__(other)
-        if Env.__subclasscheck__(other) and proto is True:
-            return True
-        return NotImplemented
+        # Our environment base class must be not only implemented by
+        # protocol, it must also be in our MRO. Otherwise, SeparableEnv
+        # and SeparableGoalEnv would overlap. Preventing this overlap is
+        # one of our goals.
+        if Env not in get_static_mro(other):
+            return False
+        return proto_hook.__get__(None, cls)(other)
+
+
+# Set `__non_callable_proto_members__` as @runtime_checkable would do on
+# Python 3.12+. We can't use @runtime_checkable because this is
+# technically not a protocol.
+non_callable_proto_members(OptEnv)
 
 
 class SeparableOptEnv(
-    SeparableEnv[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCMeta
+    SeparableEnv[ObsType, ActType],
+    SingleOptimizable[ParamType],
+    metaclass=AttrCheckProtocolMeta,
 ):
     """An optimizable and separable environment.
 
@@ -212,11 +234,23 @@ class SeparableOptEnv(
     Any class that inherits from both also inherits from this class.
     """
 
+    # Lie about this being a runtime protocol so that `attrs_match()`
+    # is run.
+    _is_protocol = True
+    _is_runtime_protocol = True
+
     @classmethod
     def __subclasshook__(cls, other: type) -> bool:
-        # Circumvent `issubclass()` to prevent recursion;
-        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
-        proto = SingleOptimizable.__subclasshook__(other)
-        if issubclass(other, SeparableEnv) and proto is True:
-            return True
-        return NotImplemented
+        # Our environment base class must be not only implemented by
+        # protocol, it must also be in our MRO. Otherwise, SeparableEnv
+        # and SeparableGoalEnv would overlap. Preventing this overlap is
+        # one of our goals.
+        if SeparableEnv not in get_static_mro(other):
+            return False
+        return proto_hook.__get__(None, cls)(other)
+
+
+# Set `__non_callable_proto_members__` as @runtime_checkable would do on
+# Python 3.12+. We can't use @runtime_checkable because this is
+# technically not a protocol.
+non_callable_proto_members(SeparableOptEnv)

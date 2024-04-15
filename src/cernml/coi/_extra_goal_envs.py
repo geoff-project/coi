@@ -14,13 +14,18 @@
 from __future__ import annotations
 
 import typing as t
-from abc import ABCMeta
 
 from gymnasium.core import ActType, ObsType
 
 from ._classes import ParamType, SingleOptimizable
 from ._extra_envs import InfoDict
 from ._goalenv import GoalEnv, GoalObs, GoalType
+from ._machinery import (
+    AttrCheckProtocolMeta,
+    get_static_mro,
+    non_callable_proto_members,
+    proto_hook,
+)
 
 __all__ = (
     "ActType",
@@ -110,7 +115,7 @@ class OptGoalEnv(
     GoalEnv[ObsType, GoalType, ActType],
     SingleOptimizable[ParamType],
     t.Generic[ObsType, GoalType, ActType, ParamType],
-    metaclass=ABCMeta,
+    metaclass=AttrCheckProtocolMeta,
 ):
     """An optimizable multi-goal environment.
 
@@ -118,21 +123,33 @@ class OptGoalEnv(
     Any class that inherits from both also inherits from this class.
     """
 
+    # Lie about this being a runtime protocol so that `attrs_match()`
+    # is run.
+    _is_protocol = True
+    _is_runtime_protocol = True
+
     @classmethod
     def __subclasshook__(cls, other: type) -> bool:
-        # Circumvent `issubclass()` to prevent recursion;
-        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
-        proto = SingleOptimizable.__subclasshook__(other)
-        if issubclass(other, GoalEnv) and proto is True:
-            return True
-        return NotImplemented
+        # Our environment base class must be not only implemented by
+        # protocol, it must also be in our MRO. Otherwise, SeparableEnv
+        # and SeparableGoalEnv would overlap. Preventing this overlap is
+        # one of our goals.
+        if GoalEnv not in get_static_mro(other):
+            return False
+        return proto_hook.__get__(None, cls)(other)
+
+
+# Set `__non_callable_proto_members__` as @runtime_checkable would do on
+# Python 3.12+. We can't use @runtime_checkable because this is
+# technically not a protocol.
+non_callable_proto_members(OptGoalEnv)
 
 
 class SeparableOptGoalEnv(
     SeparableGoalEnv[ObsType, GoalType, ActType],
     SingleOptimizable[ParamType],
     t.Generic[ObsType, GoalType, ActType, ParamType],
-    metaclass=ABCMeta,
+    metaclass=AttrCheckProtocolMeta,
 ):
     """An optimizable and separable multi-goal environment.
 
@@ -141,11 +158,23 @@ class SeparableOptGoalEnv(
     from this class.
     """
 
+    # Lie about this being a runtime protocol so that `attrs_match()`
+    # is run.
+    _is_protocol = True
+    _is_runtime_protocol = True
+
     @classmethod
     def __subclasshook__(cls, other: type) -> bool:
-        # Circumvent `issubclass()` to prevent recursion;
-        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
-        proto = SingleOptimizable.__subclasshook__(other)
-        if issubclass(other, SeparableGoalEnv) and proto is True:
-            return True
-        return NotImplemented
+        # Our environment base class must be not only implemented by
+        # protocol, it must also be in our MRO. Otherwise, SeparableEnv
+        # and SeparableGoalEnv would overlap. Preventing this overlap is
+        # one of our goals.
+        if SeparableGoalEnv not in get_static_mro(other):
+            return False
+        return proto_hook.__get__(None, cls)(other)
+
+
+# Set `__non_callable_proto_members__` as @runtime_checkable would do on
+# Python 3.12+. We can't use @runtime_checkable because this is
+# technically not a protocol.
+non_callable_proto_members(SeparableOptGoalEnv)
