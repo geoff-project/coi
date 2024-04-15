@@ -8,6 +8,11 @@
 Additional Interfaces
 =====================
 
+.. seealso::
+
+    :doc:`/guide/otherenvs`
+        User guide page on the topic.
+
 .. currentmodule:: cernml.coi
 
 The interfaces documented here are less commonly used, but may still be useful
@@ -42,6 +47,8 @@ same methods as them.
     compute_truncated('obs', 0.0, {'reward': 0.0})
     ('obs', 0.0, True, False, {'reward': 0.0})
 
+.. module:: cernml.coi._goalenv
+.. currentmodule:: cernml.coi
 .. class:: GoalEnv
     :module: cernml.coi
 
@@ -52,10 +59,9 @@ same methods as them.
     not installed. If it is installed, this is automatically an alias to the
     original class.
 
+.. module:: cernml.coi._sepenv
 .. currentmodule:: cernml.coi
-
 .. autoclass:: SeparableEnv
-
 .. autoclass:: SeparableGoalEnv
 
 .. autoclass:: InfoDict

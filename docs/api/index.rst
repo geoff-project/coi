@@ -13,33 +13,16 @@ API Reference
 .. automodule:: cernml.coi
    :no-members:
 
-COI Core
---------
-
 .. toctree::
     :maxdepth: 2
 
     classes
     registration
     configurable
-
-Intermediate Features and Interfaces
-------------------------------------
-
-.. toctree::
-    :maxdepth: 2
-
     cancellation
     checkers
     sep_goal_env
     intersections
     typeguards
-
-Implementation Details
-----------------------
-
-.. toctree::
-    :maxdepth: 2
-
     protocols
     machinery

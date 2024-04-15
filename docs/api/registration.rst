@@ -8,6 +8,11 @@
 The Problem Registry
 ====================
 
+.. seealso::
+
+    :doc:`/guide/registration`
+        User guide page on the topic.
+
 .. automodule:: cernml.coi.registration
     :no-members:
 

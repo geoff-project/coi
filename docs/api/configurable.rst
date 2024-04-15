@@ -8,6 +8,11 @@
 The Configurable Interface
 ==========================
 
+.. seealso::
+
+    :doc:`/guide/configurable`
+        User guide page on the topic.
+
 .. automodule:: cernml.coi.configurable
     :no-members:
 

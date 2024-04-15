@@ -8,6 +8,11 @@
 Intersection Interfaces
 =======================
 
+.. seealso::
+
+    :doc:`/guide/otherenvs`
+        User guide page on the topic.
+
 .. automodule:: cernml.coi._intersections
     :no-members:
 
