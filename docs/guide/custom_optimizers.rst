@@ -177,3 +177,150 @@ Examples for both approaches are shown below.
 
         def provider_func():
                 return {"MyCustomOptimizer-v2": ...}
+
+Custom Per-Environment Policies
+-------------------------------
+
+Similar to the custom optimizer providers, there are many cases in RL where an
+algorithm is only really applicable to a single environment. For this purpose,
+you can declare a *custom policy provider*. It works very similar to optimizer
+providers, but differs in some aspects of its API.
+
+There are two ways to declare a custom policy provider:
+
+1. Your environment problem defines the
+   `~CustomPolicyProvider.get_policy_names()` and
+   `~CustomPolicyProvider.load_policy()` methods of the `CustomPolicyProvider`
+   abstract base class.
+
+2. You define an an :doc:`entry point <pkg:specifications/entry-points>` in the
+   group ``cernml.custom_policies`` that has the same `registry` name as the
+   environment that it is appropriate for. This entry point should
+   point at a subclass of `CustomPolicyProvider` and that class should be
+   instantiable by calling it with no arguments.
+
+Examples for both approaches are shown below.
+
+.. tab:: Entry points (pyproject.toml)
+
+   .. code-block:: toml
+
+        # pyproject.toml
+
+        [project.entry-points.'cernml.envs']
+        MyEnv-v1 = 'mypackage:MyEnv1'
+
+        [project.entry-points.'cernml.custom_policies']
+        MyEnv-v1 = 'mypackage:ProviderClass'
+
+   .. code-block:: py
+
+        # mypackage/__init__.py
+
+        import gym
+        from stable_baselines3 import TD3
+        from cernml import coi
+
+        class MyEnv1(gym.Env): ...
+
+        class ProviderClass(coi.CustomPolicyProvider):
+            @classmethod
+            def get_policy_names(cls):
+                return ["MyCustomPolicy-v1", ...]
+
+            def load_policy(self, name):
+                filename = ...
+                return TD3.load(filename)
+
+.. tab:: Entry points (setup.cfg)
+
+   .. code-block:: cfg
+
+        # setup.cfg
+
+        [options.entry_points]
+        cernml.envs =
+            MyEnv-v1 = mypackage:MyEnv1
+        cernml.custom_policies =
+            MyEnv-v1 = mypackage:ProviderClass
+
+   .. code-block:: py
+
+        # mypackage/__init__.py
+
+        import gym
+        from cernml import coi
+
+        class MyEnv1(gym.Env): ...
+
+        class ProviderClass(coi.CustomPolicyProvider):
+            @classmethod
+            def get_policy_names(cls):
+                return ["MyCustomPolicy-v1", ...]
+
+            def load_policy(self, name):
+                filename = ...
+                return TD3.load(filename)
+
+.. tab:: Entry points (setup.py)
+
+   .. code-block:: py
+
+        # setup.py
+
+        from setuptools import setup
+
+        # ...
+
+        setup(
+            # ...,
+            entry_points={
+                "cernml.envs": [
+                    "MyEnv-v1 = mypackage:MyEnv1",
+                ],
+                "cernml.custom_policies": [
+                    "MyEnv-v1 = mypackage:ProviderClass",
+                ],
+            },
+        )
+
+   .. code-block:: py
+
+        # mypackage/__init__.py
+
+        import gym
+        from cernml import coi
+
+        class MyEnv1(gym.Env): ...
+
+        class ProviderClass(coi.CustomPolicyProvider):
+            @classmethod
+            def get_policy_names(cls):
+                return ["MyCustomPolicy-v1", ...]
+
+            def load_policy(self, name):
+                filename = ...
+                return TD3.load(filename)
+
+.. tab:: Inheritance
+
+   .. code-block:: py
+
+        # mypackage/__init__.py
+
+        import gym
+        from cernml import coi
+
+        class MyEnv1(gym.Env, coi.CustomPolicyProvider):
+
+            # ...
+
+            @classmethod
+            def get_policy_names(cls):
+                return ["MyCustomPolicy-v1", ...]
+
+            def load_policy(self, name):
+                filename = ...
+                return TD3.load(filename)
+
+        coi.register("MyEnv-v1", entry_point=MyEnv1)

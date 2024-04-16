@@ -33,6 +33,4 @@ application must be able to query such properties.
 
 ..
     Guide pages:
-
-    other_envs -- revise + rename to "extras"
     migration guide
