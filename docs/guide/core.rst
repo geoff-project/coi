@@ -140,6 +140,36 @@ This is a minimal, runnable example problem:
     :lines: 9-
     :linenos:
 
+Single-Objective Function Optimization Problems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. seealso::
+    :doc:`funcopt`
+        User guide page on function optimization problems.
+
+For a minimal working example, you should inherit from
+`cernml.coi.FunctionOptimizable` to have it fill in as many defaults as
+possible. With it as a superclass, you only have to fill in three missing
+pieces:
+
+1. `~FunctionOptimizable.get_initial_params()` to give the *initial point* for
+   each individual optimization;
+2. `~FunctionOptimizable.compute_function_objective()` as the *objective function*
+   to be minimized [#min]_;
+3. `~FunctionOptimizable.get_optimization_space()` to specify the *domain*,
+   i.e. valid inputs to the objective function. See also
+   :ref:`guide/core:spaces` for more information.
+
+You also have to *register* your class so that the central function
+`cernml.coi.make()` can instantiate it. The page on :doc:`registration` has
+more information.
+
+This is a minimal, runnable example problem:
+
+.. literalinclude:: minimal_fopt_class.py
+    :lines: 9-
+    :linenos:
+
 Reinforcement Learning Environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
