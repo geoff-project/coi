@@ -65,9 +65,11 @@ class Quadratic(Env):
     def step(self, action):
         # Update our internal state and ensure everything stays within
         # its limits.
-        self.position += np.clip(action, self.action_space.low, self.action_space.high)
+        self.position += action
         self.position = np.clip(
-            self.position, self.observation_space.low[1], self.observation_space.high[1]
+            self.position,
+            self.observation_space.low[1],
+            self.observation_space.high[1],
         )
 
         # We use the negative distance from the goal as reward. (Higher

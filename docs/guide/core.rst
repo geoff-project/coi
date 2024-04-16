@@ -136,8 +136,9 @@ more information.
 
 This is a minimal, runnable example problem:
 
-.. literalinclude:: minimal_sopt.py
+.. literalinclude:: minimal_sopt_class.py
     :lines: 9-
+    :linenos:
 
 Reinforcement Learning Environments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -161,11 +162,17 @@ more information.
 
 This is a minimal, runnable example problem:
 
-.. literalinclude:: minimal_env.py
+.. literalinclude:: minimal_env_class.py
     :lines: 9-
+    :linenos:
 
 Running Your Optimization Problem
 ---------------------------------
+
+.. seealso::
+    :doc:`control_flow`
+        User guide page with detailed information on each kind of execution
+        loop.
 
 Optimization problems – no matter whether based on `Env`, `SingleOptimizable`
 or another interface – are expected to be run as *plugins* into a *host*
@@ -182,105 +189,41 @@ problems (which might be useful for debugging) may look like this:
 
 .. tab:: SingleOptimizable
 
-    .. code-block:: python
-
-        from cernml import coi
-
-        with coi.make("MySingleOptimizableProblem-v0") as problem:
-            optimizer = ...
-            initial = params = problem.get_initial_params()
-            best = (float('inf'), initial)
-
-            while not optimizer.is_done():
-                loss = problem.compute_single_objective(params)
-                params = optimizer.step(loss)
-                best = min(best, (loss, params))
-
-            if optimizer.has_failed():
-                # Restore initial state.
-                problem.compute_single_objective(initial)
-            else:
-                # Restore best state.
-                problem.compute_single_objective(best[1])
+    .. literalinclude:: minimal_sopt_loop.py
+        :lines: 13-
+        :linenos:
 
 .. tab:: FunctionOptimizable
 
-    .. code-block:: python
-
-        from cernml import coi
-
-        with coi.make("MySingleOptimizableProblem-v0") as problem:
-            skeleton_points = problem.override_skeleton_points()
-            if skeleton_points is None:
-                skeleton_points = ... # Get user choice.
-
-            # Keep track of which points we have modified and which not.
-            restore_on_failure = []
-
-            try:
-                for time in skeleton_points:
-                    optimizer = ...
-                    initial = params = problem.get_initial_params(time)
-                    best = (float('inf'), initial)
-                    restore_on_failure.append((time, initial))
-
-                    while not optimizer.is_done():
-                        loss = problem.compute_function_objective(time, params)
-                        params = optimizer.step(loss)
-                        best = min(best, (loss, params))
-
-                    if optimizer.has_failed():
-                        raise Exception(f"optimizer failed at t={time}")
-                    else:
-                        # Restore best state.
-                        problem.compute_function_objective(time, best[1])
-            except:
-                # If anything fails, restore initial state not only for the
-                # current skeleton point, but all previous ones as well.
-                while restore_on_failure:
-                    time, params = restore_on_failure.pop()
-                    problem.compute_function_objective(time, params)
-                raise
+    .. literalinclude:: minimal_fopt_loop.py
+        :lines: 17-
+        :linenos:
 
 .. tab:: Env (Evaluation)
 
-    .. code-block:: python
-
-        from cernml import coi
-
-        show_progress: bool = ...
-        num_episodes: int = ...
-        policy = ...
-
-        # Limit steps per episode to prevent infinite loops
-        with coi.make("MyEnv-v0", max_episode_steps=10) as env:
-            for episode in range(num_episodes):
-                terminated = truncated = False
-                obs, info = env.reset()
-                while not (terminated or truncated):
-                    action = agent.predict(obs)
-                    obs, reward, terminated, truncated, info = env.step(action)
+    .. literalinclude:: minimal_env_loop.py
+        :lines: 13-
+        :linenos:
 
 While these examples are very bare-bones, various libraries already provide
 pre-packaged execution loops with a number of additional conveniences:
 
-- :doc:`Stable Baselines 3 <sb3:index>` supports the `Env` API and RL
-  environments can be passed directly to the various :samp:`{agent}.learn()`
-  methods; in addition, the package provides a function
-  :func:`~stable_baselines3.common.evaluation.evaluate_policy()` to solve
-  a problem with a given agent or policy.
-- The `CernML-RLTools <https://gitlab.cern.ch/geoff/cernml-rltools/>`_ package
-  provides a module ``cernml.rltools.envloop`` with an older and more
-  general-purpose implementation of the environment interaction loop.
-- The :doc:`cernml-coi-optimizers <optimizers:index>` package provides
-  a uniform interface for solvers of `SingleOptimizable` problems. Its
-  general-purpose :func:`~cernml.optimizers.solve()` function is directly
-  compatible with the COI.
-- In addition, many optimizers like :func:`scipy.optimize.minimize()` and
-  `Py-BOBYQA <https://numericalalgorithmsgroup.github.io/pybobyqa/>`_ are able
-  to consume `SingleOptimizable` with only minor adjustments.
+:doc:`Stable Baselines 3 <sb3:index>`
+    supports the `Env` API and RL environments can be passed directly to the
+    various :samp:`{agent}.learn()` methods; in addition, the package provides
+    a function :func:`~stable_baselines3.common.evaluation.evaluate_policy()`
+    to solve a problem with a given agent or policy.
+`cernml-rltools <https://gitlab.cern.ch/geoff/cernml-rltools/>`_
+    provides a module ``cernml.rltools.envloop`` with an older and more
+    general-purpose implementation of the environment interaction loop.
+:doc:`cernml-coi-optimizers <optimizers:index>`
+    provides a uniform interface for solvers of `SingleOptimizable` problems.
+    Its general-purpose :func:`~cernml.optimizers.solve()` function is directly
+    compatible with the COI.
 
-See also :doc:`control_flow` for a minimal examples of each execution loop.
+In addition, many optimizers like :func:`scipy.optimize.minimize()` and
+`Py-BOBYQA <https://numericalalgorithmsgroup.github.io/pybobyqa/>`_ are able to
+consume `SingleOptimizable` with only minor adjustments.
 
 Spaces
 ------
