@@ -22,21 +22,82 @@ version 0.9.0.
 Unreleased
 ----------
 
+.. seealso::
+
+    :doc:`guide/migration_090`
+        User guide page listing all breaking changes and how to adapt your
+        code.
+
+- BREAKING: Require Python 3.9.
+- BREAKING: Switched dependency from Gym 0.21 to Gymnasium.
+- BREAKING: Update NumPy requirement from 1.0 to 1.22.
+- BREAKING: Update optional Matplotlib requirement from 3.0 to 3.8.
+- BREAKING: Update optional cernml-coi-optimizers requirement from 1.1 to 2.0.
+- BREAKING: Update built-time setuptools-scm requirement from 7.0 to 8.
+- BREAKING: Update :doc:`importlib-metadata <importlib_metadata:index>` from
+  ``< 7`` to ``>= 4.8``.
+- BREAKING: Add dependency on ``typing-extensions >= 4.3``.
+- BREAKING: The `~Problem.metadata` key ``"render.modes"`` has been renamed to
+  ``"render_modes"``. Its meaning has not changed.
+- BREAKING: New rendering API: `Problem.render()` now longer accepts the
+  arguments *render_mode*. This argument is now instead passed to
+  `Problem.__init__() <Problem>`, which automatically sets the new property
+  `Problem.render_mode`. In rendering mode ``"human"``, problems are now
+  expected to call `~Problem.render()` automatically at every iteration.
+- BREAKING: `SingleOptimizable.get_initial_params()`,
+  `FunctionOptimizable.get_initial_params()` and `Env.reset()
+  <gymnasium.Env.reset>` now accept new arguments *seed* and *options*. The
+  latter is ignored by default, the former is used to seed the new property
+  `Problem.np_random`.
+- BREAKING: The convention around the return value of
+  `~SingleOptimizable.get_initial_params()` has been clarified. Unless and
+  until a new API has been worked out, its return value must now be accepted by
+  `~SingleOptimizable.compute_single_objective()` and
+  `~FunctionOptimizable.compute_function_objective()` even if its
+  out-of-bounds.
+- BREAKING: The :doc:`api/classes` have been completely rewritten. Instance and
+  subclass checks are now based on the `Protocol` implementation from Python
+  3.12. Dynamically set attributes may no longer be found and checks now also
+  consider whether an attribute is a data member, a method or a class method.
+- BREAKING: The entry point used by the :doc:`api/checkers` has been renamed
+  from ``cernml.coi.checkers`` to ``cernml.checkers``.
+- BREAKING: The attributes ``SingleOptimizable.objective_range`` and
+  ``FunctionOptimizable.objective_range`` have been removed in anticipation of
+  `the planned removal
+  <https://github.com/Farama-Foundation/Gymnasium/pull/535>`_ of
+  `gymnasium.Env.reward_range` in Gymnasium 1.0.
+- ADD: Support for Python 3.10 through 3.12.
+- ADD: New extra ``robotics``, which adds a dependency on
+  :doc:`Gymnasium-Robotics <gymrob:README>` 1.0 and sources `GoalEnv` from
+  there.
+- ADD: If :doc:`Gymnasium-Robotics <gymrob:README>` isn't installed, we provide
+  our own implementation of `cernml.coi.GoalEnv`.
+- New entry point ``cernml.envs`` through which :ref:`problems can be
+  registered <guide/registration:lazy registration via entry points>`.
 - ADD: The *warn* parameter of the :doc:`api/checkers` now is an integer
   instead of a bool. The meaning stays largely the same. Values greater than
   2 now represent the *stacklevel* parameter passed to :func:`warnings.warn()`
   to adjust the reported code location when a warning is issued. Internally,
   the checkers adjust *warn* so that warnings are never reported within the
   :doc:`api/checkers` package itself.
+- ADD: A large family of :doc:`api/typeguards` to require that an instance or
+  class implement a specific interface.
+- ADD: The :doc:`api/classes` are now all context managers; entering their
+  context does nothing, leaving it calls `Problem.close()`.
+- ADD: The method `Problem.get_wrapper_attr()`.
 - FIX: For `FunctionOptimizable`, the type of the
-  `~FunctionOptimizable.constraints` attribute has been changed from
-  `~typing.List` to `~typing.Sequence`. It has also been marked as
-  a `~typing.ClassVar` and the default value has been changed from the empty
-  list ``[]`` to the empty tuple ``()``. The same has been done in
-  `SingleOptimizable` for its attributes `~SingleOptimizable.param_names`,
-  `~SingleOptimizable.constraints`, and `~SingleOptimizable.constraint_names`
-  This prevents bugs where the default values are modified on accident.
-  A similar strategy has long been used for the `~Problem.metadata` attribute.
+  `~FunctionOptimizable.constraints` attribute has been changed from `List` to
+  `Sequence`. It has also been marked as a `typing.ClassVar` and the default
+  value has been changed from the empty list ``[]`` to the empty tuple ``()``.
+  The same has been done in `SingleOptimizable` for its attributes
+  `~SingleOptimizable.param_names`, `~SingleOptimizable.constraints`, and
+  `~SingleOptimizable.constraint_names` This prevents bugs where the default
+  values are modified on accident. A similar strategy has long been used for
+  the `~Problem.metadata` attribute.
+- OTHER: :doc:`api/registration` has been rewritten from scratch. It still
+  largely follows the :doc:`Gymnasium implementation <gym:api/registry>` and
+  should be backwards-compatible, but minor details may have changed
+  inadvertently.
 
 v0.8
 ----

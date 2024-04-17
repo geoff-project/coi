@@ -30,7 +30,4 @@ application must be able to query such properties.
     cancellation
     otherenvs
     funcopt
-
-..
-    Guide pages:
-    migration guide
+    migration_090
