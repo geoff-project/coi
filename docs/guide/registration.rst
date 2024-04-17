@@ -318,7 +318,11 @@ This function then calls `~cernml.coi.register()`, which makes
     >>> patcher.__enter__().return_value = fake_module
 
 .. setup doctest: add a fake entry point:
-    >>> from importlib.metadata import EntryPoints, EntryPoint
+    >>> import sys
+    >>> if sys.version_info < (3, 10):
+    ...     from importlib_metadata import EntryPoints, EntryPoint
+    ... else:
+    ...     from importlib.metadata import EntryPoints, EntryPoint
     >>> ep_real = EntryPoint(
     ...     name="MyOtherAcc",
     ...     value="my_package.other_module:some_function",
