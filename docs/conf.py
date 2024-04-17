@@ -161,20 +161,20 @@ def rtd_link(name: str, branch: str = "stable") -> str:
 
 
 intersphinx_mapping = {
-    "utils": (acc_py_docs_link("geoff/cernml-coi-utils"), None),
-    "optimizers": (acc_py_docs_link("geoff/cernml-coi-optimizers"), None),
-    "japc": (acc_py_docs_link("scripting-tools/pyjapc"), None),
+    "black": (rtd_link("black"), None),
     "gym": ("https://gymnasium.farama.org/", None),
     "gymrob": ("https://robotics.farama.org/", None),
+    "importlib_metadata": (rtd_link("importlib-metadata"), None),
+    "japc": (acc_py_docs_link("scripting-tools/pyjapc"), None),
     "mpl": ("https://matplotlib.org/stable/", None),
     "np": ("https://numpy.org/doc/stable/", None),
-    "sci": ("https://docs.scipy.org/doc/scipy/reference/", None),
-    "std": ("https://docs.python.org/3/", None),
+    "optimizers": (acc_py_docs_link("geoff/cernml-coi-optimizers"), None),
     "pkg": ("https://packaging.python.org/en/latest/", None),
     "sb3": (rtd_link("stable-baselines3", branch="master"), None),
-    "setuptools": (rtd_link("setuptools"), None),
-    "importlib_metadata": (rtd_link("importlib-metadata"), None),
-    "black": (rtd_link("black"), None),
+    "sci": ("https://docs.scipy.org/doc/scipy/", None),
+    "setuptools": ("https://setuptools.pypa.io/en/stable/", None),
+    "std": ("https://docs.python.org/3/", None),
+    "utils": (acc_py_docs_link("geoff/cernml-coi-utils"), None),
 }
 
 
