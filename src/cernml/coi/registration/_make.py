@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
 
-"""Dedicated module for `EnvRegistry` because it's honestly a lot of code."""
+"""Dedicated module for `cernml.coi.make()` because it's honestly a lot of code."""
 
 from __future__ import annotations
 
@@ -39,22 +39,9 @@ def make(
     """Reimplementation of `gymnasium.make`.
 
     This implementation differs from the canonical one in `gymnasium` in
-    a few ways that are necessary for our goal of compatibility:
-
-    - `isinstance` checks of *env_spec* and *env_creator.metadata* have
-      been removed or adjusted;
-    - parameter *order_enforce* has been added with the same override
-      semantics as *disable_env_checker*;
-    - a warning about the deprecated metadata key ``render.modes`` has
-      been added;
-    - env wrappers are only added if the wrapped environment is actually
-      a `gymnasium.Env`, to keep `SingleOptimizable` and others safe;
-    - the *stacklevel* parameter of `warnings.warn()` is threaded
-      through the functions so that any warning is attributed to the
-      code that called into COI (and not COI itself);
-    - compatibility with Python 3.8 has been dropped.
-
-    The code has also been given a general clean-up.
+    a few ways that are necessary for our goal of compatibility. Please
+    see the package documentation at `cernml.coi.registration` for
+    a comprehensive list of changes.
     """
     stacklevel = kwargs.pop("stacklevel", 2)
     apply_api_compatibility = (
