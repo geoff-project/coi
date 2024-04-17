@@ -79,12 +79,51 @@ def test_intersections_without_inheritance(abc: type, env_class: type[Env]) -> N
         ns["optimization_space"] = None
         ns["action_space"] = None
         ns["observation_space"] = None
+        ns["get_initial_params"] = ...
+        ns["compute_single_objective"] = ...
 
     mock = new_class(
         "NoDirectInheritance", bases=(coi.SingleOptimizable, env_class), exec_body=body
     )
+    assert issubclass(mock, coi.SingleOptimizable)
     assert issubclass(mock, env_class)
     assert issubclass(mock, abc)
+    obj = mock()
+    assert isinstance(obj, coi.SingleOptimizable)
+    assert isinstance(obj, env_class)
+    assert isinstance(obj, abc)
+
+
+@pytest.mark.parametrize(
+    ("abc", "env_class"),
+    [
+        (coi.OptEnv, Env),
+        (coi.OptGoalEnv, coi.GoalEnv),
+        (coi.SeparableOptEnv, coi.SeparableEnv),
+        (coi.SeparableOptGoalEnv, coi.SeparableGoalEnv),
+    ],
+)
+def test_bad_intersections_without_inheritance(abc: type, env_class: type[Env]) -> None:
+    def body(ns: dict[str, t.Any]) -> None:
+        def __init__(self: t.Any) -> None:
+            self.optimization_space = None
+            self.observation_space = None
+            self.action_space = None
+
+        ns["__init__"] = __init__
+        ns["get_initial_params"] = ...
+        ns["compute_single_objective"] = ...
+
+    mock = new_class(
+        "NoDirectInheritance", bases=(coi.SingleOptimizable, env_class), exec_body=body
+    )
+    assert issubclass(mock, coi.SingleOptimizable)
+    assert issubclass(mock, env_class)
+    assert not issubclass(mock, abc)
+    obj = mock()
+    assert isinstance(obj, coi.SingleOptimizable)
+    assert isinstance(obj, env_class)
+    assert isinstance(obj, abc)
 
 
 def test_env_problem() -> None:
