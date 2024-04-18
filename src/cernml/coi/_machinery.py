@@ -31,15 +31,6 @@ protocols. They inherit from `AttrCheckProtocol`, a subclass of
 The purpose of this page is to describe how exactly this extension has
 been implemented.
 
-.. note::
-    The intersection classes (`.OptEnv`, `.OptGoalEnv`
-    `.SeparableOptEnv`, `.SeparableOptGoalEnv`) each subclass the core
-    classes and one subclass of `~gymnasium.Env`. As such, they do *not*
-    inherit from `AttrCheckProtocol`. Their virtual subclassing
-    mechanism works differently and checks for inheritance from both of
-    their respective superclasses to determine whether a given class
-    subclasses them.
-
 The first section documents the :ref:`api/machinery:Classes Provided by
 This Module` as a public API of this private module. The following
 section describes the :ref:`api/machinery:Attribute-Matching Logic` in
