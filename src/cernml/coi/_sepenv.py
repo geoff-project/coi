@@ -137,10 +137,7 @@ class SeparableEnv(Env[ObsType, ActType]):
             obs: The observation calculated by
                 :func:`~gymnasium.Env.reset()` or
                 `compute_observation()`.
-            goal: A dummy parameter to stay compatible with the
-                `GoalEnv` API. This parameter generally is None. If you
-                want a multi-goal environment, consider
-                `SeparableGoalEnv`.
+            reward: The return value of `compute_reward()`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to `compute_reward()`
                 before. The `step()` method adds a key ``"reward"`` that
@@ -166,10 +163,7 @@ class SeparableEnv(Env[ObsType, ActType]):
             obs: The observation calculated by
                 :func:`~gymnasium.Env.reset()` or
                 `compute_observation()`.
-            goal: A dummy parameter to stay compatible with the
-                `GoalEnv` API. This parameter generally is None. If you
-                want a multi-goal environment, consider
-                `SeparableGoalEnv`.
+            reward: The return value of `compute_reward()`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to `compute_reward()`
                 before. The `step()` method adds a key ``"reward"`` that
