@@ -137,10 +137,10 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
     While this is all that is necessary to be considered a subclass,
     direct inheritance provides the following additional benefits:
 
-    - Its ``__init__()`` method requires *render_mode*, verifies it with
-      the ``"render_modes"`` key of `metadata` and assigns it to the
-      `render_mode` attribute. This reduces the amount of boilerplate
-      code you have to write yourself.
+    - Its `__init__() <Problem>` method requires *render_mode*, verifies
+      it with the ``"render_modes"`` key of `metadata` and assigns it to
+      the `render_mode` attribute. This reduces the amount of
+      boilerplate code you have to write yourself.
     - It implements the :term:`context manager` protocol to
       automatically call `close()` when the user is done with a problem.
     - It provides the `np_random` property as an exclusive and lazily

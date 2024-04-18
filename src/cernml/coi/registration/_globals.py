@@ -289,7 +289,7 @@ def make_vec(
     """Create a *vector* environment according to the given ID.
 
     Note:
-        This is a thin wrapper around ``gymnasium.make_vec()``. The only
+        This is a thin wrapper around :func:`gymnasium.make_vec()`. The only
         difference is that it looks up environments in the COI registry
         instead of the Gym registry.
 
