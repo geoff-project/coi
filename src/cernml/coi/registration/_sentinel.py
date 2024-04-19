@@ -43,9 +43,9 @@ __all__ = (
 class Sentinel(enum.Enum):
     """Singleton sentinel type to mark arguments as unpassed.
 
-    The pattern is motivated by :pep:`484
+    The pattern is motivated by :pep:`PEP 484
     <484#support-for-singleton-types-in-unions>` and the naming inspired
-    by :pep:`661 <661#specification>`. This is used by
+    by :pep:`PEP 661 <661#specification>`. This is used by
     `.EnvRegistry.all()`.
     """
 
