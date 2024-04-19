@@ -187,6 +187,7 @@ intersphinx_mapping = {
 def _parse_attributes_section(
     self: napoleon.GoogleDocstring, section: str
 ) -> list[str]:
+    """Work around for https://github.com/sphinx-doc/sphinx/issues/7582."""
     if self._config.napoleon_use_ivar:
         raise ValueError(
             "Monkeypatched `_parse_attributes_section()` does not "
