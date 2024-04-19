@@ -97,6 +97,10 @@ exclude_patterns = [
 # table of content of class API docs.
 toc_object_entries_show_parents = "hide"
 
+# A list of prefixes that are ignored for sorting the Python module
+# index.
+modindex_common_prefix = ["cernml.", "cernml.coi.", "cernml.coi.registration."]
+
 # Avoid role annotations as much as possible.
 default_role = "py:obj"
 
