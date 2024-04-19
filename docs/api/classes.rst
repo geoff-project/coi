@@ -5,6 +5,8 @@
 
     SPDX-License-Identifier: MIT AND (GPL-3.0-or-later OR EUPL-1.2+)
 
+:tocdepth: 3
+
 Core Classes of This Package
 ============================
 
@@ -48,6 +50,12 @@ Core Classes of This Package
 .. autoclass:: Policy
 
 .. autoclass:: HasNpRandom
+
+Supporting Types
+----------------
+
+The following types are not interfaces themselves, but are used by the core
+interfaces of this package.
 
 .. module:: cernml.coi._machine
 .. currentmodule:: cernml.coi

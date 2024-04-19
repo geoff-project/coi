@@ -55,7 +55,6 @@ copyright = "2020–2024 CERN, 2023–2024 GSI Helmholtzzentrum für Schwerionen
 author = "Nico Madysa"
 release = dist.version
 version = release.partition("+")[0]
-html_last_updated_fmt = "%b %d %Y"
 
 for entry in dist.metadata.get_all("Project-URL", []):
     url: str
@@ -85,9 +84,6 @@ extensions = [
     "sphinx_inline_tabs",
 ]
 
-# Add any paths that contain templates here, relative to this directory.
-# templates_path = ["_templates"]
-
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
@@ -112,13 +108,16 @@ maximum_signature_line_length = 89
 # The theme to use for HTML and HTML Help pages.  See the documentation
 # for a list of builtin themes.
 html_theme = "python_docs_theme"
+html_last_updated_fmt = "%b %d %Y"
 html_theme_options = {
+    "sidebarwidth": "21rem",
     "root_url": "https://acc-py.web.cern.ch/",
     "root_name": "Acc-Py Documentation server",
     "license_url": license_url,
     "issues_url": issues_url,
 }
-templates_path = ["./_theme/"]
+templates_path = ["./_templates/"]
+html_static_path = ["./_static/"]
 
 # -- Options for Autodoc -----------------------------------------------
 
