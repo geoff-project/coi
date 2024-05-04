@@ -12,10 +12,10 @@ from enum import Enum
 class Machine(Enum):
     """Enum of the various accelerators at CERN.
 
-    This enum should be used by environments in their
-    `~Problem.metadata` dictionary to declare which accelerator they
-    pertain to. This can be used to filter a collection of environments
-    for only those that are interesting to a certain group of operators.
+    This enum is used for the `~Problem.metadata` entry
+    :mdkey:`"cern.machine"`. It declares which accelerator they pertain
+    to. This can be used to filter a collection of environments for only
+    those that are interesting to a certain group of operators.
 
     This list is intentionally left incomplete. If you wish to use this
     API at a machine that is not listed in this enum, please contact the

@@ -62,10 +62,10 @@ an exception.
    https://docs.microsoft.com/en-us/dotnet/standard/threading/cancellation-in-managed-threads
 
 To use this feature, your problem must first declare that its support it by
-setting the ``"cern.cancellable"`` :ref:`metadata <Metadata>`. When it does so,
-a host application will pass a `Token` to the constructor. On this token, the
-problem should check whether cancellation has been requested whenever it enters
-a loop that may run for a long time.
+setting the metadata :mdkey:`"cern.cancellable"`. When it does so, a host
+application will pass a `Token` to the constructor. On this token, the problem
+should check whether cancellation has been requested whenever it enters a loop
+that may run for a long time.
 
 This sounds complicated, but luckily, :ref:`parameter streams
 <guide/cancellation:Synchronization>` already support cancellation tokens:

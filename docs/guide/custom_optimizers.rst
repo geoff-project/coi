@@ -26,11 +26,10 @@ There are two ways to declare a custom optimizer provider:
    `~CustomOptimizerProvider.get_optimizers()` method of the
    `CustomOptimizerProvider` protocol.
 
-2. You define an an :doc:`entry point <pkg:specifications/entry-points>` in the
-   group ``cernml.custom_optimizers`` that whose name is the :ref:`registry ID
-   <guide/registration:Registry IDs>` of the matching optimization problem.
-   This entry point should either point at a subclass of
-   `CustomOptimizerProvider` or at a bare function that acts like
+2. You define an an entry point in the group :ep:`cernml.custom_optimizers`
+   whose name is the :ref:`registry ID <guide/registration:Registry IDs>` of
+   the matching optimization problem. This entry point should either point at
+   a subclass of `CustomOptimizerProvider` or at a bare function that acts like
    `~CustomOptimizerProvider.get_optimizers()`.
 
 Examples for both approaches are shown below.
@@ -193,11 +192,10 @@ There are two ways to declare a custom policy provider:
    `~CustomPolicyProvider.load_policy()` methods of the `CustomPolicyProvider`
    abstract base class.
 
-2. You define an an :doc:`entry point <pkg:specifications/entry-points>` in the
-   group ``cernml.custom_policies`` that has the same `registry` name as the
-   environment that it is appropriate for. This entry point should
-   point at a subclass of `CustomPolicyProvider` and that class should be
-   instantiable by calling it with no arguments.
+2. You define an an entry point in the group :ep:`cernml.custom_policies` that
+   has the same `registry` name as the environment that it is appropriate for.
+   This entry point should point at a subclass of `CustomPolicyProvider` and
+   that class should be instantiable by calling it with no arguments.
 
 Examples for both approaches are shown below.
 

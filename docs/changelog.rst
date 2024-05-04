@@ -38,11 +38,11 @@ Unreleased
   ``< 7`` to ``>= 4.8``.
 - BREAKING: Add dependency on ``typing-extensions >= 4.3``.
 - BREAKING: The `~Problem.metadata` key ``"render.modes"`` has been renamed to
-  ``"render_modes"``. Its meaning has not changed.
+  :mdkey:`"render_modes"`. Its meaning has not changed.
 - BREAKING: New rendering API: `Problem.render()` now longer accepts the
   arguments *render_mode*. This argument is now instead passed to
   `Problem.__init__() <Problem>`, which automatically sets the new property
-  `Problem.render_mode`. In rendering mode ``"human"``, problems are now
+  `Problem.render_mode`. In rendering mode :rmode:`"human"`, problems are now
   expected to call `~Problem.render()` automatically at every iteration.
 - BREAKING: `SingleOptimizable.get_initial_params()`,
   `FunctionOptimizable.get_initial_params()` and `Env.reset()
@@ -60,7 +60,7 @@ Unreleased
   3.12. Dynamically set attributes may no longer be found and checks now also
   consider whether an attribute is a data member, a method or a class method.
 - BREAKING: The entry point used by the :doc:`api/checkers` has been renamed
-  from ``cernml.coi.checkers`` to ``cernml.checkers``.
+  from ``cernml.coi.checkers`` to :ep:`cernml.checkers`.
 - BREAKING: The attributes ``SingleOptimizable.objective_range`` and
   ``FunctionOptimizable.objective_range`` have been removed in anticipation of
   `the planned removal
@@ -72,7 +72,7 @@ Unreleased
   there.
 - ADD: If :doc:`Gymnasium-Robotics <gymrob:README>` isn't installed, we provide
   our own implementation of `cernml.coi.GoalEnv`.
-- New entry point ``cernml.envs`` through which :ref:`problems can be
+- New entry point :ep:`cernml.envs` through which :ref:`problems can be
   registered <guide/registration:lazy registration via entry points>`.
 - ADD: The *warn* parameter of the :doc:`api/checkers` now is an integer
   instead of a bool. The meaning stays largely the same. Values greater than
@@ -106,7 +106,7 @@ v0.8.16
 ^^^^^^^
 
 - ADD: `~cernml.coi.CustomPolicyProvider` and a :ref:`user guide section
-  <CustomPolicyProvider>` about it.
+  <guide/custom_optimizers:Custom Per-Environment Policies>` about it.
 
 v0.8.15
 ^^^^^^^
@@ -388,7 +388,7 @@ v0.4
 v0.4.7
 ^^^^^^
 
-- FIX: Typo in :attr:`~Problem.metadata` key ``"cern.machine"``.
+- FIX: Typo in :attr:`~Problem.metadata` key :mdkey:`"cern.machine"`.
 - FIX: Mark :attr:`~Problem.metadata` as a class variable.
 - FIX: Make base :attr:`~Problem.metadata` a :class:`~types.MappingProxyType`
   to prevent accidental mutation.
@@ -481,7 +481,7 @@ v0.2.0
   distribution from ``cernml-abc`` to ``cernml-coi``).
 - BREAKING: Rename ``OptimizeMixin`` to
   :class:`Optimizable<SingleOptimizable>`.
-- BREAKING: Add :attr:`~Problem.metadata` key ``"cern.machine"``.
+- BREAKING: Add :attr:`~Problem.metadata` key :mdkey:`"cern.machine"`.
 - BREAKING: Add more restrictions to :func:`env_checker()<check>`.
 - ADD: Virtual inheritance: Any class that implements the required methods of
   our interfaces automatically subclass them, even if they are not direct

@@ -18,6 +18,7 @@ API Reference
 
     classes
     registration
+    registration_errors
     configurable
     cancellation
     checkers

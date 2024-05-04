@@ -95,14 +95,17 @@ class Problem(AttrCheckProtocol, t.Protocol):
     )
     """Capabilities and behavior of this optimization problem.
 
+    While the keys of this mapping are free-form, there is a list of
+    :ref:`api/classes:standard metadata keys`.
+
     Ideally, this is an immutable, class-scope attribute that does not
     get replaced after the problem has been instantiated. Unfortunately,
     there are various exceptions to this:
 
     - Wrappers often cannot define their metadata at the class scope.
       For them, metadata only makes sense at the instance level.
-    - Certain metadata items (e.g. ``"render_fps"``) may be determined
-      at instantiation time by certain optimization problems. In this
+    - Some optimization problems can determine some of their metadata
+      (e.g. :mdkey:`"render_fps"`) only at instantiation time. In this
       case, metadata often exists both at the class and instance scope,
       but they disagree on some items.
 
@@ -119,10 +122,14 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
     @property
     def render_mode(self) -> str | None:
-        """The render mode as determined during initialization.
+        """The chosen render mode.
 
-        This attribute is expected to be set inside ``__init__()`` and
-        then not changed again.
+        This is either None (no rendering) or an item from the list in
+        the :mdkey:`"render_modes"` metadata. See also the list of
+        :ref:`api/classes:standard render modes`.
+
+        This attribute is expected to be set inside
+        :meth:`~object.__init__()` and not changed again afterwards.
 
         This is marked as read-only for compatibility with
         `gymnasium.Wrapper`, where it is not writable. However,
@@ -155,8 +162,8 @@ class Problem(AttrCheckProtocol, t.Protocol):
 
         This property is marked as read-only so that MyPy treats it as
         covariant_. All subclasses replace it with a regular attribute,
-        however. To avoid any errors, `cernml.coi.make()` circumvents
-        the property and sets the spec directly in the instance dict:
+        however. The function `cernml.coi.make()` circumvents the
+        property and sets the spec directly in the instance dict:
 
         .. code-block:: python
 
@@ -191,14 +198,39 @@ class Problem(AttrCheckProtocol, t.Protocol):
     def render(self) -> t.Any:
         """Render the environment.
 
-        The default implementation simply raises `NotImplementedError`.
-        Implementors are encouraged to call :samp:`super().render()` in
-        case of an unknown render mode in order to fail in
-        a conventionally understood manner.
+        This must act according to the `~Problem.render_mode` passed to
+        :meth:`~object.__init__()`. All supported modes must be declared
+        in the `~Problem.metadata` item :mdkey:`"render_modes"`.
 
-        Note that even though this method raises `NotImplementedError`,
-        it is *not* an abstract method. It need not be implemented by
-        implementors who don't support any rendering.
+        The default implementation simply raises `NotImplementedError`.
+        Implementors are encouraged to call it in case of an unknown
+        render mode in order to fail in a conventionally understood
+        manner:
+
+        .. code-block:: python
+
+            class MyProblem:
+                metadata = {
+                    "render_modes": ["human", "matplotlib_figures"]
+                }
+
+                def __init__(self, render_mode=None):
+                    self.render_mode = render_mode
+                    ...
+
+                def render(self):
+                    if self.render_mode == "human":
+                        return ...
+                    if self.render_mode == "matplotlib_figures":
+                        return ...
+                    # Raise `NotImplementedError` on unknown render
+                    # mode.
+                    super().render()
+
+        .. note::
+            Even though this method raises `NotImplementedError`, it is
+            *not* an abstract method. It need not be implemented by
+            implementors who don't support any rendering.
         """
         # pylint: disable = unused-argument
         # Make PyLint realize that this method is not abstract. We do

@@ -4,11 +4,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = import-outside-toplevel
-# pylint: disable = invalid-name
-# pylint: disable = redefined-builtin
-# pylint: disable = too-many-arguments
-# pylint: disable = unused-argument
+# pylint: disable = missing-function-docstring
 
 """Configuration file for the Sphinx documentation builder.
 
@@ -69,6 +65,7 @@ extensions = [
     "fix_napoleon_attributes_type",
     "fix_xrefs",
     "fixsig",
+    "extra_directives",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.graphviz",
@@ -202,6 +199,7 @@ fix_xrefs_rules = [
         "reftarget": ("sub", "gymnasium.envs.registration."),
         "contnode": ("sub", ""),
     },
+    {"pattern": "^numpy.typing.NDArray"},
     {"pattern": "^cernml\\.coi\\._goalenv\\.", "reftarget": ("sub", "cernml.coi.")},
     {"pattern": "^cernml\\.coi\\."},
     {"pattern": "^t\\.", "reftarget": ("sub", "typing."), "contnode": ("sub", "")},

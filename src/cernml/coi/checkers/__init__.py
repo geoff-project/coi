@@ -6,17 +6,13 @@
 
 """These functions help validate your `~.coi.Problem` for API conformity.
 
-The central entry point for this package is `cernml.coi.check()`. It
-tests which interfaces your problem implements and automatically calls
-the correct specialized checkers. You can also invoke these checkers
-youself with `check_env()`, etc.
+The core of this package is `cernml.coi.check()`. It tests which
+interfaces your problem implements and automatically calls the correct
+specialized checkers. can also be extended with additional checks using
+:ep:`cernml.checkers` entry points.
 
-The generic `.check()` function also provides a plugin interface via the
-:ref:`entry point <setuptools:dynamic discovery of services and
-plugins>` ``"cernml.checkers"``. This means that other packages may
-provide additional checkers. Upon each call, this method will load all
-plugins and call each of them with the signature
-:samp:`checker({problem}, warn={warn}, headless={headless})`.
+You can also invoke the individual checkers yourself, see e.g.
+`check_problem()`.
 """
 
 from ._configurable import check_configurable

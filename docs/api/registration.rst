@@ -13,10 +13,44 @@ The Problem Registry
     :doc:`/guide/registration`
         User guide page on the topic.
 
+    :doc:`registration_errors`
+        Reference of all exceptions raised in this package.
+
 .. automodule:: cernml.coi.registration
     :no-members:
 
 .. currentmodule:: cernml.coi
+
+.. entrypoint:: cernml.envs
+
+    :doc:`Entry points <pkg:specifications/entry-points>` defined under this
+    group make automatic lazy loading of optimization problems possible. See
+    :ref:`guide/registration:Lazy Registration via Entry Points` for more
+    information and code examples.
+
+    Entry points in this group must point either at a module or at a function:
+
+    - a **module** must `register()` its optimization problems when imported;
+    - a **function** must `register()` its optimization problems when called.
+
+    Functions are specified with the syntax
+    :samp:`{module_name}:{function_name}`.
+
+    In either case, all problems registered this way are added to the
+    *namespace* that is given by the entry point's name. The namespace is added
+    automatically, it doesn't have to be passed to `register()`.
+
+    Whenever a namespaced problem is requested with the syntax
+    :samp:`make("{namespace}/{problem_name}", ...)` and `make()` cannot find
+    it, it loads the entry point associated with that namespace. This imports
+    the entry point's module (and if a function is given, calls that), which in
+    turn registers a number of problems. Then `make()` attempts to look up the
+    problem again.
+
+    .. note::
+        :doc:`Entry points <pkg:specifications/entry-points>`  for Python
+        packages are not to be mixed up with the *entry_point* argument of
+        `register()`.
 
 .. autofunction:: register
 
@@ -83,8 +117,3 @@ Advanced Registration Features
     `~cernml.coi.register()`. This is used merely for type annotations.
 
 .. autoclass:: gymnasium.envs.registration.WrapperSpec
-
-Exceptions Raised by the Registry
----------------------------------
-
-.. automodule:: cernml.coi.registration.errors

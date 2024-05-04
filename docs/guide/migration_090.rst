@@ -184,7 +184,7 @@ This section only summarizes each change, please find the details in the
   a compatible render mode on to the environment's :meth:`~object.__init__()`
   method.
 - The `~Problem.metadata` key ``"render.modes"`` has been renamed to
-  ``"render_modes"``. (The point has been replaced with underscore.) The
+  :mdkey:`"render_modes"`. (The point has been replaced with underscore.) The
   meaning of the key has not changed. (See
   :ref:`guide/migration_090:Deprecations`)
 - To ensure compliance with these changes, `Problem.__init__() <Problem>`
@@ -215,11 +215,12 @@ The render modes have changed as follows:
   *state-changing methods* are called. In all other render modes, users are
   still expected to call `~Problem.render()` manually between iterations.
 
-- Gymnasium defines new render modes ``"rgb_array_list"`` and ``"ansi_list"``.
-  If the user requests one of these modes via `make()`, but the environment
-  only supports its non-list counterpart, the environment is wrapped in
-  a `~gymnasium.wrappers.RenderCollection` wrapper and the non-list mode is
-  passed to the environment's :meth:`~object.__init__()` method.
+- Gymnasium defines new render modes :rmode:`"rgb_array_list"` and
+  :rmode:`"ansi_list"`. If the user requests one of these modes via `make()`,
+  but the environment only supports its non-list counterpart, the environment
+  is wrapped in a `~gymnasium.wrappers.RenderCollection` wrapper and the
+  non-list mode is passed to the environment's :meth:`~object.__init__()`
+  method.
 
   `~gymnasium.wrappers.RenderCollection` automatically calls
   `~Problem.render()` on every call to a *state-changing method* and stores the
@@ -227,10 +228,10 @@ The render modes have changed as follows:
   `~Problem.render()`, no rendering is done; instead, all *frames* are removed
   from the internal buffer and returned.
 
-- If the user requests the render mode ``"human"`` via `make()`, but the
-  environment only supports ``"rgb_array"`` or ``"rgb_array_list"``, the
-  environment is wrapped in a new `~gymnasium.wrappers.HumanRendering` wrapper
-  and one of the supported modes is passed to the environment's
+- If the user requests the render mode :rmode:`"human"` via `make()`, but the
+  environment only supports :rmode:`"rgb_array"` or :rmode:`"rgb_array_list"`,
+  the environment is wrapped in a new `~gymnasium.wrappers.HumanRendering`
+  wrapper and one of the supported modes is passed to the environment's
   :meth:`~object.__init__()` method. The results of `~Problem.render()` are
   then displayed to the user via the PyGame_ library.
 
@@ -340,8 +341,8 @@ commonly used features of the COI.
   because Gym types were treated like `Any`.
 
 - The entry point for custom :doc:`/api/checkers` has been renamed from
-  ``cernml.coi.checkers`` to ``cernml.checkers``. This is for consistency with
-  other entry points defined by this package.
+  ``cernml.coi.checkers`` to :ep:`cernml.checkers`. This is for consistency
+  with other entry points defined by this package.
 
 Deprecations
 ------------
@@ -358,10 +359,10 @@ in future versions of Gymnasium or the COI.
   method `Problem.get_wrapper_attr()`.
 
 - The `~Problem.metadata` key ``"render.modes"`` has been renamed. Please
-  replace any occurrence with the name ``"render_modes"`` (underscore ``_``
-  instead of a period ``.``). The COI currently still accept the deprecated
-  spelling but issue a warning. The old key is planned to be ignored starting
-  with COI v0.10.0 or higher.
+  replace any occurrence with the name :mdkey:`"render_modes"` (underscore
+  ``_`` instead of a period ``.``). The COI currently still accept the
+  deprecated spelling but issue a warning. The old key is planned to be ignored
+  starting with COI v0.10.0 or higher.
 
 - The attribute `gymnasium.Env.reward_range` is slated for `removal in
   Gymnasium 1.0`_ with no replacement. The cited reason is a lack of use both
