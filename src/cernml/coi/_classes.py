@@ -10,7 +10,7 @@ They provide an extension of the API provided by :doc:`Gymnasium
 <gym:README>` and are heavily inspired by it. They are in turn:
 
 - `~.coi.Problem`: The root of the interface hierarchy. Both the
-  following two classes _and_ `.coi.Env` are subclasses of it.
+  following two classes *and* `.coi.Env` are subclasses of it.
 - `~.coi.SingleOptimizable`: an `.coi.Env`-like class for numerical
   optimization problems;
 - `~.coi.FunctionOptimizable`: A variant of `~.coi.SingleOptimizable`
