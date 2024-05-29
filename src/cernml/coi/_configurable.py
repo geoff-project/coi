@@ -9,18 +9,16 @@
 from __future__ import annotations
 
 import typing
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 from collections import OrderedDict
 from dataclasses import dataclass
 from functools import singledispatch
 from types import SimpleNamespace
 
-import numpy
+import numpy as np
 
-from ._abc_helpers import check_methods as _check_methods
-
-T = typing.TypeVar("T")  # pylint: disable = invalid-name
-T.__module__ = ""
+T = typing.TypeVar("T")
+# T.__module__ = ""  # TODO: Re-evaluate this one when making docs.
 
 ConfigValues = SimpleNamespace
 
@@ -129,11 +127,11 @@ class Config:
         dest: str
         value: T
         label: str
-        help: typing.Optional[str]
+        help: str | None
         type: typing.Callable[[str], T]
-        range: typing.Optional[typing.Tuple[T, T]]
-        choices: typing.Optional[typing.List[T]]
-        default: typing.Optional[T]
+        range: tuple[T, T] | None
+        choices: list[T] | None
+        default: T | None
 
         def validate(self, text_repr: str) -> T:
             """Validate a user-chosen value.
@@ -149,21 +147,26 @@ class Config:
             """
             try:
                 value = self.type(text_repr)
-                if self.range is not None:
-                    low, high = self.range
-                    if not low <= value <= high:  # type: ignore[operator]
-                        raise ValueError(f"{value} not in range [{low}, {high}]")
-                if self.choices is not None:
-                    if value not in self.choices:
-                        raise ValueError(f"{value} not in {self.choices!r}")
+                self._validate_range(value)
+                self._validate_choices(value)
             except Exception as exc:
                 raise BadConfig(
                     f"invalid value for {self.dest}: {text_repr!r}"
                 ) from exc
             return value
 
+        def _validate_range(self, value: T) -> None:
+            if self.range is not None:
+                low, high = self.range
+                if not low <= value <= high:  # type: ignore[operator]
+                    raise ValueError(f"{value} not in range [{low}, {high}]")
+
+        def _validate_choices(self, value: T) -> None:
+            if self.choices is not None and value not in self.choices:
+                raise ValueError(f"{value} not in {self.choices!r}")
+
     def __init__(self) -> None:
-        self._fields: typing.Dict[str, Config.Field] = OrderedDict()
+        self._fields: dict[str, Config.Field] = OrderedDict()
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__}: {list(self._fields)}>"
@@ -172,7 +175,7 @@ class Config:
         """Return a read-only view of all declared fields."""
         return self._fields.values()
 
-    def get_field_values(self) -> typing.Dict[str, typing.Any]:
+    def get_field_values(self) -> dict[str, typing.Any]:
         """Return a `dict` of the pre-configured field values.
 
         Note that this is not quite the expected input to
@@ -197,20 +200,21 @@ class Config:
         """
         return {dest: field.value for dest, field in self._fields.items()}
 
+    # TODO: Can we fix this mess?
     # Escape the generic parameter `T` here so that Sphinx does not
     # parse it. If it did, this would mess up all references to built-in
     # types in the docs.
     def add(
         self,
         dest: str,
-        value: "T",
+        value: T,
         *,
-        label: typing.Optional[str] = None,
-        help: typing.Optional[str] = None,
-        type: typing.Optional[typing.Callable[[str], "T"]] = None,
-        range: typing.Optional[typing.Tuple["T", "T"]] = None,
-        choices: typing.Optional[typing.Sequence["T"]] = None,
-        default: typing.Optional["T"] = None,
+        label: str | None = None,
+        help: str | None = None,
+        type: typing.Callable[[str], T] | None = None,
+        range: tuple[T, T] | None = None,
+        choices: typing.Sequence[T] | None = None,
+        default: T | None = None,
     ) -> "Config":
         """Add a new config field.
 
@@ -365,7 +369,8 @@ class Config:
         return result
 
 
-class Configurable(metaclass=ABCMeta):
+@typing.runtime_checkable
+class Configurable(typing.Protocol):
     """Interface for problems that are configurable.
 
     Some `Problem` classes have several parameters that determine
@@ -464,14 +469,8 @@ class Configurable(metaclass=ABCMeta):
             Exception: If any additional validation checks fail.
         """
 
-    @classmethod
-    def __subclasshook__(cls, other: type) -> typing.Any:
-        if cls is Configurable:
-            return _check_methods(other, "get_config", "apply_config")
-        return NotImplemented
 
-
-AnyBool = typing.TypeVar("AnyBool", bool, numpy.bool_)
+AnyBool = typing.TypeVar("AnyBool", bool, np.bool_)
 
 
 @singledispatch
@@ -483,7 +482,7 @@ def deduce_type(value: typing.Any) -> typing.Callable[[str], typing.Any]:
     `StrSafeBool` is returned. This wrapper ensures that
     :samp:`deduce_type({bool})(str({bool}))` round-trips correctly:
 
-        >>> type_ = deduce_type(numpy.bool_(True))
+        >>> type_ = deduce_type(np.bool_(True))
         >>> type_  # doctest: +ELLIPSIS
         <...StrSafeBool(<class 'numpy.bool_'>)>
         >>> type_(str(True))
@@ -525,7 +524,7 @@ def deduce_type(value: typing.Any) -> typing.Callable[[str], typing.Any]:
 
 
 @deduce_type.register(bool)
-@deduce_type.register(numpy.bool_)
+@deduce_type.register(np.bool_)
 def _(value: AnyBool) -> typing.Callable[[str], AnyBool]:
     return StrSafeBool(type(value))
 
@@ -568,8 +567,8 @@ class StrSafeBool(typing.Generic[AnyBool]):
 
     __slots__ = ("base_type",)
 
-    def __init__(self, base_type: typing.Type[AnyBool]) -> None:
-        self.base_type: typing.Type[AnyBool] = base_type
+    def __init__(self, base_type: type[AnyBool]) -> None:
+        self.base_type: type[AnyBool] = base_type
 
     def __repr__(self) -> str:
         return f"<{type(self).__module__}.{type(self).__name__}({self.base_type!r})>"

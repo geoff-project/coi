@@ -4,43 +4,47 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = missing-class-docstring
-# pylint: disable = missing-function-docstring
-# pylint: disable = redefined-outer-name
-
 """Test the check() function."""
+
+from __future__ import annotations
 
 import typing as t
 
-import gym
-import matplotlib.figure
+import gymnasium as gym
+import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import pyplot
+from numpy.typing import NDArray
 from scipy.optimize import LinearConstraint
 
 from cernml import coi
 
 
-class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
+class MultiGoalParabola(
+    coi.SeparableOptGoalEnv[
+        NDArray[np.double], NDArray[np.double], NDArray[np.double], NDArray[np.double]
+    ],
+    coi.Configurable,
+):
     # pylint: disable = too-many-ancestors
 
-    action_space = gym.spaces.Box(-1, 1, (2,), dtype=float)
+    action_space = gym.spaces.Box(-1, 1, (2,), dtype=np.double)
     observation_space = gym.spaces.Dict(
-        observation=gym.spaces.Box(0.0, np.sqrt(8.0), (1,), dtype=float),
-        achieved_goal=gym.spaces.Box(-2, 2, (2,), dtype=float),
-        desired_goal=gym.spaces.Box(-2, 2, (2,), dtype=float),
+        observation=gym.spaces.Box(0.0, np.sqrt(8.0), (1,), dtype=np.double),
+        achieved_goal=gym.spaces.Box(-2, 2, (2,), dtype=np.double),
+        desired_goal=gym.spaces.Box(-2, 2, (2,), dtype=np.double),
     )
-    optimization_space = gym.spaces.Box(-2, 2, (2,), dtype=float)
+    optimization_space = gym.spaces.Box(-2, 2, (2,), dtype=np.double)
     reward_range = (-np.sqrt(16.0), 0.0)
     objective_range = (0.0, np.sqrt(18.0))
-    metadata = {
-        "render.modes": ["ansi", "human", "matplotlib_figures"],
+    metadata: dict[str, t.Any] = {
+        "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
         "cern.japc": False,
         "cern.cancellable": False,
     }
 
-    def __init__(self) -> None:
+    def __init__(self, *, render_mode: str | None = None) -> None:
+        self.render_mode = render_mode
         self.pos = self.action_space.sample()
         self.goal = self.action_space.sample()
         self.constraints = [LinearConstraint(np.diag(np.ones(2)), 0.0, 1.0)]
@@ -49,18 +53,20 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
     def distance(self) -> float:
         return float(np.linalg.norm(self.pos - self.goal))
 
-    def reset(self) -> t.Dict[str, np.ndarray]:
+    def reset(
+        self, seed: int | None = None, options: coi.InfoDict | None = None
+    ) -> tuple[dict[str, NDArray[np.double]], coi.InfoDict]:
         self.pos = self.action_space.sample()
         self.goal = self.action_space.sample()
         return {
             "observation": np.array([self.distance]),
             "achieved_goal": self.pos.copy(),
             "desired_goal": self.goal.copy(),
-        }
+        }, {}
 
     def compute_observation(
-        self, action: np.ndarray, info: t.Dict
-    ) -> t.Dict[str, np.ndarray]:
+        self, action: NDArray[np.double], info: coi.InfoDict
+    ) -> coi.GoalObs:
         self.pos += action
         return {
             "observation": np.array([self.distance]),
@@ -70,51 +76,50 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
 
     def compute_reward(
         self,
-        achieved_goal: np.ndarray,
-        desired_goal: np.ndarray,
-        info: t.Dict[str, t.Any],
+        achieved_goal: NDArray[np.double],
+        desired_goal: NDArray[np.double],
+        info: coi.InfoDict,
     ) -> float:
         return max(-self.distance, self.reward_range[0])
 
-    def compute_done(
+    def compute_terminated(
         self,
-        obs: t.Dict[str, np.ndarray],
-        reward: float,
-        info: t.Dict[str, t.Any],
+        achieved_goal: NDArray[np.double],
+        desired_goal: NDArray[np.double],
+        info: coi.InfoDict,
     ) -> bool:
-        success = all(obs["observation"] < 0.05)
-        done = success or obs not in self.observation_space
-        if done:
-            info["success"] = success
-        return done
+        return bool(np.linalg.norm(achieved_goal - desired_goal, ord=np.inf) < 0.05)
 
-    def get_initial_params(self) -> np.ndarray:
-        return self.reset()["achieved_goal"]
+    def compute_truncated(
+        self,
+        achieved_goal: NDArray[np.double],
+        desired_goal: NDArray[np.double],
+        info: coi.InfoDict,
+    ) -> bool:
+        return achieved_goal not in self.observation_space
 
-    def compute_single_objective(self, params: np.ndarray) -> float:
+    def get_initial_params(self) -> NDArray[np.double]:
+        obs, _ = self.reset()
+        return obs["achieved_goal"]
+
+    def compute_single_objective(self, params: NDArray[np.double]) -> t.SupportsFloat:
         self.pos = params.copy()
         return self.distance
 
     def render(self, mode: str = "human") -> t.Any:
-        if mode == "human":
-            pyplot.figure()
+        if self.render_mode == "human":
+            plt.figure()
             xdata, ydata = zip(self.pos, self.goal)
-            pyplot.scatter(xdata, ydata, c=[0, 1])
+            plt.scatter(xdata, ydata, c=[0, 1])
             return None
-        if mode == "matplotlib_figures":
+        if self.render_mode == "matplotlib_figures":
             xdata, ydata = zip(self.pos, self.goal)
-            figure = matplotlib.figure.Figure()
+            figure = plt.Figure()
             figure.add_subplot(1, 1, 1).scatter(xdata, ydata, c=[0, 1])
             return [figure]
-        if mode == "ansi":
+        if self.render_mode == "ansi":
             return f"{self.pos} -> {self.goal}"
-        return super().render(mode)
-
-    def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
-        return [
-            *self.action_space.seed(seed),
-            *self.observation_space.seed(seed),
-        ]
+        return super().render()
 
     def get_config(self) -> coi.Config:
         return coi.Config()
@@ -123,19 +128,20 @@ class MultiGoalParabola(coi.SeparableOptGoalEnv, coi.Configurable):
         pass
 
 
-class FunctionParabola(coi.FunctionOptimizable):
+class FunctionParabola(coi.BaseFunctionOptimizable):
     objective_range = (0.0, np.sqrt(18.0))
-    metadata = {
-        "render.modes": ["ansi", "human", "matplotlib_figures"],
+    metadata: dict[str, t.Any] = {
+        "render_modes": ["ansi", "human", "matplotlib_figures"],
         "cern.machine": coi.Machine.NO_MACHINE,
         "cern.japc": False,
         "cern.cancellable": False,
     }
 
-    def __init__(self) -> None:
+    def __init__(self, *, render_mode: str | None = None) -> None:
+        super().__init__(render_mode=render_mode)
         self.pos = np.zeros(2)
         self.time = 0.0
-        self.goals: t.Dict[float, np.ndarray] = {}
+        self.goals: dict[float, NDArray[np.double]] = {}
         self.constraints = [LinearConstraint(np.diag(np.ones(2)), 0.0, 1.0)]
 
     @property
@@ -145,7 +151,7 @@ class FunctionParabola(coi.FunctionOptimizable):
     def get_optimization_space(self, cycle_time: float) -> gym.Space:
         return gym.spaces.Box(-2, 2, (2,))
 
-    def get_initial_params(self, cycle_time: float) -> np.ndarray:
+    def get_initial_params(self, cycle_time: float) -> NDArray[np.double]:
         space = self.get_optimization_space(cycle_time)
         self.time = cycle_time
         self.pos = space.sample()
@@ -153,26 +159,26 @@ class FunctionParabola(coi.FunctionOptimizable):
         return self.pos.copy()
 
     def compute_function_objective(
-        self, cycle_time: float, params: np.ndarray
+        self, cycle_time: float, params: NDArray[np.double]
     ) -> float:
         self.time = cycle_time
         self.pos = params.copy()
         return self.distance
 
-    def render(self, mode: str = "human") -> t.Any:
-        if mode == "human":
-            pyplot.figure()
+    def render(self) -> t.Any:
+        if self.render_mode == "human":
+            plt.figure()
             xdata, ydata = zip(self.pos, self.goals.get(self.time, [0, 0]))
-            pyplot.scatter(xdata, ydata, c=[0, 1])
+            plt.scatter(xdata, ydata, c=[0, 1])
             return None
-        if mode == "matplotlib_figures":
+        if self.render_mode == "matplotlib_figures":
             xdata, ydata = zip(self.pos, self.goals.get(self.time, [0, 0]))
-            figure = matplotlib.figure.Figure()
+            figure = plt.Figure()
             figure.add_subplot(1, 1, 1).scatter(xdata, ydata, c=[0, 1])
             return [figure]
-        if mode == "ansi":
+        if self.render_mode == "ansi":
             return f"{self.pos} -> {self.time} -> {self.goals.get(self.time)}"
-        return super().render(mode)
+        return super().render()
 
 
 def test_opt_env() -> None:

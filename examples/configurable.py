@@ -12,7 +12,7 @@ import sys
 import typing as t
 from types import SimpleNamespace
 
-import gym
+import gymnasium as gym
 import numpy as np
 import scipy.optimize
 from matplotlib import pyplot
@@ -20,13 +20,18 @@ from matplotlib.axes import Axes
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+from numpy.typing import NDArray
 from PyQt5 import QtCore, QtGui, QtWidgets
+from typing_extensions import override
 
 from cernml import coi
 from cernml.coi import cancellation
 
 
-class ConfParabola(coi.OptEnv, coi.Configurable):
+class ConfParabola(
+    coi.OptEnv[NDArray[np.double], NDArray[np.double], NDArray[np.double]],
+    coi.Configurable,
+):
     """Example implementation of `OptEnv`.
 
     The goal of this environment is to find the center of a parabola.
@@ -37,7 +42,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
     # Domain declarations.
     metadata = {
         # All `mode` arguments to `self.render()` that we support.
-        "render.modes": ["ansi", "human", "matplotlib_figures"],
+        "render_modes": ["ansi", "human", "matplotlib_figures"],
         # The example is independent of all CERN accelerators.
         "cern.machine": coi.Machine.NO_MACHINE,
         # No need for communication with CERN accelerators.
@@ -53,6 +58,7 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
     # in the training.
     objective = -0.05
     max_objective = -0.003
+    observation_space: gym.spaces.Box
 
     def __init__(
         self,
@@ -62,7 +68,9 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         dangling: bool = True,
         box_width: float = 2.0,
         dim: int = 5,
+        render_mode: t.Optional[str] = None,
     ):
+        self.render_mode = render_mode
         self.token = cancellation_token
         self.norm = norm
         self.dangling = dangling
@@ -77,20 +85,20 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.objective_range = (0.0, max_distance)
         self.figure: t.Optional[Figure] = None
 
+    @override
     def get_config(self) -> coi.Config:
         (dim,) = self.pos.shape
         box_width = self.optimization_space.high[0]
         config = coi.Config()
         config.add("norm", self.norm, type=int, choices=(1, 2))
-        config.add("seed", 0, type=int)
         config.add("dimensions", dim, type=int, range=(1, 10))
         config.add("enable_dangling", self.dangling, type=bool)
         config.add("box_width", box_width, type=float, range=(0.0, float("inf")))
         return config
 
+    @override
     def apply_config(self, values: SimpleNamespace) -> None:
         self.norm = values.norm
-        self.seed(values.seed)
         self.dangling = values.enable_dangling
         box_width = values.box_width
         dim = values.dimensions
@@ -104,16 +112,26 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
 
-    def reset(self) -> np.ndarray:
+    @override
+    def reset(
+        self,
+        *,
+        seed: t.Optional[int] = None,
+        options: t.Optional[coi.InfoDict] = None,
+    ) -> tuple[NDArray[np.double], coi.InfoDict]:
+        super().reset(seed=seed)
         # This is not good usage. In practice, you should only accept
         # and use cancellation tokens if your environment contains a
         # loop that waits for data. This is only for demonstration
         # purposes.
         self.token.raise_if_cancellation_requested()
         self.pos = self.optimization_space.sample()
-        return self.pos.copy()
+        return self.pos.copy(), {}
 
-    def step(self, action: np.ndarray) -> t.Tuple[np.ndarray, float, bool, t.Dict]:
+    @override
+    def step(
+        self, action: NDArray[np.double]
+    ) -> tuple[NDArray[np.double], float, bool, bool, coi.InfoDict]:
         old_pos = self.pos
         next_pos = self.pos + action
         self.pos = np.clip(
@@ -129,17 +147,23 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
             self.pos = old_pos
             self.token.complete_cancellation()
             raise
-        success = reward > self.objective
-        done = success or next_pos not in self.observation_space
-        info = {"success": success, "objective": self.objective}
-        if self.dangling and success and self.objective < self.max_objective:
+        terminated = reward > self.objective
+        truncated = next_pos not in self.observation_space
+        # TODO: `success` has become superfluous
+        info = {"success": terminated, "objective": self.objective}
+        if self.dangling and terminated and self.objective < self.max_objective:
             self.objective *= 0.95
-        return self.pos.copy(), reward, done, info
+        if self.render_mode == "human":
+            self.render()
+        return self.pos.copy(), reward, terminated, truncated, info
 
-    def get_initial_params(self) -> np.ndarray:
-        return self.reset()
+    @override
+    def get_initial_params(self) -> NDArray[np.double]:
+        pos, _ = self.reset()
+        return pos
 
-    def compute_single_objective(self, params: np.ndarray) -> float:
+    @override
+    def compute_single_objective(self, params: NDArray[np.double]) -> float:
         old_pos = self.pos
         self.pos = np.clip(
             params,
@@ -155,13 +179,14 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
             self.token.complete_cancellation()
             raise
 
-    def render(self, mode: str = "human") -> t.Any:
-        if mode == "human":
+    @override
+    def render(self) -> t.Any:
+        if self.render_mode == "human":
             _, axes = pyplot.subplots()
             self._update_axes(axes)
             pyplot.show()
             return None
-        if mode == "matplotlib_figures":
+        if self.render_mode == "matplotlib_figures":
             if self.figure is None:
                 self.figure = Figure()
                 axes = self.figure.subplots()
@@ -169,9 +194,9 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
                 [axes] = self.figure.axes
             self._update_axes(axes)
             return [self.figure]
-        if mode == "ansi":
+        if self.render_mode == "ansi":
             return str(self.pos)
-        return super().render(mode)
+        return super().render()
 
     def _update_axes(self, axes: Axes) -> None:
         """Plot this environment onto the given axes.
@@ -187,13 +212,6 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         axes.set_xlabel("Axes")
         axes.set_ylabel("Position")
 
-    def seed(self, seed: t.Optional[int] = None) -> t.List[int]:
-        return [
-            *self.observation_space.seed(seed),
-            *self.action_space.seed(seed),
-            *self.optimization_space.seed(seed),
-        ]
-
     def _fetch_distance_slow(self, pos: t.Optional[np.ndarray] = None) -> float:
         """Get distance from the goal in a slow manner.
 
@@ -208,13 +226,18 @@ class ConfParabola(coi.OptEnv, coi.Configurable):
         handle = self.token.wait_handle
         with handle:
             if handle.wait_for(lambda: self.token.cancellation_requested, timeout=0.3):
-                raise cancellation.CancelledError()
+                raise cancellation.CancelledError
         return float(
             np.linalg.norm(pos if pos is not None else self.pos, ord=self.norm)
         )
 
 
-coi.register("ConfParabola-v0", entry_point=ConfParabola, max_episode_steps=10)
+coi.register(
+    "ConfParabola-v0",
+    # TODO: This cast should not be necessary.
+    entry_point=t.cast(t.Callable[..., gym.Env], ConfParabola),
+    max_episode_steps=10,
+)
 
 
 class OptimizerThread(QtCore.QThread):
@@ -229,16 +252,19 @@ class OptimizerThread(QtCore.QThread):
     def __init__(self, env: coi.SingleOptimizable) -> None:
         super().__init__()
         self.env = env
+        opt_space = env.optimization_space
+        assert isinstance(opt_space, gym.spaces.Box), opt_space
+        self.optimization_space = opt_space
 
     def run(self) -> None:
         """Thread main function."""
 
-        def constraint(params: np.ndarray) -> float:
-            space = self.env.optimization_space
+        def constraint(params: NDArray[np.double]) -> t.SupportsFloat:
+            space = self.optimization_space
             width = space.high - space.low
-            return float(np.linalg.norm(2 * params / width, ord=np.inf))
+            return np.linalg.norm(2 * params / width, ord=np.inf)
 
-        def func(params: np.ndarray) -> float:
+        def func(params: NDArray[np.double]) -> t.SupportsFloat:
             loss = self.env.compute_single_objective(params)
             self.step.emit()
             return loss
@@ -287,7 +313,7 @@ class ConfigureDialog(QtWidgets.QDialog):
             label = QtWidgets.QLabel(field.label)
             widget = self._make_field_widget(field)
             params_layout.addRow(label, widget)
-        controls = QtWidgets.QDialogButtonBox(  # type: ignore
+        controls = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.Ok
             | QtWidgets.QDialogButtonBox.Apply
             | QtWidgets.QDialogButtonBox.Cancel
@@ -389,16 +415,22 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
 
         self.cancellation_token_source = cancellation.TokenSource()
-        self.env = coi.make(
-            "ConfParabola-v0",
-            cancellation_token=self.cancellation_token_source.token,
+        # TODO: This cast should be removed somehow.
+        self.env = t.cast(
+            coi.OptEnv[NDArray[np.double], NDArray[np.double], NDArray[np.double]],
+            coi.make(
+                "ConfParabola-v0",
+                cancellation_token=self.cancellation_token_source.token,
+                render_mode="matplotlib_figures",
+            ),
         )
         self.worker = OptimizerThread(self.env)
         self.worker.step.connect(self.on_opt_step)
         self.worker.finished.connect(self.on_opt_finished)
         self.env.reset()
 
-        [figure] = self.env.render(mode="matplotlib_figures")
+        # TODO: Can we improve this cast?
+        [figure] = t.cast(list[Figure], self.env.render())
         self.canvas = FigureCanvas(figure)
         self.launch = QtWidgets.QPushButton("Launch")
         self.launch.clicked.connect(self.on_launch)
@@ -419,6 +451,7 @@ class MainWindow(QtWidgets.QMainWindow):
         buttons_layout.addWidget(self.configure_env)
         self.addToolBar(NavigationToolbar(self.canvas, parent=self))
 
+    @override
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         # pylint: disable = invalid-name, missing-function-docstring
         self.launch.setEnabled(False)
@@ -430,6 +463,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def on_configure(self) -> None:
         """Open the dialog to configure the environment."""
+        assert coi.is_configurable(self.env)
         dialog = ConfigureDialog(self.env, parent=self)
         dialog.open()
 
@@ -449,7 +483,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def on_opt_step(self) -> None:
         """Update the plots."""
-        self.env.render("matplotlib_figures")
+        self.env.render()
         self.canvas.draw()
 
     def on_opt_finished(self) -> None:

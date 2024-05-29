@@ -13,21 +13,23 @@ import warnings
 
 from .._machine import Machine
 from .._problem import Problem
+from .._typeguards import is_problem
+from ._generic import bump_warn_arg
 from ._render import get_render_mode_checks
 
 
-def check_problem(
-    problem: Problem, *, warn: bool = True, headless: bool = True
-) -> None:
+def check_problem(problem: Problem, *, warn: int = True, headless: bool = True) -> None:
     """Check the run-time invariants of the given interface."""
+    warn = bump_warn_arg(warn)
+    assert is_problem(problem), f"doesn't implement the Problem API: {problem!r}"
     assert_machine(problem)
     assert_render_modes_defined(problem)
     assert_no_undeclared_render(problem, warn=warn, headless=headless)
     assert_execute_render(problem, headless=headless)
     if warn:
-        warn_japc(problem)
-        warn_cancellable(problem)
-        warn_render_modes(problem)
+        warn_japc(problem, warn)
+        warn_cancellable(problem, warn)
+        warn_render_modes(problem, warn)
 
 
 def assert_machine(problem: Problem) -> None:
@@ -41,65 +43,81 @@ def assert_render_modes_defined(problem: Problem) -> None:
     """Check that the environment defines render modes correctly."""
     # pylint: disable = unsubscriptable-object
     # pylint: disable = isinstance-second-argument-not-valid-type
-    render_modes = t.cast(t.Collection[str], problem.metadata.get("render.modes"))
+    render_modes = t.cast(t.Collection[str], problem.metadata.get("render_modes"))
     assert (
         render_modes is not None
-    ), "missing key render.modes in the environment metadata"
+    ), "missing key render_modes in the environment metadata"
     # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
     assert isinstance(
         render_modes, collections.abc.Collection
-    ), "render.modes must be a collection"
+    ), "render_modes must be a collection"
     for mode in render_modes:
         assert isinstance(mode, str), f"render mode must be string: {mode!r}"
 
 
 def assert_no_undeclared_render(
-    problem: Problem, *, warn: bool = True, headless: bool = True
+    problem: Problem, *, warn: int = True, headless: bool = True
 ) -> None:
     """Check for render modes that are implemented but not declared.
 
     Example:
 
+        >>> from cernml.coi import BaseProblem
         >>> from warnings import simplefilter
         >>> simplefilter("error")
-        >>> class Foo(Problem):
-        ...     def render(self, mode):
+        >>> class Foo(BaseProblem):
+        ...     def render(self):
         ...         return None
         >>> assert_no_undeclared_render(Foo())
         Traceback (most recent call last):
         ...
         AssertionError: ... doesn't raise NotImplementedError
-        >>> class Foo(Problem):
-        ...     def render(self, mode):
+
+        >>> class Foo(BaseProblem):
+        ...     def render(self):
         ...         raise TypeError()
         >>> assert_no_undeclared_render(Foo(), warn=False)
         >>> assert_no_undeclared_render(Foo())
         Traceback (most recent call last):
         ...
         UserWarning: ... raises instead: TypeError()
-        >>> class Foo(Problem):
-        ...     def render(self, mode):
-        ...         return super().render(mode)
+
+        >>> class Foo(BaseProblem):
+        ...     def render(self):
+        ...         return super().render()
         >>> assert_no_undeclared_render(Foo())
     """
     # pylint: disable = broad-except
     # pylint: disable = unsubscriptable-object
     # pylint: disable = isinstance-second-argument-not-valid-type
     blocked_modes = set(_get_blocked_modes(headless=headless))
-    render_modes = set(t.cast(t.Collection[str], problem.metadata["render.modes"]))
+    render_modes = set(problem.metadata.get("render.modes", ()))
+    if render_modes and warn:
+        warnings.warn(
+            "The metadata key `render.modes` is deprecated; "
+            "use `render_modes` instead",
+            stacklevel=max(2, warn),
+        )
+    render_modes = set(problem.metadata.get("render_modes", render_modes))
+    # TODO: Add ansi_list and rgb_array_list.
+    # TODO: Actually, this check has to be reworked completely, since
+    # render_mode is defined in the constructor now, and not supposed to
+    # change after construction.
     known_modes = {"ansi", "human", "matplotlib_figures", "rgb_array"}
     modes_to_check = known_modes - blocked_modes - render_modes
     for mode in modes_to_check:
         try:
-            problem.render(mode)
-        except (NotImplementedError, ValueError):
+            problem.render_mode = mode  # type: ignore[misc]
+            problem.render()
+        except (NotImplementedError, ValueError):  # noqa:PERF203
             pass
         except Exception as exc:
             if warn:
                 warnings.warn(
                     f"calling render({mode!r}) should raise "
                     f"NotImplementedError or ValueError, but raises "
-                    f"instead: {exc!r}"
+                    f"instead: {exc!r}",
+                    stacklevel=max(2, warn),
                 )
         else:
             raise AssertionError(
@@ -113,28 +131,35 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
 
     Example:
 
-        >>> class Foo(Problem):
-        ...     metadata = {"render.modes": ["ansi"]}
+        >>> from cernml.coi import BaseProblem
+        >>> class Foo(BaseProblem):
+        ...     metadata = {"render_modes": ["ansi"]}
         >>> assert_execute_render(Foo())
         Traceback (most recent call last):
         ...
         AssertionError: render mode 'ansi' declared ...
-        >>> class Foo(Problem):
-        ...     metadata = {"render.modes": ["custom"]}
-        ...     def render(self, mode):
-        ...         if mode == "custom":
+
+        >>> class Foo(BaseProblem):
+        ...     metadata = {"render_modes": ["custom"]}
+        ...     def __init__(self, render_mode=None):
+        ...         self.render_mode = render_mode
+        ...     def render(self):
+        ...         if self.render_mode == "custom":
         ...             return None
-        ...         return super().render(mode)
+        ...         return super().render()
         >>> assert_execute_render(Foo())
     """
     additional_checks = get_render_mode_checks()
     blocked_modes = _get_blocked_modes(headless=headless)
-    render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
+    render_modes = t.cast(t.Collection[str], problem.metadata["render_modes"])
     for mode in render_modes:
+        # TODO: This check has to be rethought, since render_mode is not
+        # expected to change after construction.
         if mode in blocked_modes:
             continue
         try:
-            result = problem.render(mode)
+            problem.render_mode = mode  # type: ignore[misc]
+            result = problem.render()
         except NotImplementedError as exc:
             raise AssertionError(
                 f"render mode {mode!r} declared but not implemented"
@@ -144,7 +169,7 @@ def assert_execute_render(problem: Problem, *, headless: bool = True) -> None:
             additional_check(result)
 
 
-def warn_render_modes(problem: Problem) -> None:
+def warn_render_modes(problem: Problem, warn: int = True) -> None:
     """Check that the environment defines the required render modes.
 
     Example:
@@ -153,7 +178,7 @@ def warn_render_modes(problem: Problem) -> None:
         >>> simplefilter("error")
         >>> class Foo:
         ...     def __init__(self, modes):
-        ...         self.metadata = {"render.modes": modes}
+        ...         self.metadata = {"render_modes": modes}
         >>> warn_render_modes(Foo([
         ...     "ansi", "human", "matplotlib_figures"
         ... ]))
@@ -171,14 +196,15 @@ def warn_render_modes(problem: Problem) -> None:
         UserWarning: missing render mode 'matplotlib_figures': ...
     """
     # pylint: disable = unsubscriptable-object
-    render_modes = t.cast(t.Collection[str], problem.metadata["render.modes"])
+    render_modes = t.cast(t.Collection[str], problem.metadata["render_modes"])
     if "ansi" not in render_modes:
         warnings.warn(
             "missing render mode 'ansi': This is the most basic "
             "render mode. In this mode, render() should return a "
             "`str` or `StringIO` for terminal output. The text may "
             "include newlines and ANSI escape sequences (e.g. for "
-            "colors)."
+            "colors).",
+            stacklevel=max(2, warn),
         )
     if "human" not in render_modes:
         warnings.warn(
@@ -186,7 +212,8 @@ def warn_render_modes(problem: Problem) -> None:
             "mode for interactive use. In this mode, render() should "
             "print or plot the environment to the current display "
             "and return nothing. This mode is seldom used by other "
-            "libraries."
+            "libraries.",
+            stacklevel=max(2, warn),
         )
     if "matplotlib_figures" not in render_modes:
         warnings.warn(
@@ -195,11 +222,12 @@ def warn_render_modes(problem: Problem) -> None:
             "meant for embedding a generic problem into a Qt-based "
             "GUI. In this mode, render() should return a list of "
             "`matplotlib.figure.Figure()` objects, but not display "
-            "in any way. This will be handled by the GUI instead."
+            "in any way. This will be handled by the GUI instead.",
+            stacklevel=max(2, warn),
         )
 
 
-def warn_japc(problem: Problem) -> None:
+def warn_japc(problem: Problem, warn: int = True) -> None:
     """Check that the environment declares JAPC usage.
 
     Example:
@@ -229,32 +257,44 @@ def warn_japc(problem: Problem) -> None:
         ...     def __init__(self, japc=None): pass
         >>> warn_japc(Foo())
     """
-    _warn_flag_to_enable_init_arg(problem, "cern.japc", "japc")
+    _warn_flag_to_enable_init_arg(
+        problem, flag_name="cern.japc", arg_name="japc", warn=bump_warn_arg(warn)
+    )
 
 
-def warn_cancellable(problem: Problem) -> None:
+def warn_cancellable(problem: Problem, warn: int = True) -> None:
     """Check that the environment declares its cancellation policy."""
-    _warn_flag_to_enable_init_arg(problem, "cern.cancellable", "cancellation_token")
+    _warn_flag_to_enable_init_arg(
+        problem,
+        flag_name="cern.cancellable",
+        arg_name="cancellation_token",
+        warn=bump_warn_arg(warn),
+    )
 
 
 def _warn_flag_to_enable_init_arg(
-    problem: Problem, flag_name: str, arg_name: str
+    problem: Problem, flag_name: str, arg_name: str, warn: int = True
 ) -> None:
     """Check a flag that lets a user opt into an __init__ argument."""
     flag = problem.metadata.get(flag_name)
     if flag is None:
         return warnings.warn(
             f"missing key {flag_name!r} in the environment "
-            "metadata; assuming the default value (False)"
+            "metadata; assuming the default value (False)",
+            stacklevel=max(2, warn),
         )
     if flag not in (True, False):
-        return warnings.warn(f"declared {flag_name} should be a bool")
+        return warnings.warn(
+            f"declared {flag_name} should be a bool",
+            stacklevel=max(2, warn),
+        )
     if flag:
         init_signature = inspect.signature(type(problem.unwrapped).__init__)
         if arg_name not in init_signature.parameters:
             return warnings.warn(
                 f"environments that declare {flag_name}=True should "
-                f"accept a keyword argument {arg_name!r} in __init__()"
+                f"accept a keyword argument {arg_name!r} in __init__()",
+                stacklevel=max(2, warn),
             )
     return None
 

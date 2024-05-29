@@ -84,7 +84,7 @@ more fully featured version of the code below.)
 
 ```python
 # my_project/__init__.py
-import gym
+import gymnasium as gym
 import numpy as np
 from cernml import coi
 
@@ -93,11 +93,12 @@ class Parabola(coi.SingleOptimizable, gym.Env):
     action_space = gym.spaces.Box(-1.0, 1.0, shape=(2,))
     optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
     metadata = {
-        "render.modes": [],
+        "render_modes": [],
         "cern.machine": coi.Machine.NO_MACHINE,
     }
 
-    def __init__(self):
+    def __init__(self, render_mode=None):
+        self.render_mode = render_mode
         self.pos = np.zeros(2)
         self._train = True
 

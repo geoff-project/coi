@@ -52,17 +52,67 @@ from ._configurable import (
 )
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._custom_policy_provider import CustomPolicyProvider, Policy
-from ._func_opt import FunctionOptimizable
+from ._extra_envs import (
+    ActType,
+    InfoDict,
+    ObsType,
+    OptEnv,
+    SeparableEnv,
+    SeparableOptEnv,
+)
+from ._extra_goal_envs import (
+    GoalObs,
+    GoalType,
+    OptGoalEnv,
+    SeparableGoalEnv,
+    SeparableOptGoalEnv,
+)
+from ._func_opt import BaseFunctionOptimizable, FunctionOptimizable
+from ._goalenv import GoalEnv
 from ._machine import Machine
-from ._problem import Problem
-from ._registration import make, register, registry, spec
-from ._sepenv import SeparableEnv, SeparableGoalEnv
-from ._single_opt import Constraint, SingleOptimizable
-from ._union_interfaces import OptEnv, OptGoalEnv, SeparableOptEnv, SeparableOptGoalEnv
+from ._problem import BaseProblem, HasNpRandom, Problem
+from ._single_opt import BaseSingleOptimizable, Constraint, ParamType, SingleOptimizable
+from ._typeguards import (
+    AnyOptimizable,
+    is_configurable,
+    is_configurable_class,
+    is_custom_optimizer_provider,
+    is_custom_optimizer_provider_class,
+    is_env,
+    is_env_class,
+    is_function_optimizable,
+    is_function_optimizable_class,
+    is_goal_env,
+    is_goal_env_class,
+    is_optimizable,
+    is_optimizable_class,
+    is_problem,
+    is_problem_class,
+    is_separable_env,
+    is_separable_env_class,
+    is_separable_goal_env,
+    is_separable_goal_env_class,
+    is_single_optimizable,
+    is_single_optimizable_class,
+)
 from .checkers import check
+from .registration import (
+    make,
+    make_vec,
+    pprint_registry,
+    register,
+    register_envs,
+    registry,
+    spec,
+)
 
 __all__ = [
+    "ActType",
+    "AnyOptimizable",
     "BadConfig",
+    "BaseFunctionOptimizable",
+    "BaseProblem",
+    "BaseSingleOptimizable",
     "Config",
     "ConfigValues",
     "Configurable",
@@ -71,10 +121,17 @@ __all__ = [
     "CustomPolicyProvider",
     "DuplicateConfig",
     "FunctionOptimizable",
+    "GoalEnv",
+    "GoalObs",
+    "GoalType",
+    "HasNpRandom",
+    "InfoDict",
     "Machine",
+    "ObsType",
     "OptEnv",
     "OptGoalEnv",
     "Policy",
+    "ParamType",
     "Problem",
     "SeparableEnv",
     "SeparableGoalEnv",
@@ -83,8 +140,31 @@ __all__ = [
     "SingleOptimizable",
     "check",
     "checkers",
+    "is_configurable",
+    "is_configurable_class",
+    "is_custom_optimizer_provider",
+    "is_custom_optimizer_provider_class",
+    "is_env",
+    "is_env_class",
+    "is_function_optimizable",
+    "is_function_optimizable_class",
+    "is_goal_env",
+    "is_goal_env_class",
+    "is_optimizable",
+    "is_optimizable_class",
+    "is_problem",
+    "is_problem_class",
+    "is_separable_env",
+    "is_separable_env_class",
+    "is_separable_goal_env",
+    "is_separable_goal_env_class",
+    "is_single_optimizable",
+    "is_single_optimizable_class",
     "make",
+    "make_vec",
+    "pprint_registry",
     "register",
+    "register_envs",
     "registry",
     "spec",
 ]

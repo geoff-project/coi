@@ -6,11 +6,43 @@
 
 """Generic assertions and checks used by multiple checkers."""
 
-import numbers
 import typing as t
 
-import gym
+import gymnasium as gym
 import numpy as np
+import typing_extensions as tx
+
+# TODO: Add proper version guards around tx
+
+
+def bump_warn_arg(warn: int) -> int:
+    """Increase the warn argument if it's nonzero.
+
+    If *warn* is False, it is returned unmodified. Otherwise, it's set
+    to at least 2 before being increased by 1 and returned.
+
+    The ``min()`` in the middle ensures that warnings are always
+    reported at least in the caller of our functions.
+
+    The purpose of increasing the argument is so that warnings are
+    always reported outside of this package. This is necessary because
+    `~warnings.warn()` only supports the *skip_file_prefixes* parameter
+    in Python 3.12+.
+
+    Example:
+
+        >>> bump_warn_arg(False)
+        False
+        >>> bump_warn_arg(True)
+        3
+        >>> bump_warn_arg(1)
+        3
+        >>> bump_warn_arg(2)
+        3
+        >>> bump_warn_arg(10)
+        11
+    """
+    return warn and max(warn, 2) + 1
 
 
 def assert_range(reward_range: t.Tuple[float, float], name: str) -> None:
@@ -20,12 +52,12 @@ def assert_range(reward_range: t.Tuple[float, float], name: str) -> None:
     assert low <= high, f"lower bound of {name} range must be lower than upper bound"
 
 
-def is_reward(reward: t.Any) -> bool:
+def is_reward(reward: t.Any) -> tx.TypeGuard[t.SupportsFloat]:
     """Return True if the object has the correct type for a reward."""
-    return isinstance(reward, (numbers.Number, np.bool_))
+    return isinstance(reward, t.SupportsFloat)
 
 
-def is_bool(value: t.Any) -> bool:
+def is_bool(value: t.Any) -> tx.TypeGuard[t.Union[bool, np.bool_]]:
     """Return True if the object is a true boolean.
 
     This accepts `bool`, :class:`np.bool_` and possible subclasses, but
@@ -88,6 +120,6 @@ def is_iterable(value: t.Any) -> bool:
     return isinstance(value, t.Iterable) or hasattr(type(value), "__getitem__")
 
 
-def is_box(space: gym.Space) -> bool:
+def is_box(space: gym.Space) -> tx.TypeGuard[gym.spaces.Box]:
     """Return True if the given space is a Box."""
     return isinstance(space, gym.spaces.Box)

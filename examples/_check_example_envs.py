@@ -10,6 +10,8 @@
 
 """Run the environment checkers over the example environments."""
 
+from typing import Any
+
 from cernml import coi
 from cernml.coi import cancellation
 
@@ -21,7 +23,8 @@ if not coi.registry.all():
 
 for spec in coi.registry.all():
     print("Checking", spec.id, "…")
-    kwargs = {}
+    kwargs: dict[str, Any] = {}
+    assert coi.is_problem_class(spec.entry_point), spec
     if spec.entry_point.metadata.get("cern.cancellable", False):
         kwargs["cancellation_token"] = cancellation.Token()
     env = coi.make(spec.id, **kwargs)

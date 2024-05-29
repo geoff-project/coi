@@ -6,33 +6,79 @@
 
 """Provide `Problem`, the most fundamental API of this package."""
 
+from __future__ import annotations
+
+import typing as t
+import warnings
 from abc import ABCMeta
 from types import MappingProxyType
-from typing import Any, ClassVar, Mapping
 
-from ._abc_helpers import check_methods as _check_methods
+import numpy as np
+from gymnasium.utils import seeding
+
 from ._machine import Machine
+from ._machinery import AttrCheckProtocol
+from .registration import EnvSpec, MinimalEnvSpec, errors
+
+if t.TYPE_CHECKING:
+    from typing_extensions import Self
+
+__all__ = (
+    "BaseProblem",
+    "HasNpRandom",
+    "Problem",
+)
 
 
-class Problem(metaclass=ABCMeta):
-    """Abstract base class of all problems.
+class HasNpRandom(t.Protocol):
+    """Protocol for classes that manage their own RNG.
 
-    You should not derive from this class. Instead, derive from one of
-    its subclasses like `~gym.Env` or `SingleOptimizable`. This class
+    This abstracts out the `gymnasium.Env.np_random` property. The
+    `Problem` protocol does not depend on it, but the :term:`abstract
+    base class` `BaseProblem` subclasses it as a mixin for convenience.
+    """
+
+    _np_random: np.random.Generator | None = None
+
+    @property
+    def np_random(self) -> np.random.Generator:
+        """Returns the environment's internal :attr:`_np_random`.
+
+        if `_np_random` is not set yet, this will initialize it with
+        a random seed.
+
+        Returns:
+            Instances of `np.random.Generator`
+        """
+        if self._np_random is None:
+            self._np_random, _ = seeding.np_random()
+        return self._np_random
+
+    @np_random.setter
+    def np_random(self, value: np.random.Generator) -> None:
+        self._np_random = value
+
+
+@t.runtime_checkable
+class Problem(AttrCheckProtocol, t.Protocol):
+    """Root protocol for all optimization problems.
+
+    Do not not directly subclass this protocol. Instead, derive from one
+    of its subclasses like `~gym.Env` or `SingleOptimizable`. This class
     exists for two purposes:
 
     - define which parts of the interfaces are common to all of them;
     - provide an easy way to test whether an interface is compatible
       with the generic optimization framework.
 
-    This is an :term:`std:abstract base class`. This means even classes
-    that don't inherit from it may be considered a subclass. To be
-    considered a subclass, a class must merely:
+    This is a `~typing.Protocol`. This means even classes that don't
+    inherit from it may be considered a subclass. To be considered
+    a subclass, a class must merely:
 
-    - provide a method `render()`,
-    - provide a method `close()`,
-    - provide a property `unwrapped`,
-    - provide a dict `metadata` as a class attribute.
+    - provide the methods `render()`, `close()` and
+      `get_wrapper_attr()`;
+    - provide a dynamic property `unwrapped`;
+    - provide the attributes `render_mode` and `spec`.
 
     Attributes:
         metadata: Capabilities and behavior of this problem.
@@ -46,7 +92,7 @@ class Problem(metaclass=ABCMeta):
             The following keys are defined and understood by this
             package:
 
-            ``"render.modes"``
+            ``"render_modes"``
                 The render modes that the optimization problem
                 understands. Standard render modes are documented under
                 `render()`.
@@ -73,16 +119,53 @@ class Problem(metaclass=ABCMeta):
             reserved for future use.
     """
 
-    # Subclasses should make `metadata` just a regular dict. This is a
-    # mapping proxy to prevent accidental mutation through inheritance.
-    metadata: ClassVar[Mapping[str, Any]] = MappingProxyType(
-        {
-            "render.modes": [],
-            "cern.machine": Machine.NO_MACHINE,
-            "cern.japc": False,
-            "cern.cancellable": False,
-        }
+    # Subclasses should make `metadata` just a regular dict. This is
+    # a mapping proxy here to prevent accidental mutation through
+    # inheritance.
+    metadata: dict[str, t.Any] = t.cast(
+        dict[str, t.Any],
+        MappingProxyType(
+            {
+                "render_modes": [],
+                "cern.machine": Machine.NO_MACHINE,
+                "cern.japc": False,
+                "cern.cancellable": False,
+            }
+        ),
     )
+
+    @property
+    def render_mode(self) -> str | None:
+        """The render mode as determined during initialization.
+
+        This attribute is expected to be set inside ``__init__()`` and
+        then not changed again.
+        """
+        # Hack: We mark this as read-only here, but all sub-protocols
+        # make it writeable again. The reason is that
+        # `gymnasium.Wrapper` defines `render_mode` to be read-only. If
+        # it were settable in `Problem`, wrappers would no longer
+        # considered to implement the protocol.
+        return vars(self).get("render_mode")
+
+    @property
+    def spec(self) -> MinimalEnvSpec | None:
+        """Information on how the problem was initialized.
+
+        This property is usually set by `make()`. You generally should
+        not modify it yourself. Wrappers should `~copy.deepcopy()` the
+        spec of the wrapped environment and make their modifications on
+        the copy.
+        """
+        # Hack: We mark this as read-only here, but all sub-protocols
+        # make it writeable again.
+        # Marking the attribute as read-only also makes it _covariant_,
+        # i.e. subclasses are allowed to return subclasses of
+        # `MinimalEnvSpec` instead of `MinimalEnvSpec` _exactly_. This
+        # allows us to replace `gymnasium.envs.registration.EnvSpec`
+        # with `cernml.coi.registration.EnvSpec`, which is exactly the
+        # same except it calls _our_ `make()` instead of Gymnasium's.
+        return vars(self).get("spec")
 
     def close(self) -> None:
         """Perform any necessary cleanup.
@@ -96,7 +179,9 @@ class Problem(metaclass=ABCMeta):
         called on the problem, with the following exceptions:
 
         - `unwrapped` must continue to behave as expected;
-        - calling `close()` again should do nothing."""
+        - calling `close()` again should do nothing.
+        """
+        return None  # noqa: RET501
 
     @property
     def unwrapped(self) -> "Problem":
@@ -128,12 +213,12 @@ class Problem(metaclass=ABCMeta):
         """
         return self
 
-    def render(self, mode: str = "human") -> Any:
+    def render(self) -> t.Any:
         """Render the environment.
 
         Args:
             mode: the mode to render with. Must be a member of
-                ``self.metadata["render.modes"]``.
+                ``self.metadata["render_modes"]``.
 
         The set of supported modes varies. Some problems do not support
         rendering at all. The following modes have a standardized
@@ -169,9 +254,9 @@ class Problem(metaclass=ABCMeta):
 
         Example:
 
-            >>> from gym import Env
+            >>> from gymnasium import Env
             >>> class MyEnv(Env):
-            ...     metadata = {'render.modes': ['human', 'rgb_array']}
+            ...     metadata = {'render_modes': ['human', 'rgb_array']}
             ...     def render(self, mode='human'):
             ...         if mode == 'rgb_array':
             ...             # Return RGB frame suitable for video.
@@ -186,20 +271,103 @@ class Problem(metaclass=ABCMeta):
 
         Note:
             Make sure to declare all modes that you support in the
-            ``"render.modes"`` key of your `metadata`. It's recommended
+            ``"render_modes"`` key of your `metadata`. It's recommended
             to call `super` in implementations to use the functionality
             of this method.
         """
         # pylint: disable = unused-argument
-        # Hack: Make PyLint realize that this method is not abstract. We
-        # do allow people to not override this method in their subclass.
+        # Make PyLint realize that this method is not abstract. We do
+        # allow people to not override this method in their subclass.
         # However, PyLint thinks that any method that raises
         # NotImplementedError should be overridden.
         assert True
-        raise NotImplementedError()
+        raise NotImplementedError
 
-    @classmethod
-    def __subclasshook__(cls, other: type) -> Any:
-        if cls is Problem:
-            return _check_methods(other, "close", "metadata", "render", "unwrapped")
-        return NotImplemented
+    def get_wrapper_attr(self, name: str) -> t.Any:
+        """Gets the attribute `name` from the environment."""
+        return getattr(self, name)
+
+
+@Problem.register
+class BaseProblem(HasNpRandom, metaclass=ABCMeta):
+    """ABC that implements the `Problem` protocol.
+
+    Subclassing this :term:`abstract base class` instead of `Problem`
+    directly comes with a few advantages for convenience:
+
+    - an `~object.__init__()` method that ensures that the `render_mode`
+      attribute is set correctly;
+    - :term:`context manager` methods that ensure that `close()` is
+      called when using the problem in a :keyword:`with` statement;
+    - the attribute `~HasNpRandom.np_random` as an exclusive and
+      seedable `~numpy.random` number generator.
+
+    To check whether an object satisfies the `Problem` protocol, use the
+    dedicated function `is_problem()`. Alternatively, you may also call
+    ``isinstance(obj.unwrapped, Problem)``. Do not use this class for
+    such checks!
+
+    Equivalent base classes also exist for the other interfaces.
+
+    See Also:
+        `BaseFunctionOptimizable`, `BaseSingleOptimizable`, `Env`
+    """
+
+    # pylint: disable = missing-function-docstring
+    metadata: dict[str, t.Any] = t.cast(
+        dict[str, t.Any],
+        MappingProxyType(
+            {
+                "render_modes": [],
+                "cern.machine": Machine.NO_MACHINE,
+                "cern.japc": False,
+                "cern.cancellable": False,
+            }
+        ),
+    )
+    render_mode: str | None = None
+    spec: EnvSpec | None = None
+
+    def __init__(self, render_mode: str | None = None) -> None:
+        modes: t.Collection[str] | None = self.metadata.get("render.modes", None)
+        if modes is not None:
+            warnings.warn(
+                errors.GymDeprecationWarning(
+                    "metadata key 'render_modes'", "'render_modes'"
+                ),
+                stacklevel=2,
+            )
+        if render_mode is not None:
+            modes = t.cast(
+                t.Collection[str], self.metadata.get("render_modes", modes or ())
+            )
+            if render_mode not in modes:
+                raise ValueError(
+                    f"invalid render mode: expected one of {modes}, "
+                    f"got {render_mode!r}"
+                )
+        self.render_mode = render_mode
+
+    def __enter__(self) -> "Self":
+        return self
+
+    # pylint: disable = useless-return
+    def __exit__(self, *args: object) -> bool | None:
+        self.close()
+        return None
+
+    # pylint: enable = useless-return
+
+    def close(self) -> None:
+        return None
+
+    def render(self) -> t.Any:
+        assert True
+        raise NotImplementedError
+
+    @property
+    def unwrapped(self) -> Problem:
+        return self
+
+    def get_wrapper_attr(self, name: str) -> t.Any:
+        return getattr(self, name)

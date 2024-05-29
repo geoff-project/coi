@@ -4,15 +4,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = abstract-method
-# pylint: disable = missing-class-docstring
-# pylint: disable = missing-function-docstring
-# pylint: disable = redefined-outer-name
-
 """Test the inheritance chain of the package."""
 
 import numpy as np
-from gym.spaces import Box
+from gymnasium.spaces import Box
 
 from cernml import coi
 

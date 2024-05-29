@@ -9,14 +9,15 @@
 from __future__ import annotations
 
 import typing as t
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
 import numpy as np
 
-from ._abc_helpers import check_class_methods, check_methods
+from ._machinery import AttrCheckProtocol
 
 
-class Policy(metaclass=ABCMeta):
+@t.runtime_checkable
+class Policy(t.Protocol):
     """Interface of RL algorithms returned by `CustomPolicyProvider`.
 
     This is an :term:`std:abstract base class`. This means even classes
@@ -34,11 +35,11 @@ class Policy(metaclass=ABCMeta):
     @abstractmethod
     def predict(
         self,
-        observation: t.Union[np.ndarray, t.Dict[str, np.ndarray]],
-        state: t.Optional[t.Tuple[np.ndarray, ...]] = None,
-        episode_start: t.Optional[np.ndarray] = None,
+        observation: np.ndarray | dict[str, np.ndarray],
+        state: tuple[np.ndarray, ...] | None = None,
+        episode_start: np.ndarray | None = None,
         deterministic: bool = False,
-    ) -> t.Tuple[np.ndarray, t.Optional[t.Tuple[np.ndarray, ...]]]:
+    ) -> tuple[np.ndarray, tuple[np.ndarray, ...] | None]:
         """Get the policy action from an observation (and hidden state).
 
         Args:
@@ -64,14 +65,9 @@ class Policy(metaclass=ABCMeta):
             as a state.
         """
 
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is Policy:
-            return check_methods(other, "predict")
-        return NotImplemented
 
-
-class CustomPolicyProvider(metaclass=ABCMeta):
+@t.runtime_checkable
+class CustomPolicyProvider(AttrCheckProtocol, t.Protocol):
     """Interface for optimization problems with custom RL algorithms.
 
     This protocol gives subclasses of `~gym.Env` the opportunity to
@@ -110,7 +106,7 @@ class CustomPolicyProvider(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def get_policy_names(cls) -> t.List[str]:
+    def get_policy_names(cls) -> list[str]:
         """Return a list of all available policies.
 
         How this list is acquired is left to the implementation.
@@ -132,13 +128,3 @@ class CustomPolicyProvider(metaclass=ABCMeta):
         pre-trained weights into it.
         """
         raise NotImplementedError
-
-    @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is CustomPolicyProvider:
-            # Mind the return value, it could be `NotImplemented`!
-            class_match = check_class_methods(other, "get_policy_names")
-            if class_match is not True:
-                return class_match
-            return check_methods(other, "load_policy")
-        return NotImplemented

@@ -55,7 +55,7 @@ also implements `~cernml.coi.OptEnv`. A demonstration:
 
 .. code-block:: python
 
-    import gym
+    import gymnasium as gym
     from cernml import coi
 
     class Indirect(coi.SingleOptimizable, gym.Env):
@@ -74,7 +74,7 @@ fundamental properties of the class and how a host application can use it.
 
 The following keys are defined and understood by this package:
 
-``"render.modes"``
+``"render_modes"``
     the render modes that the optimization problem understands (see
     :ref:`Rendering`);
 
@@ -95,7 +95,7 @@ See the :attr:`API docs<cernml.coi.Problem.metadata>` for a full spec.
 Rendering
 ---------
 
-The metadata entry ``"render.modes"`` allows a problem to declare that its
+The metadata entry ``"render_modes"`` allows a problem to declare that its
 internal state can be visualized. It should be a list of strings where each
 string is a supported render mode. Host applications may pick one of these
 strings and pass it to the problems {meth}`~cernml.coi.Problem.render()`

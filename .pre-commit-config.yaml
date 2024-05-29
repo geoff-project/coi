@@ -8,7 +8,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v4.5.0
   hooks:
   - id: check-added-large-files
   - id: check-merge-conflict
@@ -17,31 +17,36 @@ repos:
     args: ["--unsafe"]
   - id: end-of-file-fixer
   - id: trailing-whitespace
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.3.2
+  hooks:
+    - id: ruff
+      args: ["--fix", "--exit-non-zero-on-fix"]
 - repo: https://github.com/psf/black
-  rev: 23.3.0
+  rev: 24.2.0
   hooks:
   - id: black
 - repo: https://github.com/fsfe/reuse-tool
-  rev: v1.1.2
+  rev: v3.0.1
   hooks:
     - id: reuse
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
-  hooks:
-  - id: isort
-- repo: https://github.com/pycqa/flake8
-  rev: 6.0.0
-  hooks:
-  - id: flake8
-    additional_dependencies:
-    - flake8-length
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.3.0
+  rev: v1.9.0
   hooks:
   - id: mypy
     exclude: ^docs/conf.py
     additional_dependencies:
+    - numpy ~= 1.10
+    - gym >= 0.11, <0.23
+    - pytest >= 6.0
     - PyQt5-stubs ~= 5.0
+    # TODO: Only include gymnasium-robotics once stable wheels have become
+    # available for Mujoco.
+    # - gymnasium-robotics ~= 1.0
+    - matplotlib ~= 3.8
+    - gymnasium < 2
+    - types-docutils
+    - typing-extensions
 - repo: local
   hooks:
   - id: pylint

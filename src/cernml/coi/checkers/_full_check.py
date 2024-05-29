@@ -9,24 +9,25 @@
 import logging
 import typing as t
 
-import gym
+import gymnasium as gym
 
 try:
     import importlib_metadata
 except ImportError:
     # Starting with Python 3.10 (see pyproject.toml).
-    import importlib.metadata as importlib_metadata  # type: ignore
+    import importlib.metadata as importlib_metadata  # type: ignore[import, no-redef]
 
 from ._configurable import Configurable, check_configurable
 from ._env import check_env
 from ._func_opt import FunctionOptimizable, check_function_optimizable
+from ._generic import bump_warn_arg
 from ._problem import Problem, check_problem
 from ._single_opt import SingleOptimizable, check_single_optimizable
 
 LOG = logging.getLogger(__name__)
 
 
-def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
+def check(env: Problem, warn: int = True, headless: bool = True) -> None:
     """Check that a problem follows the API of this package.
 
     Args:
@@ -38,7 +39,7 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
             GUI.
         warn: If True (the default), run additional tests that might be
             indicative of problems but might also exhibit false
-            positives.
+            positives. if False, no warnings are given.
 
     Raises:
         AssertionError: if any check fails.
@@ -49,6 +50,12 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
     provide additional checkers. Upon each call, this method will load
     all plugins and call them with the signature ``checker(problem,
     warn=warn, headless=headless)``.
+
+    .. note::
+        The *warn* parameter is actually an integer. If it's nonzero,
+        ``max(2, warn)`` is used to calculate the *stacklevel* passed to
+        `~warnings.warn()`. Higher values push the reported offending
+        location further up the stack trace.
     """
     unwrapped_env = getattr(env, "unwrapped", None)
     assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'
@@ -56,6 +63,7 @@ def check(env: Problem, warn: bool = True, headless: bool = True) -> None:
         unwrapped_env, Problem
     ), f"{type(unwrapped_env)} must inherit from Problem"
     # Run built-in checkers.
+    warn = bump_warn_arg(warn)
     LOG.debug("Checking Problem interface of %s", env)
     check_problem(env, warn=warn, headless=headless)
     if isinstance(unwrapped_env, SingleOptimizable):

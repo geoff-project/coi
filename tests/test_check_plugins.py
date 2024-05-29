@@ -4,10 +4,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = missing-class-docstring
-# pylint: disable = missing-function-docstring
-# pylint: disable = redefined-outer-name
-
 """Test the `cernml.coi.checkers` entry poiny."""
 
 import typing as t
@@ -41,15 +37,14 @@ def test_check_plugins(
     our_entry_points = all_entry_points.select.return_value = [Mock(), Mock()]
     problem = Mock(spec=coi.Problem)
     problem.unwrapped = problem
-    warn = Mock()
     headless = Mock()
     # When:
-    coi.check(problem, warn=warn, headless=headless)
+    coi.check(problem, warn=1, headless=headless)
     # Then:
-    mock_check_problem.assert_called_once_with(problem, warn=warn, headless=headless)
+    mock_check_problem.assert_called_once_with(problem, warn=3, headless=headless)
     mock_entry_points.assert_called_once_with()
     all_entry_points.select.assert_called_once_with(group="cernml.coi.checkers")
     for entry_point in our_entry_points:
         entry_point.load.assert_called_once_with()
         checker = entry_point.load.return_value
-        checker.assert_called_once_with(problem, warn=warn, headless=headless)
+        checker.assert_called_once_with(problem, warn=3, headless=headless)

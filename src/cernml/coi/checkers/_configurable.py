@@ -14,16 +14,18 @@ from unittest.mock import Mock, PropertyMock
 import numpy as np
 
 from .._configurable import Config, Configurable
+from ._generic import bump_warn_arg
 
 
-def check_configurable(problem: Configurable, warn: bool = True) -> None:
+def check_configurable(problem: Configurable, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
     config = problem.get_config()
+    warn = bump_warn_arg(warn)
     assert_is_good_config(config, warn)
     assert_handles_values(problem, config, warn)
 
 
-def assert_is_good_config(config: Config, warn: bool = True) -> None:
+def assert_is_good_config(config: Config, warn: int = True) -> None:
     """Check that the given Config has good types.
 
     >>> from warnings import simplefilter
@@ -71,18 +73,20 @@ def assert_is_good_config(config: Config, warn: bool = True) -> None:
                 warnings.warn(
                     warning_template.format(
                         kind="value", value=field.value, dest=field.dest
-                    )
+                    ),
+                    stacklevel=max(2, warn),
                 )
             if field.default is not None and not isinstance(field.default, good_types):
                 warnings.warn(
                     warning_template.format(
                         kind="default", value=field.default, dest=field.dest
-                    )
+                    ),
+                    stacklevel=max(2, warn),
                 )
 
 
 def assert_handles_values(
-    problem: Configurable, config: Config, warn: bool = True
+    problem: Configurable, config: Config, warn: int = True
 ) -> None:
     """Check that the current config values can be applied.
 
@@ -119,7 +123,8 @@ def assert_handles_values(
             if not prop.call_count:
                 warnings.warn(
                     f"configured value for field {field.dest!r} has "
-                    f"not been read in apply_config()"
+                    f"not been read in apply_config()",
+                    stacklevel=max(2, warn),
                 )
 
 

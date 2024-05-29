@@ -8,24 +8,34 @@
 
 # pylint: disable = abstract-method, too-few-public-methods
 
+from __future__ import annotations
+
 import typing as t
-from abc import ABCMeta, abstractmethod
+from abc import abstractmethod
 
-import gym
-import numpy
+import gymnasium as gym
 
-from ._problem import Problem
+from ._problem import BaseProblem, Problem
 
 if t.TYPE_CHECKING:
     # pylint: disable = unused-import
-    import scipy.optimize  # noqa: F401
+    import scipy.optimize  # noqa: F401, RUF100
+
+__all__ = (
+    "Constraint",
+    "ParamType",
+    "SingleOptimizable",
+)
 
 Constraint = t.Union[
     "scipy.optimize.LinearConstraint", "scipy.optimize.NonlinearConstraint"
 ]
 
+ParamType = t.TypeVar("ParamType")  # pylint: disable = invalid-name
 
-class SingleOptimizable(Problem, metaclass=ABCMeta):
+
+@t.runtime_checkable
+class SingleOptimizable(Problem, t.Protocol[ParamType]):
     """Interface for single-objective numerical optimization.
 
     Fundamentally, an environment (described by `gym.Env`) contains a
@@ -81,15 +91,19 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             is not to attach any meaning to the constraints.
     """
 
-    optimization_space: gym.spaces.Space = None
-    objective_range: t.Tuple[float, float] = (-float("inf"), float("inf"))
-    objective_name: str = ""
-    param_names: t.List[str] = []
-    constraints: t.List[Constraint] = []
-    constraint_names: t.List[str] = []
+    render_mode: str | None = None
 
+    optimization_space: gym.spaces.Space[ParamType]
+    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
+    constraints: t.Sequence[Constraint] = []
+
+    objective_name: str = ""
+    param_names: t.Sequence[str] = ()
+    constraint_names: t.Sequence[str] = ()
+
+    # TODO: Add optional `seed` and `options` arguments.
     @abstractmethod
-    def get_initial_params(self) -> numpy.ndarray:
+    def get_initial_params(self) -> ParamType:
         """Return an initial set of parameters for optimization.
 
         The returned parameters should be within the optimization space,
@@ -100,10 +114,10 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
         always return the same value; or to skip certain calculations,
         in the case of problems that are expensive to evalaute.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @abstractmethod
-    def compute_single_objective(self, params: numpy.ndarray) -> float:
+    def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
         """Perform an optimization step.
 
         This function is similar to `~gym.Env.step()`, but it accepts
@@ -124,4 +138,54 @@ class SingleOptimizable(Problem, metaclass=ABCMeta):
             The loss associated with these parameters. Numerical
             optimizers may want to minimize that loss.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
+
+
+@SingleOptimizable.register
+class BaseSingleOptimizable(BaseProblem, t.Generic[ParamType]):
+    """ABC that implements the `SingleOptimizable` protocol.
+
+    Subclassing this :term:`abstract base class`  instead of
+    `SingleOptimizable` directly comes with a few advantages for
+    convenience:
+
+    - an `~object.__init__()` method that ensures that the `render_mode`
+      attribute is set correctly;
+    - :term:`context manager` methods that ensure that `close()` is
+      called when using the problem in a :keyword:`with` statement;
+    - the attribute `~HasNpRandom.np_random` as an exclusive and
+      seedable `~numpy.random` number generator;
+    - a `SingleOptimizable.compute_single_objective()` method that
+      automatically calls `~Problem.render()` if in render mode
+      ``human``.
+
+    To check whether an object satisfies the `SingleOptimizable`
+    protocol, use the dedicated function `is_single_optimizable()`.
+    Alternatively, you may also call ``isinstance(obj.unwrapped,
+    SingleOptimizable)``. Do not use this class for such checks!
+
+    Equivalent base classes also exist for the other interfaces.
+
+    See Also:
+        `BaseFunctionOptimizable`, `BaseProblem`, `Env`
+    """
+
+    optimization_space: gym.spaces.Space[ParamType]
+    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
+    constraints: t.Sequence[Constraint] = []
+
+    objective_name: str = ""
+    param_names: t.Sequence[str] = []
+    constraint_names: t.Sequence[str] = []
+
+    # TODO: If `get_initial_params()` gains new arguments, those should
+    # be used by default in this method.
+    @abstractmethod
+    def get_initial_params(self) -> ParamType:
+        """See `SingleOptimizable.get_initial_params()`."""  # noqa: D402
+        raise NotImplementedError
+
+    @abstractmethod
+    def compute_single_objective(self, params: ParamType) -> t.SupportsFloat:
+        """See `SingleOptimizable.compute_single_objective()`."""  # noqa: D402
+        raise NotImplementedError
