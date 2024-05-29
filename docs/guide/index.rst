@@ -23,7 +23,11 @@ application must be able to query such properties.
     :maxdepth: 2
 
     core
-    registry
+    registration
+    custom_optimizers
+    configurable
+    control_flow
     cancellation
     otherenvs
     funcopt
+    migration_090

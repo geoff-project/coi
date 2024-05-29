@@ -73,7 +73,7 @@ def check(env: Problem, warn: int = True, headless: bool = True) -> None:
     if isinstance(unwrapped_env, Configurable):
         LOG.debug("Checking Configurable interface of %s", env)
         check_configurable(t.cast(Configurable, env), warn=warn)
-    entry_points = importlib_metadata.entry_points().select(group="cernml.coi.checkers")
+    entry_points = importlib_metadata.entry_points().select(group="cernml.checkers")
     # Run plug-in checkers.
     for entry_point in entry_points:
         LOG.debug("Loading checker plugin %s", entry_point.name)

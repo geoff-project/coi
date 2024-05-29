@@ -10,380 +10,14 @@ More Optimization Interfaces
 
 .. currentmodule:: cernml.coi
 
-This section introduces a few useful, but less common interfaces defined by Gym
-and the COI.
+This section introduces a few interfaces that are sometimes useful, but often
+appear under somewhat niche circumstances.
 
-Configurable
-------------
-
-.. digraph:: control_flow
-    :caption: Fig. 1: Sequence diagram of the Configurable API
-
-    newrank = true;
-    node[
-        shape=box,
-        fontname="Open Sans",
-        style="rounded, filled",
-        fillcolor="white",
-    ];
-
-    subgraph cluster_user {
-        label = "User";
-        configure[label="Configure problem"];
-        modify[label="Modify values"];
-        submit[label="Submit new values"];
-        end[label="Present success/failure"];
-    }
-
-    subgraph cluster_host {
-        label = "Host";
-        get_config[label="problem.get_config()"];
-        get_field_values[label="config.get_field_values()"];
-        validate[label="config.validate_all(values)"];
-        apply_config[label="problem.apply_config(validated)"];
-        return_host[label="return", shape=plaintext];
-    }
-
-    subgraph cluster_plugin {
-        label = "Plugin";
-        make_config[label="Config().add(…).add(…)"];
-        return_config[label="return config", shape=plaintext];
-        use_config[label="self.field = validated.field"];
-        return_none[label="return", shape=plaintext];
-    }
-
-    { rank=same; configure; get_config; make_config; }
-    { rank=same; modify; get_field_values; return_config; }
-    { rank=same; submit; validate; }
-    { rank=same; apply_config; use_config; }
-    { rank=same; end; return_host; return_none; }
-
-    configure -> get_config -> make_config;
-    make_config -> return_config;
-    return_config -> get_field_values -> modify [style=dashed];
-    modify -> submit;
-    submit -> validate;
-    validate -> apply_config;
-    apply_config -> use_config;
-    use_config -> return_none;
-    return_none -> return_host -> end [style=dashed];
-
-The *Configurable* API provides a uniform way for problem authors to declare
-parameters of their class that can be modified before (but not during) an
-optimization run. It also allows specifying certain variants for each
-parameter. Host applications can use this interface to present a configuration
-dialog to the user.
-
-Usage examples are shown in the API reference for `Configurable`.
-
-CustomOptimizerProvider
+Multi-Goal Environments
 -----------------------
 
-There are situations when it is desirable to use an optimization algorithm that
-is custom-tailored towards a specific optimization problem. It doesn't make
-sense to offer this algorithm for all problems, e.g. because its defaults are
-specially adjusted for only that problem.
-
-For this purpose, you can declare a *custom optimizer provider*. This provider
-is queried by host applications when putting together the list of available
-optimization algorithms. The optimizers that it returns are added to the list
-if the provider is appropriate for the selected optimization problem.
-
-There are two ways to declare a custom optimizer provider:
-
-1. Your optimization problem defines the
-   `~CustomOptimizerProvider.get_optimizers()` method of the
-   `CustomOptimizerProvider` abstract base class.
-
-2. You define an an :doc:`entry point <pkg:specifications/entry-points>` in the
-   group ``cernml.custom_optimizers`` that has the same `registry` name as the
-   optimization problem that it is appropriate for. This entry point should
-   either point at a subclass of `CustomOptimizerProvider` or at a bare
-   function that acts like `~CustomOptimizerProvider.get_optimizers()`.
-
-Examples for both approaches are shown below.
-
-.. tab:: Entry points (pyproject.toml)
-
-   .. code-block:: toml
-
-        # pyproject.toml
-
-        [project.entry-points.'cernml.envs']
-        MyOptimizationProblem-v1 = 'mypackage:MyEnv1'
-        MyOptimizationProblem-v2 = 'mypackage:MyEnv2'
-
-        [project.entry-points.'cernml.custom_optimizers']
-        MyOptimizationProblem-v1 = 'mypackage:ProviderClass'
-        MyOptimizationProblem-v2 = 'mypackage:provider_func'
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        from cernml import coi
-
-        class MyEnv1(coi.SingleOptimizable): ...
-
-        class MyEnv2(coi.OptEnv): ...
-
-        class ProviderClass(coi.CustomOptimizerProvider):
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v1": ...}
-
-        def provider_func():
-                return {"MyCustomOptimizer-v2": ...}
-
-.. tab:: Entry points (setup.cfg)
-
-   .. code-block:: cfg
-
-        # setup.cfg
-
-        [options.entry_points]
-        cernml.envs =
-            MyOptimizationProblem-v1 = mypackage:MyEnv1
-            MyOptimizationProblem-v2 = mypackage:MyEnv2
-        cernml.custom_optimizers =
-            MyOptimizationProblem-v1 = mypackage:ProviderClass
-            MyOptimizationProblem-v2 = mypackage:provider_func
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        from cernml import coi
-
-        class MyEnv1(coi.SingleOptimizable): ...
-
-        class MyEnv2(coi.OptEnv): ...
-
-        class ProviderClass(coi.CustomOptimizerProvider):
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v1": ...}
-
-        def provider_func():
-                return {"MyCustomOptimizer-v2": ...}
-
-.. tab:: Entry points (setup.py)
-
-   .. code-block:: py
-
-        # setup.py
-
-        from setuptools import setup
-
-        # ...
-
-        setup(
-            # ...,
-            entry_points={
-                "cernml.envs": [
-                    "MyOptimizationProblem-v1 = mypackage:MyEnv1",
-                    "MyOptimizationProblem-v2 = mypackage:MyEnv2",
-                ],
-                "cernml.custom_optimizers": [
-                    "MyOptimizationProblem-v1 = mypackage:ProviderClass",
-                    "MyOptimizationProblem-v2 = mypackage:provider_func",
-                ],
-            },
-        )
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        from cernml import coi
-
-        class MyEnv1(coi.SingleOptimizable): ...
-
-        class MyEnv2(coi.OptEnv): ...
-
-        class ProviderClass(coi.CustomOptimizerProvider):
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v1": ...}
-
-        def provider_func():
-                return {"MyCustomOptimizer-v2": ...}
-
-.. tab:: Inheritance
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        from cernml import coi
-
-        class MyEnv1(coi.SingleOptimizable, coi.CustomOptimizerProvider):
-
-            # ...
-
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v1": ...}
-
-        coi.register("MyOptimizationProblem-v1", entry_point=MyEnv1)
-
-        class MyEnv2(coi.OptEnv, coi.CustomOptimizerProvider):
-
-            # ...
-
-            @classmethod
-            def get_optimizers(cls):
-                return {"MyCustomOptimizer-v2": ...}
-
-        coi.register("MyOptimizationProblem-v2", entry_point=MyEnv2)
-
-CustomPolicyProvider
---------------------
-
-Similar to the custom optimizer providers, there are many cases in RL where an
-algorithm is only really applicable to a single environment. For this purpose,
-you can declare a *custom policy provider*. It works very similar to optimizer
-providers, but differs in some aspects of its API.
-
-There are two ways to declare a custom policy provider:
-
-1. Your environment problem defines the
-   `~CustomPolicyProvider.get_policy_names()` and
-   `~CustomPolicyProvider.load_policy()` methods of the `CustomPolicyProvider`
-   abstract base class.
-
-2. You define an an :doc:`entry point <pkg:specifications/entry-points>` in the
-   group ``cernml.custom_policies`` that has the same `registry` name as the
-   environment that it is appropriate for. This entry point should
-   point at a subclass of `CustomPolicyProvider` and that class should be
-   instantiable by calling it with no arguments.
-
-Examples for both approaches are shown below.
-
-.. tab:: Entry points (pyproject.toml)
-
-   .. code-block:: toml
-
-        # pyproject.toml
-
-        [project.entry-points.'cernml.envs']
-        MyEnv-v1 = 'mypackage:MyEnv1'
-
-        [project.entry-points.'cernml.custom_policies']
-        MyEnv-v1 = 'mypackage:ProviderClass'
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        import gym
-        from cernml import coi
-
-        class MyEnv1(gym.Env): ...
-
-        class ProviderClass(coi.CustomPolicyProvider):
-            @classmethod
-            def get_policy_names(cls):
-                return ["MyCustomPolicy-v1", ...]
-
-            def load_policy(self, name):
-                ...
-
-.. tab:: Entry points (setup.cfg)
-
-   .. code-block:: cfg
-
-        # setup.cfg
-
-        [options.entry_points]
-        cernml.envs =
-            MyEnv-v1 = mypackage:MyEnv1
-        cernml.custom_policies =
-            MyEnv-v1 = mypackage:ProviderClass
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        import gym
-        from cernml import coi
-
-        class MyEnv1(gym.Env): ...
-
-        class ProviderClass(coi.CustomPolicyProvider):
-            @classmethod
-            def get_policy_names(cls):
-                return ["MyCustomPolicy-v1", ...]
-
-            def load_policy(self, name):
-                ...
-
-.. tab:: Entry points (setup.py)
-
-   .. code-block:: py
-
-        # setup.py
-
-        from setuptools import setup
-
-        # ...
-
-        setup(
-            # ...,
-            entry_points={
-                "cernml.envs": [
-                    "MyEnv-v1 = mypackage:MyEnv1",
-                ],
-                "cernml.custom_policies": [
-                    "MyEnv-v1 = mypackage:ProviderClass",
-                ],
-            },
-        )
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        import gym
-        from cernml import coi
-
-        class MyEnv1(gym.Env): ...
-
-        class ProviderClass(coi.CustomPolicyProvider):
-            @classmethod
-            def get_policy_names(cls):
-                return ["MyCustomPolicy-v1", ...]
-
-            def load_policy(self, name):
-                ...
-
-.. tab:: Inheritance
-
-   .. code-block:: py
-
-        # mypackage/__init__.py
-
-        import gym
-        from cernml import coi
-
-        class MyEnv1(gym.Env, coi.CustomPolicyProvider):
-
-            # ...
-
-            @classmethod
-            def get_policy_names(cls):
-                return ["MyCustomPolicy-v1", ...]
-
-            def load_policy(self, name):
-                ...
-
-        coi.register("MyEnv-v1", entry_point=MyEnv1)
-
-GoalEnv
--------
-
 .. digraph:: inheritance_diagram
-    :caption: Fig. 2: Inheritance diagram of multi-goal environments
+    :caption: Fig. 2: Inheritance diagram of multi-goal environments.
 
     rankdir = "BT";
     bgcolor = "#00000000";
@@ -395,7 +29,6 @@ GoalEnv
     problem[shape=rectangle, label=<cernml.coi.<b>Problem</b>>];
     sopt[shape=rectangle, label=<cernml.coi.<b>SingleOptimizable</b>>];
     env[shape=rectangle, label=<gymnasium.<b>Env</b>>];
-    optenv[shape=rectangle, label=<cernml.coi.<b>OptEnv</b>>];
 
     node[color=black, fontcolor=black];
     goalenv[label=<
@@ -403,27 +36,46 @@ GoalEnv
             <tr><td>gymnasium_robotics.<b>GoalEnv</b></td></tr>
             <tr>
                 <td>compute_reward(<i>achieved</i>: Obs, <i>desired</i
-                >: Obs, <i>info</i>: dict) → float</td>
+                >: Obs, <i>info</i>: Dict) → float<br
+                />compute_terminated(<i>achieved</i>: Obs, <i>desired</i
+                >: Obs, <i>info</i>: Dict) → float<br
+                />compute_truncated(<i>achieved</i>: Obs, <i>desired</i
+                >: Obs, <i>info</i>: Dict) → float</td>
             </tr>
         </table>
     >];
 
-    optgoalenv[shape=rectangle, label=<cernml.coi.<b>OptGoalEnv</b>>];
+    {sopt env} -> problem;
+    goalenv -> env;
 
-    optenv -> sopt -> problem;
-    optenv -> env -> problem;
-    optgoalenv -> goalenv -> env;
-    optgoalenv -> sopt;
+In older versions of :doc:`Gymnasium <gym:README>`, the ``GoalEnv`` interface
+was provided as an API for multi-goal RL. This class has since moved to the
+:doc:`gymnasium-robotics <gymrob:README>` package. For backwards compatibility,
+the class is still provided by this package under the name
+`cernml.coi.GoalEnv`. If the gymnasium-robotics package is installed, its
+implementation is re-exported directly. If not, an implementation is provided
+by this package itself.
 
-Gymnasium provides `GoalEnv` as a specialization of `Env`. To accommodate it,
-this package also provides `OptGoalEnv` as a similar abstract base class for
-everything that inherits both from `SingleOptimizable` and from `GoalEnv`.
+`GoalEnv` is a subclass of `Env` that extends the interface as follows:
 
-SeparableEnv
-------------
+- The *observation space* is required to always be a `~gymnasium.spaces.Dict`
+  space with at least the keys ``"observation"``, ``"achieved_goal"`` and
+  ``"desired_goal"``.
+
+- the :func:`gymnasium.Env.step()` method is expected to calculate the return
+  values *reward*, *terminated* and *truncated* through helper functions
+  :func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`,
+  :func:`~gymnasium_robotics.core.GoalEnv.compute_terminated()` and
+  :func:`~gymnasium_robotics.core.GoalEnv.compute_truncated()`. Suitable RL
+  algorithms may use these functions to recalculate these values with different
+  goal arguments.
+
+Fully Separable Environments
+----------------------------
 
 .. digraph:: inheritance_diagram
-    :caption: Fig. 3: Inheritance diagram of the separable-environment interfaces
+    :caption: Fig. 3: Inheritance diagram of the separable-environment
+        interfaces.
 
     rankdir = "BT";
     bgcolor = "#00000000";
@@ -431,12 +83,18 @@ SeparableEnv
     edge [style=dashed];
 
     node[color=gray, fontcolor=gray];
+    problem[shape=rectangle, label=<cernml.coi.<b>Problem</b>>];
+    sopt[shape=rectangle, label=<cernml.coi.<b>SingleOptimizable</b>>];
     env[shape=rectangle, label=<gymnasium.<b>Env</b>>];
     goalenv[label=<
         <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
-            <tr><td>gymnasium.<b>GoalEnv</b></td></tr>
+            <tr><td>gymnasium_robotics.<b>GoalEnv</b></td></tr>
             <tr>
                 <td>compute_reward(<i>achieved</i>: Obs, <i>desired</i
+                >: Obs, <i>info</i>: Dict) → float<br
+                />compute_terminated(<i>achieved</i>: Obs, <i>desired</i
+                >: Obs, <i>info</i>: Dict) → float<br
+                />compute_truncated(<i>achieved</i>: Obs, <i>desired</i
                 >: Obs, <i>info</i>: Dict) → float</td>
             </tr>
         </table>
@@ -451,8 +109,10 @@ SeparableEnv
                 >: Dict) → float<br
                 />compute_reward(<i>achieved</i>: Obs, <i>desired</i
                 >: None, <i>info</i>: Dict) → float<br
-                />compute_done(<i>achieved</i>: Obs, <i>reward</i
-                >: float, <i>info</i>: Dict) → float}</td>
+                />compute_terminated(<i>achieved</i>: Obs, <i>reward</i
+                >: float, <i>info</i>: Dict) → float<br
+                />compute_truncated(<i>achieved</i>: Obs, <i>reward</i
+                >: float, <i>info</i>: Dict) → float</td>
             </tr>
         </table>
     >];
@@ -461,13 +121,12 @@ SeparableEnv
             <tr><td>cernml.coi.<b>SeparableGoalEnv</b></td></tr>
             <tr>
                 <td>compute_observation(<i>action</i>: Action, <i>info</i
-                >: Dict) → float<br
-                />compute_done(<i>achieved</i>: Obs, <i>reward</i
-                >: float, <i>info</i>: Dict) → float</td>
+                >: Dict) → float</td>
             </tr>
         </table>
     >];
 
+    {sopt env} -> problem;
     sepenv -> env;
     sepgoalenv -> goalenv -> env;
 
@@ -484,17 +143,146 @@ of four new abstract methods: `~SeparableEnv.compute_observation()`,
 `~SeparableEnv.compute_reward()`, `~SeparableEnv.compute_terminated()` and
 `~SeparableEnv.compute_truncated()`.
 
-Similarly, `SeparableGoalEnv` adds `~SeparableGoalEnv.compute_observation()`,
-in addition to the already existing
-:func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`,
-:func:`~gymnasium_robotics.core.GoalEnv.compute_terminated()` and
-:func:`~gymnasium_robotics.core.GoalEnv.compute_truncated()`.
+Similarly, `SeparableGoalEnv` adds `~SeparableGoalEnv.compute_observation()` to
+the methods already defined by `GoalEnv`. It also provides a default
+implementation of `~SeparableGoalEnv.step()`.
 
-One quirk of this interface is that `~SeparableEnv.compute_reward()` takes
-a dummy parameter *desired* that must always be None. This is for compatibility
-with `GoalEnv`, ensuring that both methods have the same signature. This makes
-it easier to write generic code that can handle both interfaces equally well.
+The main distinguishing property between the two interfaces is that
+`SeparableGoalEnv` still requires the observation space to adhere to the
+`GoalEnv` requirements; `SeparableEnv` has no such restrictions.
 
-In an analogous manner to `OptEnv`, convenience base classes exist that combine
-each of the separable interfaces with `SingleOptimizable`. They are
-`SeparableOptEnv`, and `SeparableOptGoalEnv`.
+One quirk of the `SeparableEnv` interface is that
+`~SeparableEnv.compute_reward()` takes a dummy parameter *desired* that must
+always be None. This is for compatibility with `GoalEnv`, ensuring that both
+methods have the same signature. This makes it easier to write generic code
+that can handle both interfaces equally well.
+
+Intersection Interfaces
+-----------------------
+
+.. seealso::
+
+    :doc:`/api/typeguards`
+        API reference for functions that let you test whether a given object
+        implements an interface or not.
+
+.. digraph:: inheritance_diagram
+    :caption: Fig. 4: Inheritance diagram of intersection interfaces.
+
+    rankdir = "BT";
+    bgcolor = "#00000000";
+    node [shape=plaintext, fontname="Open Sans", style=filled, fillcolor="white"];
+    edge [style=dashed];
+
+    node[color=gray, fontcolor=gray, shape=rectangle];
+    problem[label=<cernml.coi.<b>Problem</b>>];
+
+    subgraph cluster_base {
+        style=invis;
+        sopt[label=<cernml.coi.<b>SingleOptimizable</b>>];
+        env[label=<gymnasium.<b>Env</b>>];
+    }
+
+    goalenv[label=<gynasium_robotics.<b>GoalEnv</b>>];
+    sepenv[label=<cernml.coi.<b>SeparableEnv</b>>];
+    sepgoalenv[label=<cernml.coi.<b>SeparableGoalEnv</b>>];
+
+    node[color=black, fontcolor=black];
+    optenv[label=<cernml.coi.<b>OptEnv</b>>];
+    optgoalenv[label=<cernml.coi.<b>OptGoalEnv</b>>];
+    sepoptenv[label=<cernml.coi.<b>SeparableOptEnv</b>>];
+    sepoptgoalenv[label=<cernml.coi.<b>SeparableOptGoalEnv</b>>];
+
+    {sopt env} -> problem;
+    {optenv goalenv sepenv} -> env;
+    {optgoalenv sepgoalenv} -> goalenv;
+    sepoptenv -> sepenv;
+    sepoptgoalenv -> sepgoalenv;
+
+    {optenv optgoalenv sepoptenv sepoptgoalenv} -> sopt;
+
+If you want to either implement multiple of :doc:`the core classes of this
+package <core>`, or you want to require that a problem implement multiple of
+them, this package provides a number of interfaces that represent
+*intersections* of them:
+
+- `OptEnv` is an intersection of `SingleOptimizable` and `Env`;
+- `OptGoalEnv` is an intersection of `SingleOptimizable` and `GoalEnv`;
+- `SeparableOptEnv` is an intersection of `SingleOptimizable` and
+  `SeparableEnv`;
+- `SeparableOptGoalEnv` is an intersection of `SingleOptimizable` and
+  `SeparableGoalEnv`.
+
+Taking for example `OptEnv`, you can shorten your line of base classes:
+
+.. code-block:: python
+
+    >>> from gymnasium.spaces import Box
+    >>> from gymnasium import Env
+    >>> from cernml import coi
+    ...
+    >>> class Both(coi.OptEnv):
+    ...     def __init__(self, render_mode=None):
+    ...         super().__init__(render_mode)
+    ...         self.optimization_space = Box(-1, 1)
+    ...         self.observation_space = Box(-1, 1)
+    ...         self.action_space = Box(-1, 1)
+    ...
+    ...     def get_initial_params(self): ...
+    ...     def compute_single_objective(self, params): ...
+    ...     def reset(self, *, seed=None, options=None): ...
+    ...     def step(self, action): ...
+    ...
+    >>> env = Both()
+    >>> isinstance(env, coi.SingleOptimizable)
+    True
+    >>> isinstance(env, Env)
+    True
+    >>> isinstance(env, coi.OptEnv)
+    True
+
+Vice versa, you can use it to test if a class implements both
+`SingleOptimizable` and `Env`, *even if* it doesn't subclass `OptEnv` itself:
+
+.. code-block:: python
+
+    >>> class Indirect(Env, coi.SingleOptimizable):
+    ...     def __init__(self, render_mode=None):
+    ...         super().__init__(render_mode)
+    ...         self.optimization_space = Box(-1, 1)
+    ...         self.observation_space = Box(-1, 1)
+    ...         self.action_space = Box(-1, 1)
+    ...
+    ...     def get_initial_params(self): ...
+    ...
+    ...     def compute_single_objective(self, params): ...
+    ...
+    >>> env = Indirect()
+    >>> isinstance(env, coi.SingleOptimizable)
+    True
+    >>> isinstance(env, Env)
+    True
+    >>> isinstance(env, coi.OptEnv)
+    True
+
+The intersection classes come with a few limitations that can't be avoided:
+
+- In order to be recognized, a class *must* inherit from `Env` or one its
+  subclasses introduced in this section. Just defining the same set of methods
+  is not enough.
+
+- Static type checkers like MyPy_ generally don't recognize the
+  intersections as `protocols <Protocol>`.
+
+- Checks via :func:`issubclass()` only work if you either:
+
+  1. inherit from one of the intersections,
+  2. define all three spaces (`~SingleOptimizable.optimization_space`,
+     `~gymnasium.Env.observation_space`, `~gymnasium.Env.action_space`) at
+     class scope (even if those definitions are just dummies),
+  3. define all three spaces via `property`.
+
+  By contrast, :func:`isinstance()` always works, even if the spaces are only
+  defined in :meth:`~object.__init__()`.
+
+.. _MyPy: https://mypy.readthedocs.io/

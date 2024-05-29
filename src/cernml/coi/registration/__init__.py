@@ -21,22 +21,53 @@ users to instantiate them in a convenient and uniform manner:
     ...
     >>> env = coi.make("MyOptProblem-v1")
 
-See the page :doc:`/guide/registry` for a more detailed description of
-the concepts.
+See the page :doc:`/guide/registration` for a more detailed description
+of the concepts.
 
 This mechanism is largely copied from the :doc:`gym:api/registry`
 mechanism of Gymnasium. Adjustments have been made here and there to
-accommodate `~cernml.coi.Problem` and its non-Env subclasses. Two
-notable changes are:
+accommodate `~cernml.coi.Problem` and its non-Env subclasses.
 
-- All warnings issued use the `stacklevel <std:warnings.warn>` argument
-  to trace themselves back to the line that calls `~.coi.register()` or
-  `~.coi.make()`. This makes it easier to find their source.
-- Plugins using the :doc:`entrypoints <pkg:specifications/entry-points>`
-  mechanism are not registered immediately upon import of this package.
-  Instead, they're only loaded the first time that something from their
-  namespace is requested.
-- The entrypoint used by this registry is ``cernml.envs``.
+**General changes:**
+    - Compatibility with Python 3.8 has been dropped.
+
+    - This registry uses the entry point ``cernml.envs`` to load
+      plugins.
+
+    - Plugins using the :doc:`entrypoints
+      <pkg:specifications/entry-points>` mechanism are not registered
+      immediately upon import of this package. Instead, they're only
+      loaded the first time that something from their namespace is
+      requested.
+
+    - All warnings issued use the `stacklevel <std:warnings.warn>`
+      argument to trace themselves back to the line that calls
+      `~.coi.register()` or `~.coi.make()`. This makes it easier to find
+      their source.
+
+    - Instead of ``gymnasium.Error``, a dedicated type hierarchy is used
+      for both exceptions and warnings. All types are exposed in the
+      `cernml.coi.registration.errors` module.
+
+    - General code cleanup.
+
+**Specific changes** to `~cernml.coi.make()`:
+    - `isinstance` checks of *env_spec* and *env_creator.metadata* have
+      been removed or adjusted.
+
+    - The parameter *order_enforce* has been added with the same
+      override semantics as *disable_env_checker*.
+
+    - A warning about the deprecated `~cernml.coi.Problem.metadata` key
+      ``"render.modes"`` has been added.
+
+    - Wrappers are only added if the wrapped environment is actually
+      a `gymnasium.Env`, to keep `~cernml.coi.SingleOptimizable` and
+      others safe.
+
+    - The *stacklevel* parameter of :func:`warnings.warn()` is threaded
+      through the functions so that any warning is attributed to the
+      code that called into COI (and not COI itself).
 """
 
 from . import errors

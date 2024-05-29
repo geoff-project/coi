@@ -98,10 +98,10 @@ module. It also documents the behavior of several internal items of the
         cases and has one fallback:
 
         1. For `Protocol` itself, the default instance check is executed.
-        2. For concrete subclasses, it defers to the instance check of
-           `~abc.ABCMeta` [#typeclass]_.
-        3. For (runtime) protocols, it first runs the instance check of
-           `~abc.ABCMeta` [#typeclass]_.
+        2. For concrete subclasses, it defers to :ref:`api/machinery:the
+           instance check of ABCMeta`.
+        3. For (runtime) protocols, it first runs :ref:`api/machinery:the
+           instance check of ABCMeta`.
         4. Only if that fails does it compare attributes between the protocol
            and the instance.
 
@@ -217,27 +217,143 @@ module. It also documents the behavior of several internal items of the
 
 .. autoclass:: _AlwaysContainsProtocol
 
+The Instance Check of ABCMeta
+-----------------------------
+
+The instance check of `~abc.ABCMeta` (and, in fact, the built-in
+:func:`isinstance()` check as well) tests whether *at least one* of
+:samp:`type({obj})` *and* :samp:`{obj}.__class__` is a subclass of the ABC,
+since the two may be different. This is e.g. the case for `Mock
+<unittest.mock.Mock.__class__>`.
+
+.. code-block:: python
+
+    >>> class Bystander:
+    ...     pass
+    ...
+    >>> class Mocker:
+    ...     __class__ = Bystander
+    ...
+    >>> mocker = Mocker()
+    >>> type(mocker)
+    <class '__main__.Mocker'>
+    >>> mocker.__class__
+    <class '__main__.Bystander'>
+    >>> isinstance(mocker, Mocker)
+    True
+    >>> isinstance(mocker, Bystander)
+    True
+
+The subclass check of `~abc.ABCMeta` (which the instance check uses) is
+recursive: Whenever you ask whether ``A`` is a subclass of ``B``, the check
+asks ``B`` **and all subclasses** of ``B``. These subclasses include real
+subclasses (via :meth:`class.__subclasses__()`) and virtual subclasses (via
+:meth:`~abc.ABCMeta.register()`). This means that any particular magic
+implemented in this package must be careful not to cause infinite recursion
+when running subclass checks within their own hooks.
+
+The Subclass Hook of the Core Classes
+-------------------------------------
+
+The :doc:`classes` (which are :term:`ABCs <abstract base class>`, but not
+`Protocol`\ s) also define a :meth:`~abc.ABCMeta.__subclasshook__()`. This hook
+only applies to these classes themselves and not to any subclasses.
+
+The hook of each ABC runs the subclass check of its corresponding
+:doc:`protocol <protocols>` and reports True on success. That means that
+anything is a subclass of one of the protocols is also a subclass of the ABC:
+
+.. code-block:: python
+
+    >>> from cernml import coi
+    ...
+    >>> class Sub(coi.protocols.Problem):
+    ...     pass
+    ...
+    >>> issubclass(Sub, coi.Problem)
+    True
+
+The reason for this behavior is that previous versions of this package used to
+suggest :samp:`isinstance({obj}, {ABC})` as check whether an object implemented
+one of the protocols, whereas the :doc:`protocol classes <protocols>` didn't
+exist yet. This preserves the old semantics while giving people time to
+transition to the :doc:`typeguards`.
+
+There is one more trick to the hooks described here: They not only guard
+against being invoked by subclasses, but also against being used to check their
+respective protocol class:
+
+.. code-block:: python
+
+   >>> coi.Problem.__subclasshook__(coi.protocols.Problem)
+   NotImplemented
+   >>> issubclass(coi.protocols.Problem, coi.Problem)
+   False
+
+`~abc.ABCMeta` runs this check when we register the ABCs as subclasses of the
+protocols to prevent cyclic inheritance. But the check happens when the ABCs
+themselves aren't bound to their names yet, so we must be careful to only use
+their names after making this check.
+
+The Implementation of Intersection Protocols
+--------------------------------------------
+
+Normally, an `intersection protocol`_ is simply a protocol that inherits from
+two or more other protocols:
+
+    >>> from cernml.coi._machinery import is_protocol
+    >>> from collections.abc import Container, Sized
+    >>> from typing import Protocol, runtime_checkable
+    ...
+    >>> @runtime_checkable
+    ... class SizedContainer(Sized, Container, Protocol):
+    ...     pass
+    ...
+    >>> class Empty:
+    ...     def __contains__(self, x):
+    ...         return False
+    ...
+    ...     def __len__(self):
+    ...         return 0
+    ...
+    >>> is_protocol(SizedContainer)
+    True
+    >>> issubclass(Empty, SizedContainer)
+    True
+
+Our own :doc:`intersections` cannot rely on this trivial behavior. Since they
+subclass `~gymnasium.Env`, which isn't a `Protocol`, they are not proper
+protocols themselves (and static type checkers recognize this).
+
+To circumvent this issue, they manually mark themselves as runtime protocols,
+setting both `~AttrCheckProtocol._is_protocol` and
+`~AttrCheckProtocol._is_runtime_protocol`. They also call
+`non_callable_proto_members()` once to set
+`~AttrCheckProtocol.__non_callable_proto_members__`. On Python 3.12+, this
+attribute would usually be setby `runtime_checkable`. While we generally use
+this attribute lazily, there is one location in `_ProtocolMeta` that expects
+the attribute to exist on Python 3.12+.
+
+Finally, the intersection protocols also override
+`AttrCheckProtocol.__subclasshook__()`. In the override, they check whether
+their respective `~gymnasium.Env` subclass appears in the subclass's
+:term:`MRO` and return a flat False if not. Otherwise, they simply forward to
+their parent.
+
+Without this additional check, we would treat the underlying environment class
+as if it were a protocol. Consequently, the intersections
+`.SeparableOptGoalEnv` and `.SeparableOptEnv` would be identical because they
+expect exactly the same set of attributes and methods. However, the semantics
+of `GoalEnv.compute_reward() <gymnasium_robotics.core.GoalEnv.compute_reward>`
+and `SeparableEnv.compute_reward() <cernml.coi.SeparableEnv.compute_reward>`
+differs considerably and they expect different arguments. Thus, there's still
+value in distinguishing the two. (And this is also what previous versions of
+this package did.)
+
+.. _intersection protocol:
+    https://typing.readthedocs.io/en/latest/spec/protocol.html
+    #unions-and-intersections-of-protocols
+
 .. [#rtp]
    Runtime protocols with data members are fine for :func:`isinstance()`
    checks but not for :func:`issubclass` checks.
-
-.. [#typeclass]
-   The instance check of `~abc.ABCMeta` (and, in fact, the built-in
-   :func:`isinstance()` check as well) tests whether *at least one* of
-   :samp:`type({obj})` *and* :samp:`{obj}.__class__` is a subclass of the ABC,
-   since the two may be different. This is e.g. the case for `Mock
-   <unittest.mock.Mock.__class__>`.
-
-   .. code-block:: python
-
-        >>> class Bystander:
-        ...     pass
-        ...
-        >>> class Mocker:
-        ...     __class__ = Bystander
-        ...
-        >>> mocker = Mocker()
-        >>> assert type(mocker) is Mocker
-        >>> assert mocker.__class__ is Bystander
-        >>> assert isinstance(mocker, Mocker)
-        >>> assert isinstance(mocker, Bystander)

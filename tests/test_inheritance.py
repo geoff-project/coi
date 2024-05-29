@@ -12,7 +12,7 @@ from types import new_class
 
 import pytest
 from gymnasium import Env
-from gymnasium.spaces import Box
+from gymnasium.spaces import Box, Dict
 
 from cernml import coi
 
@@ -23,6 +23,8 @@ class ConcreteEnv(Env):
 
 class ConcreteOptEnv(coi.OptEnv):
     optimization_space = Box(-1, 1)
+    action_space = Box(-1, 1)
+    observation_space = Box(-1, 1)
 
 
 class ConcreteGoalEnv(coi.GoalEnv):
@@ -31,6 +33,10 @@ class ConcreteGoalEnv(coi.GoalEnv):
 
 class ConcreteOptGoalEnv(coi.OptGoalEnv):
     optimization_space = Box(-1, 1)
+    action_space = Box(-1, 1)
+    observation_space = Dict(
+        observation=Box(-1, 1), achieved_goal=Box(-1, 1), observed_goal=Box(-1, 1)
+    )
 
 
 class ConcreteSeparableEnv(coi.SeparableEnv):
@@ -39,14 +45,24 @@ class ConcreteSeparableEnv(coi.SeparableEnv):
 
 class ConcreteSeparableOptEnv(coi.SeparableOptEnv):
     optimization_space = Box(-1, 1)
+    action_space = Box(-1, 1)
+    observation_space = Box(-1, 1)
 
 
 class ConcreteSeparableGoalEnv(coi.SeparableGoalEnv):
-    pass
+    optimization_space = Box(-1, 1)
+    action_space = Box(-1, 1)
+    observation_space = Dict(
+        observation=Box(-1, 1), achieved_goal=Box(-1, 1), observed_goal=Box(-1, 1)
+    )
 
 
 class ConcreteSeparableOptGoalEnv(coi.SeparableOptGoalEnv):
     optimization_space = Box(-1, 1)
+    action_space = Box(-1, 1)
+    observation_space = Dict(
+        observation=Box(-1, 1), achieved_goal=Box(-1, 1), observed_goal=Box(-1, 1)
+    )
 
 
 @pytest.mark.parametrize(
@@ -58,19 +74,74 @@ class ConcreteSeparableOptGoalEnv(coi.SeparableOptGoalEnv):
         (coi.SeparableOptGoalEnv, coi.SeparableGoalEnv),
     ],
 )
-def test_is_abstract_base_class(abc: type, env_class: type[Env]) -> None:
+def test_intersections_without_inheritance(abc: type, env_class: type[Env]) -> None:
     def body(ns: dict[str, t.Any]) -> None:
         ns["optimization_space"] = None
+        ns["action_space"] = None
+        ns["observation_space"] = None
+        ns["get_initial_params"] = ...
+        ns["compute_single_objective"] = ...
 
     mock = new_class(
         "NoDirectInheritance", bases=(coi.SingleOptimizable, env_class), exec_body=body
     )
+    assert issubclass(mock, coi.SingleOptimizable)
     assert issubclass(mock, env_class)
     assert issubclass(mock, abc)
+    obj = mock()
+    assert isinstance(obj, coi.SingleOptimizable)
+    assert isinstance(obj, env_class)
+    assert isinstance(obj, abc)
+
+
+@pytest.mark.parametrize(
+    ("abc", "env_class"),
+    [
+        (coi.OptEnv, Env),
+        (coi.OptGoalEnv, coi.GoalEnv),
+        (coi.SeparableOptEnv, coi.SeparableEnv),
+        (coi.SeparableOptGoalEnv, coi.SeparableGoalEnv),
+    ],
+)
+def test_bad_intersections_without_inheritance(abc: type, env_class: type[Env]) -> None:
+    def body(ns: dict[str, t.Any]) -> None:
+        def __init__(self: t.Any) -> None:
+            self.optimization_space = None
+            self.observation_space = None
+            self.action_space = None
+
+        ns["__init__"] = __init__
+        ns["get_initial_params"] = ...
+        ns["compute_single_objective"] = ...
+
+    mock = new_class(
+        "NoDirectInheritance", bases=(coi.SingleOptimizable, env_class), exec_body=body
+    )
+    assert issubclass(mock, coi.SingleOptimizable)
+    assert issubclass(mock, env_class)
+    assert not issubclass(mock, abc)
+    obj = mock()
+    assert isinstance(obj, coi.SingleOptimizable)
+    assert isinstance(obj, env_class)
+    assert isinstance(obj, abc)
 
 
 def test_env_problem() -> None:
     assert coi.is_problem_class(Env)
+
+
+@pytest.mark.parametrize(
+    ("abc", "protocol"),
+    [
+        (coi.Problem, coi.protocols.Problem),
+        (coi.SingleOptimizable, coi.protocols.SingleOptimizable),
+        (coi.FunctionOptimizable, coi.protocols.FunctionOptimizable),
+    ],
+)
+def test_abcs_work_like_protocols(abc: type, protocol: type) -> None:
+    subclasses = [ConcreteEnv, ConcreteOptEnv]
+    for subclass in subclasses:
+        assert issubclass(subclass, abc) == issubclass(subclass, protocol)
 
 
 @pytest.mark.parametrize(
@@ -148,7 +219,7 @@ def test_env_superclasses(subclass: type, superclasses: Sequence[type]) -> None:
         coi.SeparableOptGoalEnv,
     ],
 )
-def test_failures(cls: type) -> None:
+def test_int_not_subclass(cls: type) -> None:
     assert not issubclass(int, cls)
 
 
@@ -171,3 +242,25 @@ def test_subclasses_arent_magic(cls: type[coi.Problem]) -> None:
     for base in bases:
         assert issubclass(ImplementsProtocol, base)
     assert not issubclass(ImplementsProtocol, Subclass)
+
+
+@pytest.mark.parametrize(
+    "abc",
+    [
+        coi.Problem,
+        coi.SingleOptimizable,
+        coi.FunctionOptimizable,
+        coi.protocols.SingleOptimizable,
+        coi.protocols.FunctionOptimizable,
+        coi.Env,
+        coi.GoalEnv,
+        coi.SeparableEnv,
+        coi.SeparableGoalEnv,
+        coi.OptEnv,
+        coi.OptGoalEnv,
+        coi.SeparableOptEnv,
+        coi.SeparableOptGoalEnv,
+    ],
+)
+def test_inverse(abc: type) -> None:
+    assert not issubclass(coi.protocols.Problem, abc)

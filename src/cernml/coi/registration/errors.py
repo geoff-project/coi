@@ -30,7 +30,6 @@ __all__ = (
     "EnvOutOfDateWarning",
     "EnvSpecExistsWarning",
     "EnvUpgradedWarning",
-    "EnvUpgradedWarning",
     "GymDeprecationWarning",
     "HumanRenderingError",
     "HumanRenderingWarning",

@@ -120,7 +120,7 @@ def test_proto_classmethods_fails(monkeypatch: pytest.MonkeyPatch) -> None:
     cls = Mock(name="cls", __proto_classmethods__=None)
     get_dict = Mock(name="get_dict")
     get_dict.return_value.get.side_effect = get
-    monkeypatch.setattr(_machinery, "_get_dunder_dict_of_class", get_dict)
+    monkeypatch.setattr(_machinery, "get_dunder_dict_of_class", get_dict)
     with pytest.raises(TypeError, match="^Failed to .* is a classmethod member$"):
         _machinery.proto_classmethods(cls)
 

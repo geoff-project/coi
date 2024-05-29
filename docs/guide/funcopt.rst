@@ -42,7 +42,6 @@ Optimizing Points on an LSA Function
             </tr>
             <tr>
                 <td><i>optimization_space</i><br
-                /><i>objective_range</i><br
                 /><i>constraints</i></td>
             </tr>
         </table>
@@ -57,9 +56,6 @@ Optimizing Points on an LSA Function
                 />compute_function_objective(<i>p</i>: Params, <i>t</i
                 >: float) → float<br
                 />get_optimization_space(<i>t</i>: float) → Space</td>
-            </tr>
-            <tr>
-                <td><i>objective_range</i><br/><i>constraints</i></td>
             </tr>
         </table>
     >];

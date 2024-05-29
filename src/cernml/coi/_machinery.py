@@ -40,12 +40,17 @@ been implemented.
     their respective superclasses to determine whether a given class
     subclasses them.
 
-The first section documents the :ref:`Classes Provided by This Module`
-as a public API of this private module. The following section describes
-the :ref:`Attribute-Matching Logic` in detail. After this, several
-:ref:`Compatibility Shims` are described that ensure that this module
-works on all Python versions starting from 3.9. Finally, :ref:`Utilities
-and Dark Magic` documents a few particularly obscure hacks.
+The first section documents the :ref:`api/machinery:Classes Provided by
+This Module` as a public API of this private module. The following
+section describes the :ref:`api/machinery:Attribute-Matching Logic` in
+detail. After this, several :ref:`api/machinery:Compatibility Shims` are
+described that ensure that this module works on all Python versions
+starting from 3.9. Following this, :ref:`api/machinery:Utilities and
+Dark Magic` documents a few particularly obscure hacks. Finally, we
+conclude with notes on various tricky implementation details surrounding
+:ref:`api/machinery:The Instance Check of ABCMeta`,
+:ref:`api/machinery:The Subclass Hook of the Core Classes`, and
+:ref:`api/machinery:The Implementation of Intersection Protocols`.
 """
 
 import functools
@@ -58,13 +63,26 @@ if t.TYPE_CHECKING:
     from typing_extensions import TypeGuard
 
 __all__ = (
-    "AttrCheckProtocolMeta",
     "AttrCheckProtocol",
+    "AttrCheckProtocolMeta",
+    "attr_in_annotations",
+    "attrs_match",
+    "find_mismatched_attr",
+    "get_class_annotations",
+    "get_class_annotations_impl",
+    "get_dunder_dict_of_class",
+    "get_static_mro",
+    "is_protocol",
+    "lazy_load_getattr_static",
+    "non_callable_proto_members",
+    "proto_classmethods",
+    "proto_hook",
+    "protocol_attrs",
 )
 
 
-_static_mro: t.Callable[[type], tuple[type, ...]] = vars(type)["__mro__"].__get__
-_get_dunder_dict_of_class: t.Callable[[type], dict[str, object]] = vars(type)[
+get_static_mro: t.Callable[[type], tuple[type, ...]] = vars(type)["__mro__"].__get__
+get_dunder_dict_of_class: t.Callable[[type], dict[str, object]] = vars(type)[
     "__dict__"
 ].__get__
 
@@ -94,7 +112,7 @@ def get_class_annotations_impl(obj: type, /) -> dict[str, object]:
     only used on Python 3.9. Under this name, however, it is available
     on all versions. This is for documentation and testing purposes.
     """
-    obj_dict = _get_dunder_dict_of_class(obj)
+    obj_dict = get_dunder_dict_of_class(obj)
     ann = obj_dict.get("__annotations__", None)
     if isinstance(ann, GetSetDescriptorType):
         # This is the case e.g. when `obj` is `types.FunctionType`.
@@ -198,7 +216,7 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
                         f"not {bases.__class__.__name__}"
                     )
                 bases = _AlwaysContainsProtocol(bases)
-        namespace.setdefault("__subclasshook__", _proto_hook)
+        namespace.setdefault("__subclasshook__", proto_hook)
         return super().__new__(mcs, name, bases, namespace, **kwargs)
 
     def __init__(cls, *args: t.Any, **kwargs: t.Any) -> None:
@@ -247,17 +265,18 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
            only regards regular subclassing.
 
         2. If this gets called via a concrete class, we defer to
-           `~abc.ABCMeta` [#typeclass]_. We could defer to our direct
-           superclass `_ProtocolMeta` since it would lead to the same
-           result; however, we *must* skip it in the following case, so
-           we might as well maintain symmetry between both cases.
+           :ref:`api/machinery:the instance check of ABCMeta`. We could
+           defer to our direct superclass `_ProtocolMeta` since it would
+           lead to the same result; however, we *must* skip it in the
+           following case, so we might as well maintain symmetry between
+           both cases.
 
         3. If this wasn't called on `AttrCheckProtocol` itself nor on
            a concrete class, it must've been called on a protocol class.
-           Ask `~abc.ABCMeta` for its instance check. This covers
-           subclasses via inheritance and via
+           Run :ref:`api/machinery:the instance check of ABCMeta`. This
+           covers subclasses via inheritance and via
            :meth:`~abc.ABCMeta.register()`. Unless the result is cached,
-           this will run our `__subclasscheck__()` [#typeclass]_.
+           this will run our `__subclasscheck__()`.
 
         4. Only if that check fails do we check the attributes via
            `attrs_match()`. We want to do this last because it's the
@@ -319,10 +338,10 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
 
 
 @classmethod  # type: ignore[misc]
-def _proto_hook(cls: AttrCheckProtocolMeta, other: type) -> t.Any:
+def proto_hook(cls: AttrCheckProtocolMeta, other: type) -> t.Any:
     """The subclasshook for all attribute-checking protocols.
 
-    This is actually defined outside of the class as ``_proto_hook()``.
+    This is actually defined outside of the class as ``proto_hook()``.
     It is injected by `AttrCheckProtocolMeta.__new__()` and prevents
     `Protocol` from injecting its own `typing._proto_hook`.
 
@@ -369,7 +388,8 @@ def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
     `proto_classmethods()`), we only look it up on *obj* if *obj* is
     a type. If it isn't a type, we look it up on :samp:`type({obj})`. We
     *don't* use `~instance.__class__` because `type` is what is used in
-    the :term:`method resolution order` [#typeclass]_.
+    the :term:`method resolution order`. (See :ref:`api/machinery:the
+    instance check of ABCMeta`.)
 
     If the attribute is found on *obj*, further tests depend on the
     nature of the protocol member:
@@ -436,7 +456,7 @@ def attr_in_annotations(proto: AttrCheckProtocolMeta, attr: str) -> bool:
 
     This code is modified from Python 3.12 `typing._proto_hook()`.
     """
-    for base in _static_mro(proto):
+    for base in get_static_mro(proto):
         try:
             annotations = get_class_annotations(base)
         except AttributeError:
@@ -472,7 +492,7 @@ def non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
     # Don't use `getattr()` to avoid lookup in super classes.
     members = t.cast(
         t.Union[set[str], None],
-        _get_dunder_dict_of_class(cls).get("__non_callable_proto_members__"),
+        get_dunder_dict_of_class(cls).get("__non_callable_proto_members__"),
     )
     if members is None:
         members = set()
@@ -512,13 +532,13 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
     # Don't use `getattr()` to avoid lookup in super classes.
     members = t.cast(
         t.Union[set[str], None],
-        _get_dunder_dict_of_class(cls).get("__proto_classmethods__"),
+        get_dunder_dict_of_class(cls).get("__proto_classmethods__"),
     )
     if members is None:
         # Access the attributes via the class dictionary; access
         # via `getattr()` would bind them and give us bound-method
         # objects, not classmethod objects!
-        cvars = _get_dunder_dict_of_class(cls)
+        cvars = get_dunder_dict_of_class(cls)
         members = set()
         for attr in protocol_attrs(cls):
             try:
@@ -561,7 +581,7 @@ def protocol_attrs(cls: type) -> set[str]:
     # Don't use `getattr()` to avoid lookup in super classes.
     attrs = t.cast(
         t.Union[set[str], None],
-        _get_dunder_dict_of_class(cls).get("__protocol_attrs__"),
+        get_dunder_dict_of_class(cls).get("__protocol_attrs__"),
     )
     if attrs is not None:
         return attrs

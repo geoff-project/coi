@@ -167,15 +167,14 @@ definition: Instead of being its own independent class, it now subclasses the
 The interface **requires** the following information from us:
 
 - :ref:`metadata`
-- :ref:`the optimization space`
-- :ref:`the initial point *x₀*`
-- :ref:`the objective function`
+- :ref:`tutorials/implement-singleoptimizable:the optimization space`
+- :ref:`tutorials/implement-singleoptimizable:the initial point *x₀*`
+- :ref:`tutorials/implement-singleoptimizable:the objective function`
 
 and the following ones are **optional** (i.e. we'll get to them later):
 
-- :ref:`constraints`
-- :ref:`the objective range`
-- :ref:`custom rendering output`
+- :ref:`tutorials/implement-singleoptimizable:constraints`
+- :ref:`tutorials/implement-singleoptimizable:custom rendering output`
 
 The Metadata
 ^^^^^^^^^^^^
@@ -207,7 +206,8 @@ have conventional meaning. The full list is given :attr:`elsewhere
 
 ``render_modes``
     This must be present and it must be a collection of strings. We'll get to
-    the details :ref:`further down <custom rendering output>`, but this
+    the details :ref:`further down
+    <tutorials/implement-singleoptimizable:custom rendering output>`, but this
     declares the ways in which a user can visualize your problem. Because this
     list is empty right now, it means our problem can't be visualized at all.
     (We'll change this later.)
@@ -371,29 +371,8 @@ AWAKE itself. If we were able to, this class would already be usable.
     :alt: Screenshot of the generic optimization GUI with the beam-steering
         optimization problem loaded
 
-The Details (Optional)
-----------------------
-
-This section contains details on some portions of the interface that only a
-minority of authors will have to deal with. They are here for completeness'
-sake, but feel free to skip this part.
-
-The Objective Range
-^^^^^^^^^^^^^^^^^^^
-
-Similar to how the `~cernml.coi.SingleOptimizable.optimization_space` declares
-the range of possible inputs to the cost function,
-`~cernml.coi.SingleOptimizable.objective_range` declares the range of possible
-outputs. Because most optimizers are reasonably independent of the exact scale
-of the function they optimize, this range is not terribly useful.
-
-It has a default value ``(-inf, inf)``, which is always correct. If you want to
-narrow this down, be sure to pick the correct limits: the cost function is not
-allowed to return values outside of this range and `~cernml.coi.check()`
-verifies that this is true.
-
 Constraints
-^^^^^^^^^^^
+-----------
 
 Some optimization algorithms (such as COBYLA_) have a concept of *constraints*,
 i.e. linear or nonlinear functions whose value must be kept within certain

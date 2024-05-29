@@ -23,9 +23,8 @@ import typing as t
 from gymnasium import Env
 
 from ._custom_optimizer_provider import CustomOptimizerProvider
-from ._extra_envs import SeparableEnv
-from ._extra_goal_envs import SeparableGoalEnv
 from ._goalenv import GoalEnv
+from ._sepenv import SeparableEnv, SeparableGoalEnv
 from .configurable import Configurable
 from .protocols import FunctionOptimizable, Problem, SingleOptimizable
 

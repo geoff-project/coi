@@ -10,6 +10,17 @@ The Core API
 
 .. currentmodule:: cernml.coi
 
+This page describes the various pieces of the common optimization interfaces.
+You are invited to skip to a section that interests you, or to read the page
+top to bottom, at your leisure.
+
+Keep in mind that while these interfaces are the most important ones, there are
+also others that provide important features. See, for example,
+:doc:`configurable` and :doc:`custom_optimizers`.
+
+The Interface Hierarchy
+-----------------------
+
 .. digraph:: inheritance_diagram
     :caption: "Fig. 1: Inheritance diagram of the core interfaces"
 
@@ -40,11 +51,7 @@ The Core API
                 <td>get_initial_params(<i>seed</i>=None, <i>options</i>=None) → Params<br
                 />compute_single_objective(<i>p</i>: Params) → float</td>
             </tr>
-            <tr>
-                <td><i>optimization_space</i><br
-                /><i>objective_range</i><br
-                /><i>constraints</i></td>
-            </tr>
+            <tr><td><i>optimization_space</i></td></tr>
         </table>
     >];
 
@@ -57,8 +64,7 @@ The Core API
             </tr>
             <tr>
                 <td><i>action_space</i><br
-                /><i>observation_space</i><br
-                /><i>reward_range</i></td>
+                /><i>observation_space</i></td>
             </tr>
         </table>
     >];
@@ -84,75 +90,192 @@ implementing it is the same as implementing both of its bases. At the same
 time, every class that implements both base interfaces also implements
 `OptEnv`. A demonstration:
 
+    >>> import gymnasium
+    >>> from cernml import coi
+    ...
+    >>> class Indirect(coi.SingleOptimizable, gymnasium.Env):
+    ...     optimization_space = ...
+    ...     observation_space = ...
+    ...     action_space = ...
+    ...
+    >>> issubclass(Indirect, coi.OptEnv)
+    True
 
-.. code-block:: python
+Minimal Implementations
+-----------------------
 
-    import gymnasium as gym
-    from cernml import coi
+This section shows you the *absolute* bare minimum to write any optimization
+problem at all. They're intended to get your feet off the ground if you are new
+to this library. They are not interesting optimization problems. Anything
+non-trivial (e.g. communicating with an external machine) will require some
+additional steps. See :doc:`/tutorials/implement-singleoptimizable` for a more
+comprehensive tutorial.
 
-    class Indirect(coi.SingleOptimizable, gym.Env):
-        ...
+Single-Objective Optimization Problems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    assert issubclass(Indirect, coi.OptEnv)
+For a minimal working example, you should inherit from
+`cernml.coi.SingleOptimizable` to have it fill in as many defaults as possible.
+With it as a superclass, you only have to fill in three missing pieces:
 
+1. `~SingleOptimizable.get_initial_params()` to give the *initial point* of an
+   optimization;
+2. `~SingleOptimizable.compute_single_objective()` as the *objective function*
+   to be minimized [#min]_;
+3. `~SingleOptimizable.optimization_space` to specify the problem's *domain*,
+   i.e. valid inputs to the objective function. See also
+   :ref:`guide/core:spaces` for more information.
 
-Metadata
---------
+.. [#min] The objective function is also called *cost function* or *loss
+   function*. If you have a maximization problem, you can always convert it to
+   a minimization problem by flipping the sign of the figure of interest.
 
-Every optimization problem should have a class attribute called
-`Problem.metadata`, which is a dict with string keys. The dict must be defined
-at the class level and immutable. It communicates fundamental properties of the
-class and how a host application can use it.
+You also have to *register* your class so that the central function
+`cernml.coi.make()` can instantiate it. The page on :doc:`registration` has
+more information.
 
-The following keys are defined and understood by this package:
+This is a minimal, runnable example problem:
 
-``"render_modes"``
-    the render modes that the optimization problem understands (see
-    :ref:`Rendering`);
+.. literalinclude:: minimal_sopt_class.py
+    :lines: 9-
+    :linenos:
 
-``"cern.machine"``
-    the accelerator that an optimization problem is associated with;
+Single-Objective Function Optimization Problems
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``"cern.japc"``
-    a boolean flag indicating whether the problem's constructor expects an
-    argument named *japc* of type :class:`~japc:pyjapc.PyJapc`;
+.. seealso::
+    :doc:`funcopt`
+        User guide page on function optimization problems.
 
-``"cern.cancellable"``
-    A boolean flag indicating whether the problem's constructor expects an
-    argument named *cancellation_token* of type `cancellation.Token
-    <cernml.coi.cancellation.Token>` (see :ref:`Cancellation`).
+For a minimal working example, you should inherit from
+`cernml.coi.FunctionOptimizable` to have it fill in as many defaults as
+possible. With it as a superclass, you only have to fill in three missing
+pieces:
 
-See the :attr:`API docs<Problem.metadata>` for a full spec.
+1. `~FunctionOptimizable.get_initial_params()` to give the *initial point* for
+   each individual optimization;
+2. `~FunctionOptimizable.compute_function_objective()` as the *objective function*
+   to be minimized [#min]_;
+3. `~FunctionOptimizable.get_optimization_space()` to specify the *domain*,
+   i.e. valid inputs to the objective function. See also
+   :ref:`guide/core:spaces` for more information.
 
-Rendering
----------
+You also have to *register* your class so that the central function
+`cernml.coi.make()` can instantiate it. The page on :doc:`registration` has
+more information.
 
-The metadata entry ``"render_modes"`` allows a problem to declare that its
-internal state can be visualized. It should be a list of strings where each
-string is a supported render mode. Host applications may pick one of these
-strings and pass it to the problems {meth}`~Problem.render()` method. For this
-to work, render modes need to have well-defined semantics.
+This is a minimal, runnable example problem:
 
-The following render modes are standardized by either Gym or this package:
+.. literalinclude:: minimal_fopt_class.py
+    :lines: 9-
+    :linenos:
 
-``"human"``
-    The default mode, for interactive use. This should e.g. open a window and
-    display the problem's current state in it. Displaying the window should not
-    block control flow.
+Reinforcement Learning Environments
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``"ansi"``
-    Return a text-only representation of the problem. This may contain e.g.
-    terminal control codes for color effects.
+For a minimal working example, you inherit from `gymnasium.Env` and fill in the
+X missing pieces:
 
-``"rgb_array"``
-    Return a Numpy array representing color image data.
+1. :func:`~gymnasium.Env.reset()` to initialize the environment for a new
+   episode and receive an initial observation;
+2. :func:`~gymnasium.Env.step()` to take an action in the current episode;
+3. `~gymnasium.Env.observation_space` to specify the domain of *observations*
+   that are returned by :func:`~gymnasium.Env.reset()` and
+   :func:`~gymnasium.Env.step()`;
+4. `~gymnasium.Env.action_space` to specify the domain of *actions* that are
+   accepted by :func:`~gymnasium.Env.step()`. See also :ref:`guide/core:spaces`
+   for more information.
 
-``"matplotlib_figures"``
-    Return a list of Matplotlib :class:`~matplotlib.figure.Figure` objects,
-    suitable for embedding into a GUI application.
+You also have to *register* your class so that the central function
+`cernml.coi.make()` can instantiate it. The page on :doc:`registration` has
+more information.
 
-See the `~cernml.coi.Problem.render()` docs for a full spec of each render
-mode.
+This is a minimal, runnable example problem:
+
+.. literalinclude:: minimal_env_class.py
+    :lines: 9-
+    :linenos:
+
+Running Your Optimization Problem
+---------------------------------
+
+.. seealso::
+    :doc:`control_flow`
+        User guide page with detailed information on each kind of execution
+        loop.
+
+Optimization problems – no matter whether based on `Env`, `SingleOptimizable`
+or another interface – are expected to be run as *plugins* into a *host*
+application. While the Geoff project maintains a `reference implementation
+<https://gitlab.cern.ch/geoff/geoff-app/>`_ of such a host application,
+institutes and users are encouraged to write their own host applications,
+tailored to their specific needs and re-using `components of the broader Geoff
+project <https://gitlab.cern.ch/geoff/>`_ as necessary.
+
+Typically, host applications end up implementing one kind or another of
+*execution loop* executes an algorithm (e.g. a numerical optimizer or an RL
+policy) on a given problem. Minimal execution loops for the different kinds of
+problems (which might be useful for debugging) may look like this:
+
+.. tab:: SingleOptimizable
+
+    .. literalinclude:: minimal_sopt_loop.py
+        :lines: 13-
+        :linenos:
+
+.. tab:: FunctionOptimizable
+
+    .. literalinclude:: minimal_fopt_loop.py
+        :lines: 17-
+        :linenos:
+
+.. tab:: Env (Evaluation)
+
+    .. literalinclude:: minimal_env_loop.py
+        :lines: 13-
+        :linenos:
+
+While these examples are very bare-bones, various libraries already provide
+pre-packaged execution loops with a number of additional conveniences:
+
+:doc:`Stable Baselines 3 <sb3:index>`
+    supports the `Env` API and RL environments can be passed directly to the
+    various :samp:`{agent}.learn()` methods; in addition, the package provides
+    a function :func:`~stable_baselines3.common.evaluation.evaluate_policy()`
+    to solve a problem with a given agent or policy.
+`cernml-rltools <https://gitlab.cern.ch/geoff/cernml-rltools/>`_
+    provides a module ``cernml.rltools.envloop`` with an older and more
+    general-purpose implementation of the environment interaction loop.
+:doc:`cernml-coi-optimizers <optimizers:index>`
+    provides a uniform interface for solvers of `SingleOptimizable` problems.
+    Its general-purpose :func:`~cernml.optimizers.solve()` function is directly
+    compatible with the COI.
+
+In addition, many optimizers like :func:`scipy.optimize.minimize()` and
+`Py-BOBYQA <https://numericalalgorithmsgroup.github.io/pybobyqa/>`_ are able to
+consume `SingleOptimizable` with only minor adjustments.
+
+Spaces
+------
+
+Optimization is always executed over a certain numeric *domain*, i.e. a space
+of allowed values. These domains are encapsulated by Gym's concept of
+a `Space`. While Gym provides many different kinds of spaces (discrete,
+continuous, aggregate, …), the COI only support `~gymnasium.spaces.Box` at this
+time. This restriction may be lifted in the future, depending on user feedback.
+
+The interfaces make use of spaces as follows:
+
+`SingleOptimizable.optimization_space`
+    the domain of valid inputs to
+    `~SingleOptimizable.compute_single_objective()`;
+
+`Env.action_space <gymnasium.Env.action_space>`
+    the domain of valid inputs to :func:`~gymnasium.Env.step()`;
+
+`Env.observation_space <gymnasium.Env.observation_space>`
+    the domain of valid observations returned by :func:`~gymnasium.Env.reset()`
+    and :func:`~gymnasium.Env.step()`.
 
 Naming Your Quantities
 ----------------------
@@ -199,6 +322,71 @@ You are free not to define these attributes at all. In this case, the host
 application will see the inherited default values and assume no particular
 meaning of your quantities.
 
+Metadata
+--------
+
+Every optimization problem should have a class attribute called
+`Problem.metadata`, which is a dict with string keys. The dict should be
+defined at the class level and immutable [#mdimmut]_. It communicates
+fundamental properties of the class and how a host application can use it.
+
+The following keys are defined and understood by this package:
+
+``"render_modes"``
+    the render modes that the optimization problem understands (see
+    :ref:`guide/core:Rendering`);
+
+``"cern.machine"``
+    the accelerator that an optimization problem is associated with;
+
+``"cern.japc"``
+    a boolean flag indicating whether the problem's constructor expects an
+    argument named *japc* of type :class:`~japc:pyjapc.PyJapc`;
+
+``"cern.cancellable"``
+    A boolean flag indicating whether the problem's constructor expects an
+    argument named *cancellation_token* of type `cancellation.Token
+    <cernml.coi.cancellation.Token>` (see
+    :ref:`guide/cancellation:Cancellation`).
+
+See the :attr:`API docs<Problem.metadata>` for a full spec.
+
+.. [#mdimmut] While authors of optimization problems are strongly encouraged to
+   make `~Problem.metadata` immutable and class-scoped, host applications
+   cannot rely on this. Edge cases are known where the attribute is either
+   instance-scoped or the dict is swapped out for another. No cases are known
+   where an existing dict is modified in-place.
+
+Rendering
+---------
+
+The metadata entry ``"render_modes"`` allows a problem to declare that its
+internal state can be visualized. It should be a list of strings where each
+string is a supported render mode. Host applications may pick one of these
+strings and pass it to the problems {meth}`~Problem.render()` method. For this
+to work, render modes need to have well-defined semantics.
+
+The following render modes are standardized by either Gym or this package:
+
+``"human"``
+    The default mode, for interactive use. This should e.g. open a window and
+    display the problem's current state in it. Displaying the window should not
+    block control flow.
+
+``"ansi"``
+    Return a text-only representation of the problem. This may contain e.g.
+    terminal control codes for color effects.
+
+``"rgb_array"``
+    Return a Numpy array representing color image data.
+
+``"matplotlib_figures"``
+    Return a list of Matplotlib :class:`~matplotlib.figure.Figure` objects,
+    suitable for embedding into a GUI application.
+
+See the `~cernml.coi.Problem.render()` docs for a full spec of each render
+mode.
+
 Closing
 -------
 
@@ -218,19 +406,16 @@ If such is the case for an optimization problem, it should override the
 is required to call `~Problem.close()` when it has no more need for an
 optimization problem.
 
-.. warning::
-
-    The `~Problem.close()` method is *not* called after an optimization
-    procedure is done. In particular, a host application may perform several
-    optimization runs on the same problem and call `~Problem.close()` only at
-    the very end. Furthermore, an arbitrary amount of time may pass between the
-    last call to `~SingleOptimizable.compute_single_objective()` and the call
-    to `~Problem.close()`.
+All classes that inherit from `Problem` automatically are :term:`context
+managers <context manager>` that can be used in :keyword:`with` blocks.
+Whenever the :keyword:`with` block is exited, `~Problem.close()` gets called
+automatically.
 
 .. note::
 
-    If you want to use an optimization problem in your own application or
-    script, consider using the :func:`~contextlib.closing()` context manager:
+    If, for some reason, you are dealing with an optimization problem that
+    doesn't explicitly subclass `Problem`, you can use the `contextlib.closing`
+    adapter:
 
     .. code-block:: python
 
@@ -239,174 +424,8 @@ optimization problem.
         with closing(MyProblem(...)) as problem:
             optimize(problem)
 
-    The context manager ensures that `~Problem.close()` is called under all
-    circumstances – even if an exception occurs.
-
-Spaces
-------
-
-Optimization is always executed over a certain numeric *domain*, i.e. a space
-of allowed values. These domains are encapsulated by Gym's concept of
-a `Space`. While Gym provides many different kinds of spaces (discrete,
-continuous, aggregate, …), this package for now only supports
-`~gymnasium.spaces.Box` for maximum portability. This restriction may be lifted
-in the future.
-
-In addition, box spaces are for now restricted to the bounds [−1; +1]. This
-restriction, too, may be lifted in the future.
-
-The interfaces make use of spaces as follows:
-
-`SingleOptimizable.optimization_space`
-    the domain of valid inputs to
-    `~SingleOptimizable.compute_single_objective()`;
-
-`Env.action_space <gymnasium.Env.action_space>`
-    the domain of valid inputs to :func:`~gymnasium.Env.step()`;
-
-`Env.observation_space <gymnasium.Env.observation_space>`
-    the domain of valid observations returned by :func:`~gymnasium.Env.reset()`
-    and :func:`~gymnasium.Env.step()`.
-
-Control Flow for ``SingleOptimizable``
---------------------------------------
-
-The `SingleOptimizable` interface provides two methods that a host application
-can interact with: `~SingleOptimizable.get_initial_params()` and
-`~SingleOptimizable.compute_single_objective()`.
-
-The `~SingleOptimizable.get_initial_params()` method should return a reasonable
-point in phase space from where to start optimization. E.g. this may be the
-current state of the machine; a constant, known-good point; or
-a randomly-chosen point in phase space.
-
-It must always be safe to call `~SingleOptimizable.compute_single_objective()`
-directly with the result of `~SingleOptimizable.get_initial_params()`.
-Afterwards, an optimizer may choose any point in the phase space defined by the
-`~SingleOptimizable.optimization_space` and pass it to
-`~SingleOptimizable.compute_single_objective()`. This will typically happen in
-a loop until the optimizer has found a minimum of the objective function.
-
-Even after optimization is completed, a host application may call
-`~SingleOptimizable.compute_single_objective()` again with the value returned
-by `~SingleOptimizable.get_initial_params()` before optimization. A use case is
-that optimization has failed and the user wishes to reset the machine to the
-state before optimization.
-
-In addition, this basic control flow can be interleaved arbitrarily with calls
-to `~Problem.render()` in order to visualize progress to the user.
-
-Thus, typical control flow looks as follows:
-
-.. code-block:: python
-
-    from cernml import coi
-
-    show_progress: bool = ...
-    optimizer = ...
-    problem = coi.make("MySingleOptimizableProblem-v0")
-    initial = params = problem.get_initial_params()
-
-    while not optimizer.is_done():
-        loss = problem.compute_single_objective(params)
-        params = optimizer.step(loss)
-        if show_progress:
-            problem.render(...)
-
-    if optimizer.has_failed():
-        problem.compute_single_objective(initial)
-
-Control Flow for ``Env``
-------------------------
-
-The `Env` interface provides three methods that a host application can interact
-with: :func:`~gymnasium.Env.reset()`, :func:`~gymnasium.Env.step()` and
-`~Problem.close()`. In contrast to `SingleOptimizable`, the `Env` interface is
-typically called many times in *episodes*, especially during training. Each
-episode follows the same protocol.
-
-The :func:`~gymnasium.Env.reset()` method is called at the start of an episode.
-It typically picks a random, known-bad initial state and clears any state from
-the previous episode. It eventually must return an initial observation to seed
-the agent. Though an environment may pick a constant initial state or re-use
-the current state, (see :ref:`the above section <Control Flow for
-\`\`SingleOptimizable\`\`>`), this is often reduces the amount of experience
-a reinforcement learner can gather.
-
-Afterwards, the host application calls an agent to decide on an action given
-the current observation. This action is then passed to
-:func:`~gymnasium.Env.step()`, which must return a 5-tuple of the following
-values:
-
-*obs*
-    the next observation after the action has been applied;
-
-*reward*
-    the reward for the given action (a reinforcement learner's goal is to
-    maximize the expected cumulative reward over an episode);
-
-*terminated*
-    a boolean flag indicating whether the agent has reached a terminal state of
-    the environment (e.g. game won/lost).
-
-*truncated*
-    a boolean flag indicating whether the episode has been ended due to
-    a reason external to the environment (e.g. training time limit expired).
-
-*info*
-    a dict mapping from strings to arbitrary values.
-
-This is done in a loop until the episode is ended by passing a True value for
-either of *terminated* or *truncated* (or both). Once the episode is over, the
-host application will make no further call to :func:`~gymnasium.Env.step()`
-until the next episode is started via :func:`~gymnasium.Env.reset()`. A host
-application is also free to end an episode prematurely, e.g. to call
-:func:`~gymnasium.Env.reset()` before an episode is over (though doing so
-during training would be bad for the trained agent). There is no guarantee that
-any episode is ever driven to completion.
-
-The *info* dict is free to return any additional information. There is
-currently only one standardized key:
-
-``"success"``
-    a bool indicating whether the episode has ended by reaching a "good"
-    terminal state. Absence of this key may either mean that the episode hasn't
-    ended, that a "bad" terminal state has been reached, or that there is not
-    difference between terminal states.
-
-The `~Problem.close()` method is called at the end of the lifetime of an
-environment. No further calls to the environment will be made afterwards. It
-should use this method to release any resources it has acquired in its
-constructor.
-
-In addition, this basic control flow can be interleaved arbitrarily with calls
-to `~Problem.render()` in order to visualize progress to the user.
-
-Thus, typical control flow looks as follows:
-
-.. code-block:: python
-
-    from cernml import coi
-    from contextlib import closing
-    from gym.wrappers import TimeLimit
-
-    show_progress: bool = ...
-    num_episodes: int = ...
-    agent = ...
-
-    # Use TimeLimit to prevent infinite loops.
-    env = TimeLimit(coi.make("MyEnv-v0"), 10)
-
-    with closing(env):
-        for _ in range(num_episodes):
-            done = False
-            obs = env.reset()
-            while not done:
-                action = agent.predict(obs)
-                obs, reward, done, info = env.step(action)
-                if show_progress:
-                    env.render(...)
-                    display(reward, info, ...)
+    This ensures that `~Problem.close()` is called under all circumstances –
+    even if an exception occurs.
 
 Additional Restrictions
 -----------------------
@@ -418,27 +437,20 @@ restrictions on environments:
   `~SingleOptimizable.optimization_space` must all be `Boxes
   <gymnasium.spaces.Box>`. The only exception is if the environment is
   a `GoalEnv`: in that case, `~gymnasium.Env.observation_space` must be
-  `~gymnasium.spaces.Dict` (with exactly the three expected keys) and the
-  ``"observation"`` sub-space must be a `~gymnasium.spaces.Box`.
-- The `~gymnasium.Env.action_space` and the
-  `~SingleOptimizable.optimization_space`  must have the same shape; They must
-  only differ in their bounds. The bounds of the action space must be symmetric
-  around zero and normalized (equal to or less than one).
+  `~gymnasium.spaces.Dict` (with exactly the three expected keys) and the three
+  required sub-spaces must be `Boxes <gymnasium.spaces.Box>`.
 - If the environment supports any rendering at all, it should support at least
   the *human*, *ansi* and *matplotlib_figures*. The former two facilitate
   debugging and stand-alone usage, the latter makes it possible to embed the
   environment into a GUI.
-- The environment metadata must contain a key ``"cern.machine"`` with a value
-  of type `Machine`. It tells users which CERN accelerator the environment
-  belongs to.
-- Rewards must always lie within the defined reward range and objectives within
-  the defined objective range. Both ranges are unbounded by default.
-- The problems must never diverge to NaN or infinity.
+- At CERN, The environment metadata must contain a key ``"cern.machine"`` with
+  a value of type `Machine`. It tells users which CERN accelerator the
+  environment belongs to. Outside of CERN, authors are free to omit this key
+  and institutes are allowed to define a category key of their own.
 
 For the convenience of problem authors, this package provides a function
 `check()` that verifies these requirements on a best-effort basis. If you
 package your problem, we recommend adding a unit test to your package that
-calls this function and exercise it on every CI job. See the `Acc-Py
-guidelines`_ on testing for more information.
-
-.. _Acc-Py guidelines: https://wikis.cern.ch/display/ACCPY/Testing
+calls this function and exercise it on every CI job. CERN users are encouraged
+to consult the `Acc-Py guidelines on testing
+<https://wikis.cern.ch/display/ACCPY/Testing>`_ for further information.

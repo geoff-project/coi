@@ -29,14 +29,12 @@ wait for incoming data in a way that can still be interrupted by the
 user in a safe manner. :doc:`checkers` allow authors of optimization
 problems to test their classes for compliance with certain restrictions
 and assumptions that we place on the more general :doc:`Gymnasium API
-<gym:README>`. After that, we list :doc:`extras`, which contains useful
-but less commonly used interfaces – most notably
-`CustomOptimizerProvider`. The :doc:`goalenv` are based on on the
-multi-goal API that used to be part of Gymnasium but has since been
-moved to :doc:`Gymnasium-Robotics <gymrob:content/multi-goal_api>`.
-Finally, for all users of `static type checking`_, a large number of
-:doc:`typeguards` is provided to narrow this package's interfaces as
-necessary.
+<gym:README>`. After that, we list :doc:`sep_goal_env`, which contains
+useful but less commonly used interfaces. The :doc:`intersections`
+provide useful classes for when you want implement two interfaces at
+once or want to assert that a class does so. Finally, for all users of
+`static type checking`_, a large number of :doc:`typeguards` is provided
+to narrow this package's interfaces as necessary.
 
 .. _static type checking: https://mypy.readthedocs.io/en/stable/
 
@@ -61,23 +59,25 @@ from ._classes import (
 )
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._custom_policy_provider import CustomPolicyProvider, Policy
-from ._extra_envs import (
+from ._goalenv import (
+    GoalEnv,
+    GoalObs,
+    GoalType,
+)
+from ._intersections import (
+    OptEnv,
+    OptGoalEnv,
+    SeparableOptEnv,
+    SeparableOptGoalEnv,
+)
+from ._machine import Machine
+from ._sepenv import (
     ActType,
     InfoDict,
     ObsType,
-    OptEnv,
     SeparableEnv,
-    SeparableOptEnv,
-)
-from ._extra_goal_envs import (
-    GoalObs,
-    GoalType,
-    OptGoalEnv,
     SeparableGoalEnv,
-    SeparableOptGoalEnv,
 )
-from ._goalenv import GoalEnv
-from ._machine import Machine
 from ._typeguards import (
     AnyOptimizable,
     is_configurable,

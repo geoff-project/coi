@@ -8,6 +8,11 @@
 The Problem Registry
 ====================
 
+.. seealso::
+
+    :doc:`/guide/registration`
+        User guide page on the topic.
+
 .. automodule:: cernml.coi.registration
     :no-members:
 
@@ -55,6 +60,16 @@ Advanced Registration Features
 .. autodata:: cernml.coi.registration._sentinel.MISSING
     :no-value:
 
+.. function:: make_vec(id: str | EnvSpec, num_envs: int = 1, vectorization_mode: str = 'async', vector_kwargs: dict[str, typing.Any] | None = None, wrappers: typing.Sequence[typing.Callable[[~cernml.coi.Env], Wrapper]] | None = None, **kwargs: typing.Any) -> VectorEnv
+    :module: gymnasium
+
+    Create a vector environment according to the given ID.
+
+    .. note::
+
+        This feature is experimental, and is likely to change in future
+        releases.
+
 .. function:: gymnasium.envs.registration.EnvCreator(**kwargs: typing.Any) -> ~gymnasium.Env
     :single-line-parameter-list:
 
@@ -68,7 +83,6 @@ Advanced Registration Features
     `~cernml.coi.register()`. This is used merely for type annotations.
 
 .. autoclass:: gymnasium.envs.registration.WrapperSpec
-    :undoc-members:
 
 Exceptions Raised by the Registry
 ---------------------------------

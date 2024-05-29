@@ -8,6 +8,18 @@
 Core Classes of This Package
 ============================
 
+.. seealso::
+
+    :doc:`/guide/core`
+        User guide page on most classes introduced here.
+    :doc:`/guide/control_flow`
+        User guide page on the order in which the methods introduced here are
+        expected to be called.
+    :doc:`/guide/custom_optimizers`
+        User guide page on specifically `~cernml.coi.CustomOptimizerProvider`.
+    :doc:`/guide/funcopt`
+        User guide page on specifically `~cernml.coi.FunctionOptimizable`.
+
 .. automodule:: cernml.coi._classes
     :no-members:
 
@@ -27,6 +39,8 @@ Core Classes of This Package
 
     See `gymnasium.Env`. This is re-exported for the user's convenience.
 
+.. module:: cernml.coi._custom_optimizer_provider
+.. currentmodule:: cernml.coi
 .. autoclass:: CustomOptimizerProvider
 
 .. autoclass:: CustomPolicyProvider
@@ -35,6 +49,8 @@ Core Classes of This Package
 
 .. autoclass:: HasNpRandom
 
+.. module:: cernml.coi._machine
+.. currentmodule:: cernml.coi
 .. autoclass:: Machine
     :undoc-members:
 

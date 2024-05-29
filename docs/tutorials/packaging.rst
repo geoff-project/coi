@@ -170,7 +170,7 @@ You can inspect the results via the :command:`tree` `command <tree_>`_:
 This is usually enough to get started. However, there are two useful files that
 Acc-Py does not create for us: :file:`.gitignore` and :file:`pyproject.toml`.
 If you're not in a hurry, we suggest you create them now. Otherwise, continue
-with :ref:`Adding Dependencies`.
+with :ref:`tutorials/packaging:Adding Dependencies`.
 
 Further reading in the Acc-Py wiki:
 
@@ -415,7 +415,7 @@ Version Requirements (Digression)
 
 .. note::
    This section is purely informative. If it bores you, feel free to skip ahead
-   to :ref:`Test run`.
+   to :ref:`tutorials/packaging:Test run`.
 
 When specifying your requirements, you should make sure to put in a
 *reasonable* version range for two simple reasons:
@@ -500,7 +500,7 @@ SDists and Wheels (Digression)
 
 .. note::
    This section is purely informative. If it bores you, feel free to skip ahead
-   to :ref:`Continuous Integration`.
+   to :ref:`tutorials/packaging:Continuous Integration`.
 
 The act of bringing Python code into a publishable format has a lot of
 historical baggage. This section skips most of the history and explains the
@@ -543,8 +543,8 @@ Given that most projects will be written purely in Python, wheels are the
 preferred distribution format. Depending on circumstances, it may make sense to
 publish an sdist in addition. The way to manually create and upload a
 distribution to the package repository is `described elsewhere <Acc-Py package
-upload_>`_. See :ref:`Releasing a Package via CI` for the preferred and
-supported method at CERN.
+upload_>`_. See :ref:`tutorials/packaging:Releasing a Package via CI` for the
+preferred and supported method at CERN.
 
 .. _Acc-Py package upload:
    https://wikis.cern.ch/display/ACCPY/Development+Guidelines#DevelopmentGuidelines-CreationandUploadofyourpackage
@@ -939,10 +939,10 @@ Single-Sourcing Your Version Number
 
 Over time, it becomes annoying to increase your version number every time you
 release a new version of your package. On top of that, Acc-Py :ref:`requires us
-to use Git tags to publish our package <Releasing a Package via CI>`, but
-doesn't actually use the name of the tag at all. It would be nice if we could
-just make the tag name our version number and read that into our project
-metadata.
+to use Git tags to publish our package <tutorials/packaging:Releasing a Package
+via CI>`, but doesn't actually use the name of the tag at all. It would be nice
+if we could just make the tag name our version number and read that into our
+project metadata.
 
 `Setuptools-SCM`_ is a plugin for Setuptools that does precisely that. It
 generates your version number automatically based on your Git tags and feeds it
@@ -1100,9 +1100,9 @@ that catches, among other things:
 .. _Pylint:
    http://pylint.pycqa.org/
 
-In contrast to :ref:`Black <Automatic Code Formatting>`, PyLint
-is *extremely* configurable and encourages users to enable or disable lints as
-necessary. Here is an example configuration:
+In contrast to :ref:`Black <tutorials/packaging:Automatic Code Formatting>`,
+PyLint is *extremely* configurable and encourages users to enable or disable
+lints as necessary. Here is an example configuration:
 
 .. code-block:: python
 
@@ -1141,8 +1141,8 @@ to only that function. If you put them at the end of a line, they only apply to
 that line.
 
 You can prevent bugs from silently sneaking into your code by running PyLint in
-your :ref:`CI/CD pipeline <continuous integration>` every time you push code to
-Gitlab:
+your :ref:`CI/CD pipeline <tutorials/packaging:continuous integration>` every
+time you push code to Gitlab:
 
 .. code-block:: yaml
 

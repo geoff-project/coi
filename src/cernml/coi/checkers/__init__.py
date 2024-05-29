@@ -13,7 +13,7 @@ youself with `check_env()`, etc.
 
 The generic `.check()` function also provides a plugin interface via the
 :ref:`entry point <setuptools:dynamic discovery of services and
-plugins>` ``"cernml.coi.checkers"``. This means that other packages may
+plugins>` ``"cernml.checkers"``. This means that other packages may
 provide additional checkers. Upon each call, this method will load all
 plugins and call each of them with the signature
 :samp:`checker({problem}, warn={warn}, headless={headless})`.
@@ -23,18 +23,14 @@ from ._configurable import check_configurable
 from ._env import check_env
 from ._full_check import check
 from ._func_opt import check_function_optimizable
-from ._generic import assert_range, is_box, is_reward
 from ._problem import check_problem
 from ._single_opt import check_single_optimizable
 
-__all__ = [
-    "assert_range",
+__all__ = (
     "check",
     "check_configurable",
     "check_env",
     "check_function_optimizable",
     "check_problem",
     "check_single_optimizable",
-    "is_box",
-    "is_reward",
-]
+)

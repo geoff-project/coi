@@ -8,6 +8,11 @@
 The Cancellation API
 ====================
 
+.. seealso::
+
+    :doc:`/guide/cancellation`
+        User guide page on the topic.
+
 .. automodule:: cernml.coi.cancellation
     :no-members:
 

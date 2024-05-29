@@ -38,8 +38,6 @@ class Parabola(coi.OptEnv):
     observation_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
     action_space = gym.spaces.Box(-1.0, 1.0, shape=(2,))
     optimization_space = gym.spaces.Box(-2.0, 2.0, shape=(2,))
-    reward_range = (-8.0, 0.0)
-    objective_range = (0.0, 8.0)
     metadata = {
         # All `mode` arguments to `self.render()` that we support.
         "render_modes": ["ansi", "human", "matplotlib_figures"],

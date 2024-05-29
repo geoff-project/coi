@@ -68,7 +68,7 @@ problem should check whether cancellation has been requested whenever it enters
 a loop that may run for a long time.
 
 This sounds complicated, but luckily, :ref:`parameter streams
-<Synchronization>` already support cancellation tokens:
+<guide/cancellation:Synchronization>` already support cancellation tokens:
 
 .. code-block:: python
     :linenos:

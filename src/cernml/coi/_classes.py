@@ -137,10 +137,10 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
     While this is all that is necessary to be considered a subclass,
     direct inheritance provides the following additional benefits:
 
-    - Its ``__init__()`` method requires *render_mode*, verifies it with
-      the ``"render_modes"`` key of `metadata` and assigns it to the
-      `render_mode` attribute. This reduces the amount of boilerplate
-      code you have to write yourself.
+    - Its `__init__() <Problem>` method requires *render_mode*, verifies
+      it with the ``"render_modes"`` key of `metadata` and assigns it to
+      the `render_mode` attribute. This reduces the amount of
+      boilerplate code you have to write yourself.
     - It implements the :term:`context manager` protocol to
       automatically call `close()` when the user is done with a problem.
     - It provides the `np_random` property as an exclusive and lazily
@@ -358,8 +358,10 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
         if other is protocols.Problem or cls is not Problem:
             return NotImplemented
         # Run `issubclass(other, protocol)` but skip
-        # `ABCMeta.__subclasscheck__()`, since that would lead to
-        # infinite recursion.
+        # `ABCMeta.__subclasscheck__()`. ABCMeta checks if `other` is
+        # subclass of any subclass (recursively!), which would
+        # eventually call this hook again, leading to infinite
+        # recursion.
         return protocols.Problem.__subclasshook__(other)
 
 
@@ -406,14 +408,6 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
     """A `Space` instance that describes the phase space of parameters.
     This may be the same or different from the
     `~gymnasium.Env.action_space`. This attribute is required."""
-
-    # TODO: Deprecated in Gymnasium.
-    # https://gitlab.cern.ch/geoff/cernml-coi/-/issues/14
-    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    """Optional. Specifies the range in which the return value of
-    `compute_single_objective()` will lie. The default is to allow any
-    finite float value, but subclasses may restrict this, e.g. for
-    normalization purposes."""
 
     constraints: t.Sequence[Constraint] = ()
     """Optional. The constraints that apply to this optimization
@@ -517,8 +511,10 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
         if other is protocols.SingleOptimizable or cls is not SingleOptimizable:
             return NotImplemented
         # Run `issubclass(other, protocol)` but skip
-        # `ABCMeta.__subclasscheck__()`, since that would lead to
-        # infinite recursion.
+        # `ABCMeta.__subclasscheck__()`. ABCMeta checks if `other` is
+        # subclass of any subclass (recursively!), which would
+        # eventually call this hook again, leading to infinite
+        # recursion.
         return protocols.SingleOptimizable.__subclasshook__(other)
 
 
@@ -550,12 +546,6 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
     - a property `~Problem.np_random` for convenient random-number
       generation.
     """
-
-    objective_range: tuple[float, float] = (-float("inf"), float("inf"))
-    """Specifies the range in which the return value of
-    `compute_function_objective()` will lie. The default is to allow any
-    float value, but subclasses may restrict this e.g. for normalization
-    purposes."""
 
     constraints: t.Sequence[Constraint] = ()
     """The constraints that apply to this optimization problem. For now,
@@ -729,6 +719,8 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
         if other is protocols.FunctionOptimizable or cls is not FunctionOptimizable:
             return NotImplemented
         # Run `issubclass(other, protocol)` but skip
-        # `ABCMeta.__subclasscheck__()`, since that would lead to
-        # infinite recursion.
+        # `ABCMeta.__subclasscheck__()`. ABCMeta checks if `other` is
+        # subclass of any subclass (recursively!), which would
+        # eventually call this hook again, leading to infinite
+        # recursion.
         return protocols.FunctionOptimizable.__subclasshook__(other)

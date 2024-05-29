@@ -5,9 +5,11 @@
 #
 # SPDX-License-Identifier: MIT AND (GPL-3.0-or-later OR EUPL-1.2+)
 
-"""Vendored version of `gymnasium_robotics.core`.
+"""This package vendors the `.GoalEnv` class of Gymnasium Robotics.
 
-This only is used if `gymnasium-robotics` isn't installed.
+If :doc:`Gymnasium-Robotics <gymrob:content/multi-goal_api>` is
+installed, its `gymnasium_robotics.core.GoalEnv` class is used. if it
+isn't, this package provides its own, compatible implementation.
 """
 
 import sys
