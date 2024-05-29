@@ -19,7 +19,7 @@ if t.TYPE_CHECKING:
     from gymnasium import Env, Wrapper
     from gymnasium.experimental.vector import VectorEnv
 
-    from .._problem import Problem
+    from .. import protocols
     from ._base import EnvCreator, VectorEnvCreator, WrapperSpec
     from ._spec import EnvSpec
 
@@ -91,7 +91,7 @@ def pprint_registry(
 def register(
     env_id: str,
     /,
-    entry_point: type[Problem] | EnvCreator | str,
+    entry_point: type[protocols.Problem] | EnvCreator | str,
     vector_entry_point: VectorEnvCreator | str | None = None,
     *,
     reward_threshold: float | None = None,
@@ -127,7 +127,7 @@ def register(
 def register(
     env_id: str,
     /,
-    entry_point: type[Problem] | EnvCreator | str | None = None,
+    entry_point: type[protocols.Problem] | EnvCreator | str | None = None,
     vector_entry_point: VectorEnvCreator | str | None = None,
     *,
     reward_threshold: float | None = None,
@@ -211,7 +211,7 @@ def make(
     apply_api_compatibility: bool | None = None,
     disable_env_checker: bool | None = None,
     **kwargs: t.Any,
-) -> Problem:
+) -> protocols.Problem:
     """Create an environment according to the given ID.
 
     The environment must have been previously registered with

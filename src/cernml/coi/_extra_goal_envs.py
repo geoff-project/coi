@@ -10,20 +10,14 @@
 
 from __future__ import annotations
 
-import sys
 import typing as t
 from abc import ABCMeta
 
 from gymnasium.core import ActType, ObsType
 
+from ._classes import ParamType, SingleOptimizable
 from ._extra_envs import InfoDict
-from ._goalenv import GoalEnv, GoalType
-from ._single_opt import ParamType, SingleOptimizable
-
-if sys.version_info < (3, 11):
-    from typing_extensions import TypedDict
-else:
-    from typing import TypedDict
+from ._goalenv import GoalEnv, GoalObs, GoalType
 
 __all__ = (
     "ActType",
@@ -36,14 +30,6 @@ __all__ = (
     "SeparableGoalEnv",
     "SeparableOptGoalEnv",
 )
-
-
-class GoalObs(TypedDict, t.Generic[ObsType, GoalType]):
-    """Type annotation for the observation type of `.GoalEnv`."""
-
-    observation: ObsType
-    desired_goal: GoalType
-    achieved_goal: GoalType
 
 
 class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
@@ -71,7 +57,7 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
 
     def step(
         self, action: ActType
-    ) -> tuple[dict[str, ObsType | GoalType], t.SupportsFloat, bool, bool, InfoDict]:
+    ) -> tuple[GoalObs, t.SupportsFloat, bool, bool, InfoDict]:
         """Implementation of `gym.Env.step()`.
 
         This calls in turn the three new abstract methods:
@@ -79,14 +65,11 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
         `compute_terminated()` and `compute_truncated()`.
         """  # noqa: D402
         info: InfoDict = {}
-        obs = t.cast(
-            dict[str, t.Union[ObsType, GoalType]],
-            self.compute_observation(action, info),
-        )
+        obs = self.compute_observation(action, info)
         achieved_goal = t.cast(GoalType, obs["achieved_goal"])
         desired_goal = t.cast(GoalType, obs["desired_goal"])
         reward = self.compute_reward(achieved_goal, desired_goal, info)
-        info["reward"] = reward
+        info["reward"] = float(reward)
         terminated = self.compute_terminated(achieved_goal, desired_goal, info)
         truncated = self.compute_truncated(achieved_goal, desired_goal, info)
         return obs, reward, terminated, truncated, info
@@ -126,10 +109,12 @@ class OptGoalEnv(
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is OptGoalEnv:
-            bases = other.__mro__
-            return GoalEnv in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if issubclass(other, GoalEnv) and proto is True:
+            return True
         return NotImplemented
 
 
@@ -147,8 +132,10 @@ class SeparableOptGoalEnv(
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is SeparableOptGoalEnv:
-            bases = other.__mro__
-            return SeparableGoalEnv in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if issubclass(other, SeparableGoalEnv) and proto is True:
+            return True
         return NotImplemented

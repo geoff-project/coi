@@ -15,7 +15,6 @@ import functools
 import typing as t
 from abc import ABCMeta
 from collections.abc import Mapping
-from contextlib import suppress
 from types import GetSetDescriptorType
 
 if t.TYPE_CHECKING:
@@ -31,6 +30,57 @@ _static_mro: t.Callable[[type], tuple[type, ...]] = vars(type)["__mro__"].__get_
 _get_dunder_dict_of_class: t.Callable[[type], dict[str, object]] = vars(type)[
     "__dict__"
 ].__get__
+
+
+def get_class_annotations_impl(obj: type) -> dict[str, object]:
+    """Safely retrieve annotations from a type object.
+
+    This is copied from `inspect.get_annotations()` for backwards
+    compatibility with Python 3.9. The following changes have been
+    made:
+
+    - remove logic for non-type objects;
+    - remove logic for evaluation of annotations;
+    - replace unsafe `getattr()` with access via the `__dict__`
+      descriptor;
+    - whereas `inspect.get_annotations()` never modifies `obj` and
+      always returns a fresh `dict`, this function only creates
+      a new dict if necessary, and also assigns it to
+      `obj.__annotations__` in that case. This is to be parallel
+      with the Python 3.10 data descriptor `type.__annotations__`.
+
+    Note that if the dict cannot be assigned (e.g. because `obj` is
+    a builtin type), we may still end up producing a fresh dict on
+    every call.
+    """
+    obj_dict = _get_dunder_dict_of_class(obj)
+    ann = obj_dict.get("__annotations__", None)
+    if isinstance(ann, GetSetDescriptorType):
+        # This is the case e.g. when `obj` is `type` on
+        # Python 3.10+.
+        ann = None
+    if ann is None:
+        ann = {}
+        try:
+            type.__setattr__(obj, "__annotations__", ann)
+        except TypeError:
+            raise AttributeError(
+                f"{obj.__class__.__name__} object {obj.__name__!r} "
+                f"has no attribute '__annotations__'"
+            ) from None
+        # May raise if `obj` is a builtin type.
+        # with suppress(TypeError):
+        #     type.__setattr__(obj, "__annotations__", ann)
+        return ann
+    return t.cast(dict, ann)
+
+
+try:  # pragma: no cover
+    get_class_annotations: t.Callable[[type], dict[str, object]] = vars(type)[
+        "__annotations__"
+    ].__get__
+except KeyError:  # pragma: no cover
+    get_class_annotations = get_class_annotations_impl
 
 
 class AttrCheckProtocolMeta(t._ProtocolMeta):
@@ -68,12 +118,17 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
 
     def __init__(cls, *args: t.Any, **kwargs: t.Any) -> None:
         super().__init__(*args, **kwargs)
-        if "__protocol_attrs__" not in vars(cls) and getattr(
-            cls, "_is_protocol", False
-        ):
-            # Note: This is our own function, not
-            # `typing._get_protocol_attrs()!`
-            cls.__protocol_attrs__: set[str] = protocol_attrs(cls)
+        if getattr(cls, "_is_protocol", False):
+            # If `__protocol_attrs__` has not yet been set, we set it
+            # here; if it HAS been set, we remove our own internal
+            # attributes from it (e.g. `__proto_classmethods__`).
+            # This guards against version differences between Python
+            # 3.12+ and before; older versions didn't use
+            #   `__protocol_attrs__` yet.
+            if "__protocol_attrs__" not in vars(cls):
+                cls.__protocol_attrs__ = protocol_attrs(cls)
+            else:
+                cls.__protocol_attrs__ -= _SPECIAL_NAMES
 
     def __instancecheck__(cls, instance: t.Any) -> bool:
         if cls is AttrCheckProtocol:
@@ -113,9 +168,12 @@ def _proto_hook(cls: AttrCheckProtocolMeta, other: type) -> t.Any:
     # pylint: disable = protected-access
     if not cls.__dict__.get("_is_protocol", False):
         return NotImplemented
-    if not isinstance(other, type):
-        # Same error message as for issubclass(1, int).
-        raise TypeError("issubclass() arg 1 must be a class")
+    # No need to check for `isinstance(other, type)` at this point; on
+    # Python 3.12 this is done in `_ProtocolMeta.__subclasscheck__()`.
+    # On older versions, it is done in `ABCMeta.__subclasscheck__()`.
+    # if not isinstance(other, type):
+    #     # Same error message as for issubclass(1, int).
+    #     raise TypeError("issubclass() arg 1 must be a class")
     if not attrs_match(cls, other):
         return NotImplemented
     return True
@@ -149,7 +207,7 @@ def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
                 type(obj) if is_classmethod and not isinstance(obj, type) else obj, attr
             )
         except AttributeError:
-            if not is_subprotocol(obj) or not attr_in_annotations(obj, attr):
+            if not (is_subprotocol(obj) and attr_in_annotations(obj, attr)):
                 return False
         else:
             if is_classmethod:
@@ -194,10 +252,14 @@ def attr_in_annotations(proto: AttrCheckProtocolMeta, attr: str) -> bool:
 def non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
     """Lazy collection of any protocol members that aren't methods.
 
-    Note that this does not include classmethods. Classmethod objects
-    themselves are not callable; however, we collect them with
-    `getattr(cls, name)`. This returns a bound method object, which _is_
-    callable!
+    We do not include classmethods here. This is so that they can be
+    explicitly deleted by assigning `None` to their name, just like for
+    regular methods.
+
+    Classmethod objects are a bit weird; on their own, they are not
+    callable. However, ``getattr(cls, name)`` calls
+    ``the_classmethod.__get__(None, cls)``, which binds them to the
+    class. The bound-method object thus returned *is* callable.
 
     The result is cached in the class's `__non_callable_proto_members__`
     attribute. If it already exists (which is the case on Python 3.12+),
@@ -205,11 +267,18 @@ def non_callable_proto_members(cls: AttrCheckProtocolMeta) -> set[str]:
 
     This code is modified from Python 3.12+ `@runtime_checkable`.
     """
-    members = getattr(cls, "__non_callable_proto_members__", None)
+    # Don't use `getattr()` to avoid lookup in super classes.
+    members = t.cast(
+        t.Union[set[str], None],
+        _get_dunder_dict_of_class(cls).get("__non_callable_proto_members__"),
+    )
     if members is None:
         members = set()
         for attr in protocol_attrs(cls):
             try:
+                # Using `getattr` here serves two purposes: 1. it binds
+                # classmethods, making them callable, and 2. it
+                # automatically looks up attributes in parent protocols.
                 is_callable = callable(getattr(cls, attr, None))
             except Exception as e:
                 raise TypeError(
@@ -236,7 +305,11 @@ def proto_classmethods(cls: AttrCheckProtocolMeta) -> set[str]:
     This code is based on `non_callable_proto_members()`, which is in
     turn modified from Python 3.12+ `@runtime_checkable`.
     """
-    members = getattr(cls, "__proto_classmethods__", None)
+    # Don't use `getattr()` to avoid lookup in super classes.
+    members = t.cast(
+        t.Union[set[str], None],
+        _get_dunder_dict_of_class(cls).get("__proto_classmethods__"),
+    )
     if members is None:
         # Access the attributes via the class dictionary; access
         # via `getattr()` would bind them and give us bound-method
@@ -295,51 +368,7 @@ def protocol_attrs(cls: type) -> set[str]:
     return attrs
 
 
-try:
-    get_class_annotations: t.Callable[[type], dict[str, object]] = vars(type)[
-        "__annotations__"
-    ].__get__
-except KeyError:
-
-    def get_class_annotations(obj: type) -> dict[str, object]:
-        """Safely retrieve annotations from a type object.
-
-        This is copied from `inspect.get_annotations()` for backwards
-        compatibility with Python 3.9. The following changes have been
-        made:
-
-        - remove logic for non-type objects;
-        - remove logic for evaluation of annotations;
-        - replace unsafe `getattr()` with access via the `__dict__`
-          descriptor;
-        - whereas `inspect.get_annotations()` never modifies `obj` and
-          always returns a fresh `dict`, this function only creates
-          a new dict if necessary, and also assigns it to
-          `obj.__annotations__` in that case. This is to be parallel
-          with the Python 3.10 data descriptor `type.__dict__`.
-
-        Note that if the dict cannot be assigned (e.g. because `obj` is
-        a builtin type), we may still end up producing a fresh dict on
-        every call.
-        """
-        obj_dict = _get_dunder_dict_of_class(obj)
-        if obj_dict and hasattr(obj_dict, "get"):
-            ann = obj_dict.get("__annotations__", None)
-            if isinstance(ann, GetSetDescriptorType):
-                # This is the case e.g. when `obj` is `type`.
-                ann = None
-        else:
-            ann = None
-        if ann is None:
-            ann = {}
-            # May raise if `obj` a builtin type.
-            with suppress(TypeError):
-                type.__setattr__(obj, "__annotations__", ann)
-            return ann
-        return t.cast(dict, ann)
-
-
-class _GetAttr(t.Protocol):
+class _GetAttr(t.Protocol):  # pragma: no cover
     def __call__(
         self, obj: object, name: str, default: t.Optional[t.Any] = ..., /
     ) -> t.Any: ...

@@ -12,6 +12,7 @@ from types import new_class
 
 import pytest
 from gymnasium import Env
+from gymnasium.spaces import Box
 
 from cernml import coi
 
@@ -21,7 +22,7 @@ class ConcreteEnv(Env):
 
 
 class ConcreteOptEnv(coi.OptEnv):
-    pass
+    optimization_space = Box(-1, 1)
 
 
 class ConcreteGoalEnv(coi.GoalEnv):
@@ -29,7 +30,7 @@ class ConcreteGoalEnv(coi.GoalEnv):
 
 
 class ConcreteOptGoalEnv(coi.OptGoalEnv):
-    pass
+    optimization_space = Box(-1, 1)
 
 
 class ConcreteSeparableEnv(coi.SeparableEnv):
@@ -37,7 +38,7 @@ class ConcreteSeparableEnv(coi.SeparableEnv):
 
 
 class ConcreteSeparableOptEnv(coi.SeparableOptEnv):
-    pass
+    optimization_space = Box(-1, 1)
 
 
 class ConcreteSeparableGoalEnv(coi.SeparableGoalEnv):
@@ -45,10 +46,77 @@ class ConcreteSeparableGoalEnv(coi.SeparableGoalEnv):
 
 
 class ConcreteSeparableOptGoalEnv(coi.SeparableOptGoalEnv):
-    pass
+    optimization_space = Box(-1, 1)
 
 
-def _assert_env_subclass(subclass: type, superclasses: Sequence[type]) -> None:
+@pytest.mark.parametrize(
+    ("abc", "env_class"),
+    [
+        (coi.OptEnv, Env),
+        (coi.OptGoalEnv, coi.GoalEnv),
+        (coi.SeparableOptEnv, coi.SeparableEnv),
+        (coi.SeparableOptGoalEnv, coi.SeparableGoalEnv),
+    ],
+)
+def test_is_abstract_base_class(abc: type, env_class: type[Env]) -> None:
+    def body(ns: dict[str, t.Any]) -> None:
+        ns["optimization_space"] = None
+
+    mock = new_class(
+        "NoDirectInheritance", bases=(coi.SingleOptimizable, env_class), exec_body=body
+    )
+    assert issubclass(mock, env_class)
+    assert issubclass(mock, abc)
+
+
+def test_env_problem() -> None:
+    assert coi.is_problem_class(Env)
+
+
+@pytest.mark.parametrize(
+    ("subclass", "superclasses"),
+    [
+        (ConcreteEnv, [Env]),
+        (ConcreteOptEnv, [Env, coi.SingleOptimizable, coi.OptEnv]),
+        (ConcreteGoalEnv, [Env, coi.GoalEnv]),
+        (
+            ConcreteOptGoalEnv,
+            [Env, coi.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
+        ),
+        (
+            ConcreteSeparableEnv,
+            [Env, coi.SeparableEnv],
+        ),
+        (
+            ConcreteSeparableOptEnv,
+            [
+                Env,
+                coi.SingleOptimizable,
+                coi.OptEnv,
+                coi.SeparableEnv,
+                coi.SeparableOptEnv,
+            ],
+        ),
+        # SeparableGoalEnv is not a SeparableEnv. Their compute_reward()
+        # methods are semantically different.
+        (ConcreteSeparableGoalEnv, [Env, coi.GoalEnv, coi.SeparableGoalEnv]),
+        # SeparableOptGoalEnv is not a SeparableEnv. Their compute_reward()
+        # methods are semantically different.
+        (
+            ConcreteSeparableOptGoalEnv,
+            [
+                Env,
+                coi.GoalEnv,
+                coi.SingleOptimizable,
+                coi.OptEnv,
+                coi.OptGoalEnv,
+                coi.SeparableGoalEnv,
+                coi.SeparableOptGoalEnv,
+            ],
+        ),
+    ],
+)
+def test_env_superclasses(subclass: type, superclasses: Sequence[type]) -> None:
     all_superclasses = (
         coi.GoalEnv,
         coi.SingleOptimizable,
@@ -66,109 +134,22 @@ def _assert_env_subclass(subclass: type, superclasses: Sequence[type]) -> None:
         )
 
 
-def _is_abstract_base_class(abc: type, env_class: type[Env]) -> bool:
-    mock = new_class("NoDirectInheritance", bases=(coi.SingleOptimizable, env_class))
-    return issubclass(mock, abc)
-
-
-def test_env_problem() -> None:
-    assert coi.is_problem_class(Env)
-
-
-def test_optenv_is_abstract() -> None:
-    assert _is_abstract_base_class(coi.OptEnv, Env)
-
-
-def test_optgoalenv_is_abstract() -> None:
-    assert _is_abstract_base_class(coi.OptGoalEnv, coi.GoalEnv)
-
-
-def test_sepoptenv_is_abstract() -> None:
-    assert _is_abstract_base_class(coi.SeparableOptEnv, coi.SeparableEnv)
-
-
-def test_sepoptgoalenv_is_abstract() -> None:
-    assert _is_abstract_base_class(coi.SeparableOptGoalEnv, coi.SeparableGoalEnv)
-
-
-def test_env() -> None:
-    _assert_env_subclass(ConcreteEnv, [Env])
-
-
-def test_optenv() -> None:
-    _assert_env_subclass(
-        ConcreteOptEnv,
-        [Env, coi.SingleOptimizable, coi.OptEnv],
-    )
-
-
-def test_goalenv() -> None:
-    _assert_env_subclass(ConcreteGoalEnv, [Env, coi.GoalEnv])
-
-
-def test_optgoalenv() -> None:
-    _assert_env_subclass(
-        ConcreteOptGoalEnv,
-        [Env, coi.GoalEnv, coi.SingleOptimizable, coi.OptEnv, coi.OptGoalEnv],
-    )
-
-
-def test_sepenv() -> None:
-    _assert_env_subclass(
-        ConcreteSeparableEnv,
-        [Env, coi.SeparableEnv],
-    )
-
-
-def test_sepoptenv() -> None:
-    _assert_env_subclass(
-        ConcreteSeparableOptEnv,
-        [
-            Env,
-            coi.SingleOptimizable,
-            coi.OptEnv,
-            coi.SeparableEnv,
-            coi.SeparableOptEnv,
-        ],
-    )
-
-
-def test_sepgoalenv() -> None:
-    # SeparableGoalEnv is not a SeparableEnv. Their compute_reward()
-    # methods are semantically different.
-    _assert_env_subclass(
-        ConcreteSeparableGoalEnv,
-        [Env, coi.GoalEnv, coi.SeparableGoalEnv],
-    )
-
-
-def test_sepoptgoalenv() -> None:
-    # SeparableOptGoalEnv is not a SeparableEnv. Their compute_reward()
-    # methods are semantically different.
-    _assert_env_subclass(
-        ConcreteSeparableOptGoalEnv,
-        [
-            Env,
-            coi.GoalEnv,
-            coi.SingleOptimizable,
-            coi.OptEnv,
-            coi.OptGoalEnv,
-            coi.SeparableGoalEnv,
-            coi.SeparableOptGoalEnv,
-        ],
-    )
-
-
-def test_failures() -> None:
-    assert not issubclass(int, Env)
-    assert not issubclass(int, coi.GoalEnv)
-    assert not issubclass(int, coi.SingleOptimizable)  # type: ignore[misc]
-    assert not issubclass(int, coi.OptEnv)
-    assert not issubclass(int, coi.OptGoalEnv)
-    assert not issubclass(int, coi.SeparableEnv)
-    assert not issubclass(int, coi.SeparableGoalEnv)
-    assert not issubclass(int, coi.SeparableOptEnv)
-    assert not issubclass(int, coi.SeparableOptGoalEnv)
+@pytest.mark.parametrize(
+    "cls",
+    [
+        Env,
+        coi.GoalEnv,
+        coi.SingleOptimizable,
+        coi.OptEnv,
+        coi.OptGoalEnv,
+        coi.SeparableEnv,
+        coi.SeparableGoalEnv,
+        coi.SeparableOptEnv,
+        coi.SeparableOptGoalEnv,
+    ],
+)
+def test_failures(cls: type) -> None:
+    assert not issubclass(int, cls)
 
 
 @pytest.mark.parametrize(

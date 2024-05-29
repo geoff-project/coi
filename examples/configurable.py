@@ -8,14 +8,15 @@
 
 """An example of how to use the `Configurable` interface."""
 
+from __future__ import annotations
+
 import sys
 import typing as t
-from types import SimpleNamespace
 
 import gymnasium as gym
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize
-from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -58,7 +59,9 @@ class ConfParabola(
     # in the training.
     objective = -0.05
     max_objective = -0.003
+    action_space: gym.spaces.Box
     observation_space: gym.spaces.Box
+    optimization_space: gym.spaces.Box
 
     def __init__(
         self,
@@ -68,7 +71,7 @@ class ConfParabola(
         dangling: bool = True,
         box_width: float = 2.0,
         dim: int = 5,
-        render_mode: t.Optional[str] = None,
+        render_mode: str | None = None,
     ):
         self.render_mode = render_mode
         self.token = cancellation_token
@@ -83,7 +86,7 @@ class ConfParabola(
         )
         self.reward_range = (-max_distance, 0.0)
         self.objective_range = (0.0, max_distance)
-        self.figure: t.Optional[Figure] = None
+        self.figure: Figure | None = None
 
     @override
     def get_config(self) -> coi.Config:
@@ -97,7 +100,7 @@ class ConfParabola(
         return config
 
     @override
-    def apply_config(self, values: SimpleNamespace) -> None:
+    def apply_config(self, values: coi.ConfigValues) -> None:
         self.norm = values.norm
         self.dangling = values.enable_dangling
         box_width = values.box_width
@@ -114,10 +117,7 @@ class ConfParabola(
 
     @override
     def reset(
-        self,
-        *,
-        seed: t.Optional[int] = None,
-        options: t.Optional[coi.InfoDict] = None,
+        self, *, seed: int | None = None, options: coi.InfoDict | None = None
     ) -> tuple[NDArray[np.double], coi.InfoDict]:
         super().reset(seed=seed)
         # This is not good usage. In practice, you should only accept
@@ -149,8 +149,7 @@ class ConfParabola(
             raise
         terminated = reward > self.objective
         truncated = next_pos not in self.observation_space
-        # TODO: `success` has become superfluous
-        info = {"success": terminated, "objective": self.objective}
+        info = {"objective": self.objective}
         if self.dangling and terminated and self.objective < self.max_objective:
             self.objective *= 0.95
         if self.render_mode == "human":
@@ -158,8 +157,10 @@ class ConfParabola(
         return self.pos.copy(), reward, terminated, truncated, info
 
     @override
-    def get_initial_params(self) -> NDArray[np.double]:
-        pos, _ = self.reset()
+    def get_initial_params(
+        self, *, seed: int | None = None, options: coi.InfoDict | None = None
+    ) -> NDArray[np.double]:
+        pos, _ = self.reset(seed=seed, options=options)
         return pos
 
     @override
@@ -182,9 +183,9 @@ class ConfParabola(
     @override
     def render(self) -> t.Any:
         if self.render_mode == "human":
-            _, axes = pyplot.subplots()
+            _, axes = plt.subplots()
             self._update_axes(axes)
-            pyplot.show()
+            plt.show()
             return None
         if self.render_mode == "matplotlib_figures":
             if self.figure is None:
@@ -212,7 +213,7 @@ class ConfParabola(
         axes.set_xlabel("Axes")
         axes.set_ylabel("Position")
 
-    def _fetch_distance_slow(self, pos: t.Optional[np.ndarray] = None) -> float:
+    def _fetch_distance_slow(self, pos: np.ndarray | None = None) -> float:
         """Get distance from the goal in a slow manner.
 
         This simulates interaction with the machine. We sleep for a
@@ -232,12 +233,7 @@ class ConfParabola(
         )
 
 
-coi.register(
-    "ConfParabola-v0",
-    # TODO: This cast should not be necessary.
-    entry_point=t.cast(t.Callable[..., gym.Env], ConfParabola),
-    max_episode_steps=10,
-)
+coi.register("ConfParabola-v0", entry_point=ConfParabola, max_episode_steps=10)
 
 
 class OptimizerThread(QtCore.QThread):
@@ -292,7 +288,7 @@ class ConfigureDialog(QtWidgets.QDialog):
     """
 
     def __init__(
-        self, target: coi.Configurable, parent: t.Optional[QtWidgets.QWidget] = None
+        self, target: coi.Configurable, parent: QtWidgets.QWidget | None = None
     ) -> None:
         super().__init__(parent)
         spec = getattr(target, "spec", None)
@@ -353,7 +349,7 @@ class ConfigureDialog(QtWidgets.QDialog):
             return combo_box
         if field.range is not None:
             low, high = field.range
-            spin_box: t.Union[QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox]
+            spin_box: QtWidgets.QSpinBox | QtWidgets.QDoubleSpinBox
             if isinstance(field.value, (int, np.integer)):
                 spin_box = QtWidgets.QSpinBox()
                 spin_box.setValue(int(field.value))
@@ -415,22 +411,18 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
 
         self.cancellation_token_source = cancellation.TokenSource()
-        # TODO: This cast should be removed somehow.
-        self.env = t.cast(
-            coi.OptEnv[NDArray[np.double], NDArray[np.double], NDArray[np.double]],
-            coi.make(
-                "ConfParabola-v0",
-                cancellation_token=self.cancellation_token_source.token,
-                render_mode="matplotlib_figures",
-            ),
+        env = coi.make(
+            "ConfParabola-v0",
+            cancellation_token=self.cancellation_token_source.token,
+            render_mode="matplotlib_figures",
         )
+        self.env = t.cast(ConfParabola, env)
         self.worker = OptimizerThread(self.env)
         self.worker.step.connect(self.on_opt_step)
         self.worker.finished.connect(self.on_opt_finished)
         self.env.reset()
 
-        # TODO: Can we improve this cast?
-        [figure] = t.cast(list[Figure], self.env.render())
+        [figure] = self.env.render()
         self.canvas = FigureCanvas(figure)
         self.launch = QtWidgets.QPushButton("Launch")
         self.launch.clicked.connect(self.on_launch)
@@ -499,7 +491,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.configure_env.setEnabled(True)
 
 
-def main(argv: t.List[str]) -> int:
+def main(argv: list[str]) -> int:
     """Main function. You should pass in `sys.argv`."""
     app = QtWidgets.QApplication(argv)
     window = MainWindow()

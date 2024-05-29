@@ -28,7 +28,7 @@ if t.TYPE_CHECKING:
     from gymnasium import Env, Wrapper
     from gymnasium.experimental.vector import VectorEnv
 
-    from .._problem import Problem
+    from .. import protocols
 
 __all__ = ("EnvRegistry",)
 
@@ -123,7 +123,7 @@ class EnvRegistry:
         self,
         env_id: str,
         /,
-        entry_point: type[Problem] | _base.EnvCreator | str | None = None,
+        entry_point: type[protocols.Problem] | _base.EnvCreator | str | None = None,
         vector_entry_point: _base.VectorEnvCreator | str | None = None,
         **kwargs: t.Any,
     ) -> None:
@@ -159,7 +159,7 @@ class EnvRegistry:
         apply_api_compatibility: bool | None = None,
         disable_env_checker: bool | None = None,
         **kwargs: t.Any,
-    ) -> Problem:
+    ) -> protocols.Problem:
         """Implementation of `make`."""
         stacklevel = bump_stacklevel(kwargs)
         allow_imports = kwargs.pop("allow_imports", True)

@@ -43,6 +43,15 @@ pre-run :doc:`configuration <config>` of optimization problems and for
 the :doc:`cancellation <cancellation>` of running algorithms.
 """
 
+from ._classes import (
+    Constraint,
+    Env,
+    FunctionOptimizable,
+    HasNpRandom,
+    ParamType,
+    Problem,
+    SingleOptimizable,
+)
 from ._configurable import (
     BadConfig,
     Config,
@@ -67,11 +76,8 @@ from ._extra_goal_envs import (
     SeparableGoalEnv,
     SeparableOptGoalEnv,
 )
-from ._func_opt import BaseFunctionOptimizable, FunctionOptimizable
 from ._goalenv import GoalEnv
 from ._machine import Machine
-from ._problem import BaseProblem, HasNpRandom, Problem
-from ._single_opt import BaseSingleOptimizable, Constraint, ParamType, SingleOptimizable
 from ._typeguards import (
     AnyOptimizable,
     is_configurable,
@@ -110,9 +116,6 @@ __all__ = [
     "ActType",
     "AnyOptimizable",
     "BadConfig",
-    "BaseFunctionOptimizable",
-    "BaseProblem",
-    "BaseSingleOptimizable",
     "Config",
     "ConfigValues",
     "Configurable",
@@ -120,6 +123,7 @@ __all__ = [
     "CustomOptimizerProvider",
     "CustomPolicyProvider",
     "DuplicateConfig",
+    "Env",
     "FunctionOptimizable",
     "GoalEnv",
     "GoalObs",
@@ -163,6 +167,7 @@ __all__ = [
     "make",
     "make_vec",
     "pprint_registry",
+    "protocols",
     "register",
     "register_envs",
     "registry",

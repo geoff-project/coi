@@ -8,14 +8,16 @@
 
 """An example implementation of the `OptEnv` interface."""
 
+from __future__ import annotations
+
 import argparse
 import sys
 import typing as t
 
 import gymnasium as gym
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.optimize
-from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from numpy.typing import NDArray
@@ -64,11 +66,11 @@ class Parabola(coi.OptEnv):
     objective = -0.05
     max_objective = -0.003
 
-    def __init__(self, *, render_mode: t.Optional[str] = None) -> None:
+    def __init__(self, *, render_mode: str | None = None) -> None:
         self.render_mode = render_mode
         self.pos = np.zeros(2)
         self._train = True
-        self.figure: t.Optional[Figure] = None
+        self.figure: Figure | None = None
 
     def train(self, train: bool = True) -> None:
         """Turn the environment's training mode on or off.
@@ -81,7 +83,7 @@ class Parabola(coi.OptEnv):
 
     @override
     def reset(
-        self, seed: t.Optional[int] = None, options: t.Optional[coi.InfoDict] = None
+        self, seed: int | None = None, options: coi.InfoDict | None = None
     ) -> tuple[NDArray[np.double], coi.InfoDict]:
         super().reset(seed=seed)
         # Don't use the full observation space for initial states.
@@ -101,15 +103,16 @@ class Parabola(coi.OptEnv):
         reward = -sum(self.pos**2)
         terminated = reward > self.objective
         truncated = next_pos not in self.observation_space
-        # TODO: `success` has become superfluous
-        info = {"success": terminated, "objective": self.objective}
+        info = {"objective": self.objective}
         if self._train and terminated and self.objective < self.max_objective:
             self.objective *= 0.95
         return self.pos.copy(), reward, terminated, truncated, info
 
     @override
-    def get_initial_params(self) -> NDArray[np.double]:
-        pos, _ = self.reset()
+    def get_initial_params(
+        self, *, seed: int | None = None, options: coi.InfoDict | None = None
+    ) -> NDArray[np.double]:
+        pos, _ = self.reset(seed=seed, options=options)
         return pos
 
     @override
@@ -124,9 +127,9 @@ class Parabola(coi.OptEnv):
     @override
     def render(self) -> t.Any:
         if self.render_mode == "human":
-            pyplot.figure()
-            pyplot.scatter(*self.pos)
-            pyplot.show()
+            plt.figure()
+            plt.scatter(*self.pos)
+            plt.show()
             return None
         if self.render_mode == "matplotlib_figures":
             if self.figure is None:
@@ -141,12 +144,7 @@ class Parabola(coi.OptEnv):
         return super().render()
 
 
-coi.register(
-    "Parabola-v0",
-    # TODO: This cast should not be necessary.
-    entry_point=t.cast(t.Callable[..., gym.Env], Parabola),
-    max_episode_steps=10,
-)
+coi.register("Parabola-v0", entry_point=Parabola, max_episode_steps=10)
 
 
 def run_episode(agent: BaseAlgorithm, env: coi.OptEnv) -> bool:
@@ -175,7 +173,7 @@ def get_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main_rl(env: Parabola, num_runs: int) -> t.List[bool]:
+def main_rl(env: Parabola, num_runs: int) -> list[bool]:
     """Handler for `rl` mode."""
     agent = TD3("MlpPolicy", env, learning_rate=2e-3)
     agent.learn(total_timesteps=300)
@@ -183,7 +181,7 @@ def main_rl(env: Parabola, num_runs: int) -> t.List[bool]:
     return [run_episode(agent, env) for _ in range(num_runs)]
 
 
-def main_opt(env: Parabola, num_runs: int) -> t.List[bool]:
+def main_opt(env: Parabola, num_runs: int) -> list[bool]:
     """Handler for `opt` mode."""
     bounds = bounds = scipy.optimize.Bounds(
         env.optimization_space.low,
@@ -199,12 +197,11 @@ def main_opt(env: Parabola, num_runs: int) -> t.List[bool]:
     ]
 
 
-def main(argv: t.List[str]) -> None:
+def main(argv: list[str]) -> None:
     """Main function. Should be passed `sys.argv[1:]`."""
     args = get_parser().parse_args(argv)
-    env = coi.make("Parabola-v0")
+    env = t.cast(Parabola, coi.make("Parabola-v0"))
     coi.check(env)
-    assert isinstance(env, Parabola), env
     successes = {"rl": main_rl, "opt": main_opt}[args.mode](env, 100)
     print(f"Success rate: {np.mean(successes):.1%}")
 

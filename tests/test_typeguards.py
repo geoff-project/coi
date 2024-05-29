@@ -6,6 +6,8 @@
 
 """Test the `_typeguards` module."""
 
+from __future__ import annotations
+
 import typing as t
 from unittest.mock import Mock
 
@@ -66,7 +68,9 @@ def test_any_optimizable() -> None:
     class ConcreteSingleOptimizable(coi.SingleOptimizable):
         optimization_space: t.Any = None
 
-        def get_initial_params(self) -> t.Any:
+        def get_initial_params(
+            self, *, seed: int | None = None, options: dict[str, t.Any] | None = None
+        ) -> t.Any:
             pass
 
         def compute_single_objective(self, params: t.Any) -> t.Any:
@@ -76,7 +80,13 @@ def test_any_optimizable() -> None:
         def get_optimization_space(self, cycle_time: float) -> t.Any:
             pass
 
-        def get_initial_params(self, cycle_time: float) -> t.Any:
+        def get_initial_params(
+            self,
+            cycle_time: float,
+            *,
+            seed: int | None = None,
+            options: dict[str, t.Any] | None = None,
+        ) -> t.Any:
             pass
 
         def compute_function_objective(self, cycle_time: float, params: t.Any) -> t.Any:

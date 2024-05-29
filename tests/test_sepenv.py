@@ -6,29 +6,30 @@
 
 """Test the SeparableEnv class."""
 
-from unittest.mock import Mock
+from unittest.mock import MagicMock
 
 from cernml import coi
 
 
 def test_step() -> None:
     class Subclass(coi.SeparableEnv):
-        reset = Mock(name="reset")
-        render = Mock(name="render")
-        compute_observation = Mock(name="compute_observation")
-        compute_reward = Mock(name="compute_reward")
-        compute_terminated = Mock(name="compute_terminated")
-        compute_truncated = Mock(name="compute_truncated")
+        reset = MagicMock(name="reset")
+        render = MagicMock(name="render")
+        compute_observation = MagicMock(name="compute_observation")
+        compute_reward = MagicMock(name="compute_reward")
+        compute_reward.return_value.__float__.return_value = 545.23
+        compute_terminated = MagicMock(name="compute_terminated")
+        compute_truncated = MagicMock(name="compute_truncated")
 
     env = Subclass()
-    action = Mock(name="action")
+    action = MagicMock(name="action")
     obs, reward, terminated, truncated, info = env.step(action)
     env.compute_observation.assert_called_once_with(action, info)
     assert obs == env.compute_observation.return_value
     env.compute_reward.assert_called_once_with(obs, None, info)
     assert reward == env.compute_reward.return_value
-    env.compute_terminated.assert_called_once_with(obs, None, info)
-    env.compute_truncated.assert_called_once_with(obs, None, info)
+    env.compute_terminated.assert_called_once_with(obs, 545.23, info)
+    env.compute_truncated.assert_called_once_with(obs, 545.23, info)
     assert terminated == env.compute_terminated.return_value
     assert truncated == env.compute_truncated.return_value
-    assert info == {"reward": env.compute_reward.return_value}
+    assert info == {"reward": 545.23}

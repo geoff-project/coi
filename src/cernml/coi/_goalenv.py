@@ -10,26 +10,38 @@
 This only is used if `gymnasium-robotics` isn't installed.
 """
 
+import sys
 from abc import abstractmethod
 from contextlib import suppress
-from typing import Any, Generic, Optional, SupportsFloat, TypeVar, Union
+from typing import Any, Generic, Optional, SupportsFloat, TypeVar
 
 import gymnasium as gym
 from gymnasium import error
 from gymnasium.core import ActType, ObsType
 
+if sys.version_info < (3, 11):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
+
 __all__ = (
     "GoalEnv",
+    "GoalObs",
     "GoalType",
 )
 
 GoalType = TypeVar("GoalType")  # pylint: disable = invalid-name
 
 
-class GoalEnv(
-    gym.Env[dict[str, Union[ObsType, GoalType]], ActType],
-    Generic[ObsType, GoalType, ActType],
-):
+class GoalObs(TypedDict, Generic[ObsType, GoalType]):
+    """Type annotation for the observation type of `.GoalEnv`."""
+
+    observation: ObsType
+    desired_goal: GoalType
+    achieved_goal: GoalType
+
+
+class GoalEnv(gym.Env[Any, ActType], Generic[ObsType, GoalType, ActType]):
     r"""A goal-based environment.
 
     It functions just as any regular Gymnasium environment but it
@@ -50,31 +62,28 @@ class GoalEnv(
       on the achieved and desired goal, as well as extra information.
     """
 
-    observation_space: gym.spaces.Dict
+    observation_space: gym.spaces.Dict  # type: ignore[assignment]
 
     @abstractmethod
     def reset(
-        self,
-        *,
-        seed: Optional[int] = None,
-        options: Optional[dict] = None,
-    ) -> tuple[dict[str, Union[ObsType, GoalType]], dict[str, Any]]:
+        self, *, seed: Optional[int] = None, options: Optional[dict[str, Any]] = None
+    ) -> tuple[GoalObs, dict[str, Any]]:
         """Reset the environment.
 
         In addition, check if the observation space is correct by
         inspecting the `observation`, `achieved_goal`, and
         `desired_goal` keys.
         """
-        # pylint: disable = assignment-from-no-return
         res = super().reset(seed=seed)
         # Enforce that each GoalEnv uses a Goal-compatible observation
         # space.
-        if not isinstance(self.observation_space, gym.spaces.Dict):
+        ob_space = self.observation_space
+        if not isinstance(ob_space, gym.spaces.Dict):
             raise error.Error(
                 "GoalEnv requires an observation space of type gym.spaces.Dict"
             )
         for key in ["observation", "achieved_goal", "desired_goal"]:
-            if key not in self.observation_space.spaces:
+            if key not in ob_space.spaces:
                 raise error.Error(
                     f'GoalEnv requires the "{key}" key to be part of the '
                     f"observation dictionary."

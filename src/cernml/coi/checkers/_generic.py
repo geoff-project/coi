@@ -7,12 +7,16 @@
 """Generic assertions and checks used by multiple checkers."""
 
 import typing as t
+import unittest.mock
+from contextlib import contextmanager
 
 import gymnasium as gym
 import numpy as np
-import typing_extensions as tx
 
-# TODO: Add proper version guards around tx
+if t.TYPE_CHECKING:
+    from typing_extensions import TypeGuard
+
+    from .. import protocols
 
 
 def bump_warn_arg(warn: int) -> int:
@@ -45,19 +49,70 @@ def bump_warn_arg(warn: int) -> int:
     return warn and max(warn, 2) + 1
 
 
-def assert_range(reward_range: t.Tuple[float, float], name: str) -> None:
+def assert_range(reward_range: tuple[float, float], name: str) -> None:
     """Check that the reward range is actually a range."""
     assert len(reward_range) == 2, f"{name} reward range must be tuple `(low, high)`."
     low, high = reward_range
     assert low <= high, f"lower bound of {name} range must be lower than upper bound"
 
 
-def is_reward(reward: t.Any) -> tx.TypeGuard[t.SupportsFloat]:
+@contextmanager
+def assert_human_render_called(problem: "protocols.Problem") -> t.Iterator[None]:
+    """Context manager that asserts automatic `render()` calls.
+
+    This context manager fails if the render mode of *env* is *human*
+    and `render()` is not called within the context.
+
+    If the render mode is anything except *human*, this context manager
+    does nothing.
+
+    Example:
+        >>> class Foo:
+        ...     reward_range = (-1.0, 1.0)
+        ...     observation_space = gym.spaces.Box(-1, 1, ())
+        ...     action_space = observation_space
+        ...     def __init__(self, render_mode=None):
+        ...         self.render_mode = render_mode
+        ...     @property
+        ...     def unwrapped(self):
+        ...         return self
+        ...     def reset(self, seed=None, options=None):
+        ...         return np.array(0.0, dtype=np.float32), {}
+        ...     def step(self, action):
+        ...         return action, 0.0, False, False, {}
+        ...     def render(self):
+        ...         return None
+        >>> env = Foo(render_mode="human")
+        >>> with assert_human_render_called(env):
+        ...     _ = env.reset()
+        Traceback (most recent call last):
+        ...
+        AssertionError: in render mode 'human', the env must call
+        render() automatically whenever its state changes
+    """
+    mode = problem.render_mode
+    if mode != "human":
+        yield
+        return
+    render = problem.render
+    mock = unittest.mock.Mock(name=str(render), wraps=render)
+    with unittest.mock.patch.object(problem, "render", new_callable=lambda: mock):
+        yield
+    try:
+        mock.assert_called()
+    except AssertionError as exc:
+        raise AssertionError(
+            "in render mode 'human', the env must call render() "
+            "automatically whenever its state changes"
+        ) from exc
+
+
+def is_reward(reward: t.Any) -> "TypeGuard[t.SupportsFloat]":
     """Return True if the object has the correct type for a reward."""
     return isinstance(reward, t.SupportsFloat)
 
 
-def is_bool(value: t.Any) -> tx.TypeGuard[t.Union[bool, np.bool_]]:
+def is_bool(value: t.Any) -> "TypeGuard[bool | np.bool_]":
     """Return True if the object is a true boolean.
 
     This accepts `bool`, :class:`np.bool_` and possible subclasses, but
@@ -120,6 +175,6 @@ def is_iterable(value: t.Any) -> bool:
     return isinstance(value, t.Iterable) or hasattr(type(value), "__getitem__")
 
 
-def is_box(space: gym.Space) -> tx.TypeGuard[gym.spaces.Box]:
+def is_box(space: gym.Space) -> "TypeGuard[gym.spaces.Box]":
     """Return True if the given space is a Box."""
     return isinstance(space, gym.spaces.Box)

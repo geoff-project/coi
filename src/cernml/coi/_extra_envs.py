@@ -17,7 +17,7 @@ from abc import ABCMeta
 
 from gymnasium.core import ActType, Env, ObsType
 
-from ._single_opt import ParamType, SingleOptimizable
+from ._classes import ParamType, SingleOptimizable
 
 __all__ = (
     "ActType",
@@ -67,9 +67,9 @@ class SeparableEnv(Env[ObsType, ActType]):
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(obs, None, info)
-        info["reward"] = reward
-        terminated = self.compute_terminated(obs, None, info)
-        truncated = self.compute_truncated(obs, None, info)
+        info["reward"] = freward = float(reward)
+        terminated = self.compute_terminated(obs, freward, info)
+        truncated = self.compute_truncated(obs, freward, info)
         return obs, reward, terminated, truncated, info
 
     def compute_observation(self, action: ActType, info: InfoDict) -> ObsType:
@@ -122,9 +122,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
-    # TODO: Change this to pass the reward instead of the goal. Keep
-    # harmony with GoalEnv in mind.
-    def compute_terminated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
+    def compute_terminated(self, obs: ObsType, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
         This externalizes the decision whether the agent has reached the
@@ -155,7 +153,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
-    def compute_truncated(self, obs: ObsType, goal: None, info: InfoDict) -> bool:
+    def compute_truncated(self, obs: ObsType, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
         This externalizes the decision whether a condition outside of
@@ -192,10 +190,12 @@ class OptEnv(Env[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCM
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is OptEnv:
-            bases = other.__mro__
-            return Env in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if Env.__subclasscheck__(other) and proto is True:
+            return True
         return NotImplemented
 
 
@@ -209,8 +209,10 @@ class SeparableOptEnv(
     """
 
     @classmethod
-    def __subclasshook__(cls, other: type) -> t.Any:
-        if cls is SeparableOptEnv:
-            bases = other.__mro__
-            return SeparableEnv in bases and SingleOptimizable in bases
+    def __subclasshook__(cls, other: type) -> bool:
+        # Circumvent `issubclass()` to prevent recursion;
+        # ABC.__subclasscheck__ goes through _every_ subclass of an ABC.
+        proto = SingleOptimizable.__subclasshook__(other)
+        if issubclass(other, SeparableEnv) and proto is True:
+            return True
         return NotImplemented

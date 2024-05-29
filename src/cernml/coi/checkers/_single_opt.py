@@ -12,14 +12,20 @@ import gymnasium as gym
 import numpy as np
 from scipy.optimize import LinearConstraint, NonlinearConstraint
 
-from .._single_opt import Constraint, SingleOptimizable
 from .._typeguards import is_single_optimizable
-from ._generic import assert_range, is_box, is_reward
+from ..protocols import Constraint, SingleOptimizable
+from ._generic import (
+    assert_human_render_called,
+    assert_range,
+    bump_warn_arg,
+    is_box,
+    is_reward,
+)
+from ._reseed import assert_reseed
 
 
 def check_single_optimizable(opt: SingleOptimizable, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
-    _ = warn  # Flag is currently unused, keep it for forward compatibility.
     assert is_single_optimizable(
         opt
     ), f"doesn't implement the SingleOptimizable API: {opt!r}"
@@ -27,7 +33,8 @@ def check_single_optimizable(opt: SingleOptimizable, warn: int = True) -> None:
     assert_range(opt.objective_range, "objective")
     assert_constraints(opt.constraints)
     assert_matching_names(opt)
-    assert_opt_returned_values(opt)
+    assert_opt_return_values(opt)
+    assert_reseed(opt, opt.get_initial_params, warn=bump_warn_arg(warn))
 
 
 def assert_optimization_space(env: SingleOptimizable) -> None:
@@ -79,11 +86,11 @@ def assert_matching_names(opt: SingleOptimizable) -> None:
     if opt.objective_name:
         assert isinstance(
             opt.objective_name, str
-        ), f"objective name {opt.objective_name} must be a string"
+        ), f"objective name {opt.objective_name!r} must be a string"
     if opt.param_names:
         assert not isinstance(
             opt.param_names, str
-        ), f"param names {opt.param_names} must not be a single string"
+        ), f"param names {opt.param_names!r} must not be a single string"
         opt_space = opt.optimization_space
         shape: t.Optional[tuple[int, ...]] = getattr(opt_space, "shape", None)
         assert (
@@ -96,11 +103,11 @@ def assert_matching_names(opt: SingleOptimizable) -> None:
         for param_name in opt.param_names:
             assert isinstance(
                 param_name, str
-            ), f"objective name {param_name} must be a string"
+            ), f"parameter name {param_name!r} must be a string"
     if opt.constraint_names:
         assert not isinstance(
             opt.constraint_names, str
-        ), f"param names {opt.constraint_names} must not be a single string"
+        ), f"param names {opt.constraint_names!r} must not be a single string"
         expected = len(opt.constraints)
         assert (
             len(opt.constraint_names) == expected
@@ -108,17 +115,18 @@ def assert_matching_names(opt: SingleOptimizable) -> None:
         for constraint_name in opt.constraint_names:
             assert isinstance(
                 constraint_name, str
-            ), f"objective name {constraint_name} must be a string"
+            ), f"constraint name {constraint_name!r} must be a string"
 
 
-def assert_opt_returned_values(opt: SingleOptimizable) -> None:
+def assert_opt_return_values(opt: SingleOptimizable) -> None:
     """Check the return types of `SingleOptimizable` methods."""
     params = opt.get_initial_params()
     assert params in opt.optimization_space, "parameters outside of space"
     assert isinstance(params, np.ndarray), "parameters must be NumPy array"
     params = opt.optimization_space.sample()
     low, high = opt.objective_range
-    loss = opt.compute_single_objective(params)
+    with assert_human_render_called(opt):
+        loss = opt.compute_single_objective(params)
     assert is_reward(loss), "loss must be a float or integer"
     assert is_reward(low), "loss range must be float: {low!r}"
     assert is_reward(high), "loss range must be float: {high!r}"

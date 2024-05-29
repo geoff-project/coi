@@ -11,7 +11,7 @@ from __future__ import annotations
 import typing as t
 
 if t.TYPE_CHECKING:
-    from .._problem import Problem
+    from ..protocols import Problem
     from ._base import WrapperSpec
     from ._spec import EnvSpec
 
