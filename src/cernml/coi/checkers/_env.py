@@ -12,7 +12,7 @@ import warnings
 import gym
 import numpy as np
 
-from .._sepenv import SeparableEnv
+from .._extra_envs import SeparableEnv
 from ._generic import assert_range, is_bool, is_box, is_reward
 
 

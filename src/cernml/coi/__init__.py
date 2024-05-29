@@ -52,13 +52,13 @@ from ._configurable import (
 )
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._custom_policy_provider import CustomPolicyProvider, Policy
+from ._extra_envs import OptEnv, SeparableEnv, SeparableOptEnv
+from ._extra_goal_envs import OptGoalEnv, SeparableGoalEnv, SeparableOptGoalEnv
 from ._func_opt import FunctionOptimizable
 from ._machine import Machine
 from ._problem import Problem
 from ._registration import make, register, registry, spec
-from ._sepenv import SeparableEnv, SeparableGoalEnv
 from ._single_opt import Constraint, SingleOptimizable
-from ._union_interfaces import OptEnv, OptGoalEnv, SeparableOptEnv, SeparableOptGoalEnv
 from .checkers import check
 
 __all__ = [
