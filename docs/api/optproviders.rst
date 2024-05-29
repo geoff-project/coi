@@ -5,8 +5,14 @@
 
     SPDX-License-Identifier: MIT AND (GPL-3.0-or-later OR EUPL-1.2+)
 
-Custom Optimizer Providers
+Custom Algorithm Providers
 ==========================
 
 .. autoclass:: cernml.coi.CustomOptimizerProvider
+   :members:
+
+.. autoclass:: cernml.coi.CustomPolicyProvider
+   :members:
+
+.. autoclass:: cernml.coi.Policy
    :members:

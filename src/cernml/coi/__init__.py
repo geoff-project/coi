@@ -51,6 +51,7 @@ from ._configurable import (
     DuplicateConfig,
 )
 from ._custom_optimizer_provider import CustomOptimizerProvider
+from ._custom_policy_provider import CustomPolicyProvider, Policy
 from ._func_opt import FunctionOptimizable
 from ._machine import Machine
 from ._problem import Problem
@@ -67,11 +68,13 @@ __all__ = [
     "Configurable",
     "Constraint",
     "CustomOptimizerProvider",
+    "CustomPolicyProvider",
     "DuplicateConfig",
     "FunctionOptimizable",
     "Machine",
     "OptEnv",
     "OptGoalEnv",
+    "Policy",
     "Problem",
     "SeparableEnv",
     "SeparableGoalEnv",

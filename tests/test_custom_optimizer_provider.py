@@ -9,7 +9,7 @@
 # pylint: disable = missing-function-docstring
 # pylint: disable = redefined-outer-name
 
-"""Test the inheritance chain of the package."""
+"""Test the inheritance behavior of `CustomOptimizerProvider`."""
 
 import typing as t
 

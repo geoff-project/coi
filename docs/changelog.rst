@@ -21,6 +21,11 @@ work with version 0.8.11, but may break with version 0.9.0.
 Unreleased
 ----------
 
+v0.8.16
+-------
+
+- ADD: `~cernml.coi.CustomPolicyProvider` and a :ref:`user guide section <CustomPolicyProvider>` about it.
+
 v0.8.15
 -------
 
