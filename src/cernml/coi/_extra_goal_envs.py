@@ -6,7 +6,10 @@
 
 # pylint: disable = too-many-ancestors
 
-"""Interfaces that combine two or more base interfaces."""
+"""These classes provide extra functionality for multi-goal_ environments.
+
+.. _multi-goal: https://robotics.farama.org/content/multi-goal_api/
+"""
 
 from __future__ import annotations
 
@@ -35,22 +38,26 @@ __all__ = (
 class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
     """A multi-goal environment whose calculations nicely separate.
 
-    This interface is superficially similar to `~gym.GoalEnv`, but
+    This interface is superficially similar to `GoalEnv`, but
     additionally also splits out the calculation of the observation and
     the end-of-episode flag. This class differs from `SeparableEnv` in
     the meaning of the parameters that are passed to
-    `~gym.GoalEnv.compute_reward()`.
+    :func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`.
 
     The split introduced by this class makes two things possible:
 
     - replacing `compute_observation()` with a function approximator,
       e.g. a neural network;
     - estimating the goodness of the very initial observation of an
-      episode via `~gym.GoalEnv.compute_reward()`.
+      episode via
+      :func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`.
 
     Because of these use cases, all state transition should be
     restricted to `compute_observation()`. In particular, it must be
-    possible to call `gym.GoalEnv.compute_reward()` and `compute_done()`
+    possible to call
+    :func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`,
+    :func:`~gymnasium_robotics.core.GoalEnv.compute_terminated()`, and
+    :func:`~gymnasium_robotics.core.GoalEnv.compute_truncated()`
     multiple times without changing the internal state of the
     environment.
     """
@@ -58,11 +65,14 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
     def step(
         self, action: ActType
     ) -> tuple[GoalObs, t.SupportsFloat, bool, bool, InfoDict]:
-        """Implementation of `gym.Env.step()`.
+        """Implementation of :func:`gymnasium.Env.step()`.
 
         This calls in turn the three new abstract methods:
-        `compute_observation()`, `~gym.GoalEnv.compute_reward()`,
-        `compute_terminated()` and `compute_truncated()`.
+        `compute_observation()`,
+        :func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`,
+        :func:`~gymnasium_robotics.core.GoalEnv.compute_terminated()`,
+        and
+        :func:`~gymnasium_robotics.core.GoalEnv.compute_truncated()`.
         """  # noqa: D402
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
@@ -104,8 +114,8 @@ class OptGoalEnv(
 ):
     """An optimizable multi-goal environment.
 
-    This is an intersection of `~gym.GoalEnv` and `SingleOptimizable`.
-    Any class that inherits from both, also inherits from this class.
+    This is an intersection of `GoalEnv` and `SingleOptimizable`.
+    Any class that inherits from both also inherits from this class.
     """
 
     @classmethod
@@ -127,8 +137,8 @@ class SeparableOptGoalEnv(
     """An optimizable and separable multi-goal environment.
 
     This is an intersection of `SeparableGoalEnv` and
-    `SingleOptimizable`. Any class that inherits from both, also
-    inherits from this class.
+    `SingleOptimizable`. Any class that inherits from both also inherits
+    from this class.
     """
 
     @classmethod

@@ -53,16 +53,14 @@ def pyplot(monkeypatch: pytest.MonkeyPatch) -> Mock:
 
 
 class CallStatsMixin:
-    """Mixin that counts all method calls.
+    """Mixin that counts all method calls."""
 
-    Attributes:
-        call_count: A dict mapping method name to number of times this
-            method has been called.
-    """
+    call_count: Counter[str]
+    """A dict mapping method name to number of times this method has been called."""
 
     def __init__(self) -> None:
         super().__init__()
-        self.call_count = Counter[str]()
+        self.call_count = Counter()
 
     def __getattribute__(self, name: str) -> object:
         attr = super().__getattribute__(name)

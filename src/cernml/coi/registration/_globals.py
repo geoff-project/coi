@@ -20,7 +20,7 @@ if t.TYPE_CHECKING:
     from gymnasium.experimental.vector import VectorEnv
 
     from .. import protocols
-    from ._base import EnvCreator, VectorEnvCreator, WrapperSpec
+    from . import _base
     from ._spec import EnvSpec
 
 __all__ = (
@@ -49,7 +49,7 @@ def namespace(ns: str) -> AbstractContextManager:
 
 
 def spec(env_id: str) -> EnvSpec:
-    """Retrieve the `EnvSpec` for a registered environment.
+    """Retrieve the `.EnvSpec` for a registered environment.
 
     Args:
         env_id: The environment ID in the usual format
@@ -70,15 +70,15 @@ def pprint_registry(
     exclude_namespaces: list[str] | None = None,
     disable_print: bool = False,
 ) -> str | None:
-    """Pretty prints all environments in the :attr:`registry`.
+    """Pretty print all environments in the `registry`.
 
     Keyword Args:
-        num_cols: Number of columns to arrange environments in, for
-            display.
-        exclude_namespaces: A list of namespaces to be excluded from
-            printing. Helpful if only ALE environments are wanted.
-        disable_print: If True, return the whole message as a string.
-            The default is to print everything to standard output.
+        num_cols: The number of columns in which to print the
+            environments.
+        exclude_namespaces: Optional. A list of namespaces to be
+            excluded from printing.
+        disable_print: If True, print nothing and return the message as
+            a string instead.
     """
     return registry.pprint(
         num_cols=num_cols,
@@ -91,8 +91,8 @@ def pprint_registry(
 def register(
     env_id: str,
     /,
-    entry_point: type[protocols.Problem] | EnvCreator | str,
-    vector_entry_point: VectorEnvCreator | str | None = None,
+    entry_point: type[protocols.Problem] | _base.EnvCreator | str,
+    vector_entry_point: _base.VectorEnvCreator | str | None = None,
     *,
     reward_threshold: float | None = None,
     nondeterministic: bool = False,
@@ -101,7 +101,7 @@ def register(
     autoreset: bool = False,
     disable_env_checker: bool = False,
     apply_api_compatibility: bool = False,
-    additional_wrappers: tuple[WrapperSpec, ...] = (),
+    additional_wrappers: tuple[_base.WrapperSpec, ...] = (),
     **kwargs: t.Any,
 ) -> None: ...
 
@@ -111,7 +111,7 @@ def register(
     env_id: str,
     /,
     *,
-    vector_entry_point: VectorEnvCreator | str,
+    vector_entry_point: _base.VectorEnvCreator | str,
     reward_threshold: float | None = None,
     nondeterministic: bool = False,
     max_episode_steps: int | None = None,
@@ -119,7 +119,7 @@ def register(
     autoreset: bool = False,
     disable_env_checker: bool = False,
     apply_api_compatibility: bool = False,
-    additional_wrappers: tuple[WrapperSpec, ...] = (),
+    additional_wrappers: tuple[_base.WrapperSpec, ...] = (),
     **kwargs: t.Any,
 ) -> None: ...
 
@@ -127,8 +127,8 @@ def register(
 def register(
     env_id: str,
     /,
-    entry_point: type[protocols.Problem] | EnvCreator | str | None = None,
-    vector_entry_point: VectorEnvCreator | str | None = None,
+    entry_point: type[protocols.Problem] | _base.EnvCreator | str | None = None,
+    vector_entry_point: _base.VectorEnvCreator | str | None = None,
     *,
     reward_threshold: float | None = None,
     nondeterministic: bool = False,
@@ -137,13 +137,13 @@ def register(
     autoreset: bool = False,
     disable_env_checker: bool = False,
     apply_api_compatibility: bool = False,
-    additional_wrappers: tuple[WrapperSpec, ...] = (),
+    additional_wrappers: tuple[_base.WrapperSpec, ...] = (),
     **kwargs: t.Any,
 ) -> None:
     """Register an environment for later use with `make()`.
 
-    TODO: The following section fits better into the user guide than the
-    API reference.
+    This function must be called exactly once for every optimization
+    problem you want to create with `make()`.
 
     The environment ID follows the syntax:
     ``[<namespace>/]<name>[-v<version>]``. See `make()` for information
@@ -152,8 +152,8 @@ def register(
     Args:
         env_id: The ID to register the environment under.
         entry_point: The entry point for creating the environment. May
-            be either a subclass of `cernml.coi.Problem`, a function
-            that returns an instance of this class, or a string. If
+            be either a subclass of `~.coi.Problem`, a function that
+            returns an instance of `~.coi.Problem`, or a string. If
             a string, it should be in the format ``<module>:<object>``
             with as many dots ``.`` on either side of the colon as
             necessary.
@@ -164,19 +164,20 @@ def register(
             same state cannot be reached.
         max_episode_steps: If not None, the maximum number of steps before
             an episode is truncated. Implemented via
-            `gymnasium.wrappers.TimeLimit`.
+            `~gymnasium.wrappers.TimeLimit`.
         order_enforce: If True, a wrapper around the environment ensures
             that all functions are called in the correct order.
-            Implemented via `gymnasium.wrappers.OrderEnforcing`.
+            Implemented via `~gymnasium.wrappers.OrderEnforcing`.
         autoreset: If True, a wrapper around the environment calls
-            `reset()` immediately whenever an episode ends. Implemented
-            via `gymnasium.wrappers.AutoResetWrapper`.
+            :func:`~gymnasium.Env.reset()` immediately whenever an
+            episode ends. Implemented via
+            `~gymnasium.wrappers.AutoResetWrapper`.
         disable_env_checker: Normally, all environments are wrapped in
-            `gymnasium.wrappers.PassiveEnvChecker`. If True, don't do that
+            `~gymnasium.wrappers.PassiveEnvChecker`. If True, don't do that
             for this environment.
         apply_api_compatibility: If True, the class still follows the
             Gym v0.21 Step API. In this case,
-            `gymnasium.wrappers.StepAPICompatibility`
+            `~gymnasium.wrappers.StepAPICompatibility`
             wraps around it to ensure compatibility with the new API.
         additional_wrappers: Additional wrappers to apply the
             environment automatically when `make()` is called.
@@ -217,11 +218,13 @@ def make(
     The environment must have been previously registered with
     `cernml.coi.register()`.
 
-    To find all available environments, use `cernml.coi.registry.all()`.
+    To find all available environments, use `registry.all()
+    <.EnvRegistry.all>`.
 
     Unlike in `register()`, the env ID may follow the syntax
     ``"[<module>:][<namespace>/]<name>[-v<version>]"``. If a module is
-    given, it is imported before looking up the environment.
+    given, it is imported unconditionally before looking up the
+    environment.
 
     In addition, if you don't specify the version of an environment that
     has been registered with a version, the *highest version* is picked
@@ -229,24 +232,24 @@ def make(
 
     If a namespace is given and the environment cannot be found
     immediately, an :doc:`entry point <pkg:specifications/entry-points>`
-    in the group `cernml.envs` with the same name as the namespace is
+    in the group ``cernml.envs`` with the same name as the namespace is
     loaded. If the entry point points at a module, it is imported; if it
     points at a function, the function is called. The function should do
     nothing but call `register()` as necessary.
 
     Args:
-        env_id: Name of the environment or an `EnvSpec`.
+        env_id: Name of the environment or an `~.EnvSpec`.
         max_episode_steps: Override the same parameter of `register()`.
-            Implemented via `gymnasium.wrappers.TimeLimit`.
+            Implemented via `~gymnasium.wrappers.TimeLimit`.
         autoreset: If True, to automatically reset the environment after
             each episode. Implemented via
-            `gymnasium.wrappers.AutoResetWrapper`.
+            `~gymnasium.wrappers.AutoResetWrapper`.
         apply_api_compatibility: Override the same parameter of
             `register()`. Implemented via
-            `gymnasium.wrappers.StepAPICompatibility`.
+            `~gymnasium.wrappers.StepAPICompatibility`.
         disable_env_checker: Override the same parameter of
             `register()`. Implemented via
-            `gymnasium.wrappers.PassiveEnvChecker`.
+            `~gymnasium.wrappers.PassiveEnvChecker`.
         kwargs: Additional arguments to pass to the environment
             constructor.
 
@@ -281,14 +284,15 @@ def make_vec(
     """Create a *vector* environment according to the given ID.
 
     Note:
-        This is a thin wrapper around `gymnasium.make_vec()`. The only
+        This is a thin wrapper around ``gymnasium.make_vec()``. The only
         difference is that it looks up environments in the COI registry
         instead of the Gym registry.
 
         In Gymnasium, this feature is still considered experimental and
         likely to change in future releases.
 
-    To find all available environments, use `cernml.coi.registry.all()`.
+    To find all available environments, use `registry.all()
+    <.EnvRegistry.all>`.
 
     Unlike in `register()`, the env ID may follow the syntax
     ``"[<module>:][<namespace>/]<name>[-v<version>]"``. If a module is
@@ -299,7 +303,7 @@ def make_vec(
     automatically.
 
     Args:
-        env_id: Name of the environment or an `EnvSpec`.
+        env_id: Name of the environment or an `.EnvSpec`.
         num_envs: Number of environments to create.
         vectorization_mode: How to vectorize the environment. Can be
             either ``"async"``, ``"sync"`` or ``"custom"``.

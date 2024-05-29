@@ -4,17 +4,29 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Provice ABCs that correspond to each protocol of this package."""
+"""These functions let you test which interfaces an object implements.
+
+Unlike naive :func:`isinstance()` checks, these functions takes
+Gymnasium :doc:`gym:api/wrappers` into account and unwrap them. For
+convenience when using Mypy, all functions return a `~typing.TypeGuard`.
+
+The functions with name :samp:`is_{type}_class()` are relatively simple
+wrappers around :func:`issubclass()`. They work around some weaknesses
+in Mypy's error reporting, and provide symmetry with the
+:samp:`is_{type}()` functions based on :func:`isinstance()`.
+
+.. currentmodule:: cernml.coi
+"""
 
 import typing as t
 
 from gymnasium import Env
 
-from ._configurable import Configurable
 from ._custom_optimizer_provider import CustomOptimizerProvider
 from ._extra_envs import SeparableEnv
 from ._extra_goal_envs import SeparableGoalEnv
 from ._goalenv import GoalEnv
+from .configurable import Configurable
 from .protocols import FunctionOptimizable, Problem, SingleOptimizable
 
 if t.TYPE_CHECKING:
@@ -48,54 +60,29 @@ __all__ = (
 
 
 def is_configurable(obj: object, /) -> "TypeGuard[Configurable]":
-    """Check whether the given `Problem` is `Configurable`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is `Configurable`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, Configurable)
 
 
 def is_configurable_class(obj: object, /) -> "TypeGuard[type[Configurable]]":
-    """Check whether the given type is a subclass of `Configurable`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `Configurable`."""
     return isinstance(obj, type) and issubclass(obj, Configurable)
 
 
 def is_problem(obj: object, /) -> "TypeGuard[Problem]":
-    """Check whether the given object is a `Problem`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is a `Problem`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, Problem)
 
 
 def is_problem_class(obj: object, /) -> "TypeGuard[type[Problem]]":
-    """Check whether the given type is a subclass of `Problem`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `Problem`."""
     return isinstance(obj, type) and issubclass(obj, Problem)  # type: ignore[misc]
 
 
 def is_single_optimizable(obj: object, /) -> "TypeGuard[SingleOptimizable[t.Any]]":
-    """Check whether the given `Problem` is a `SingleOptimizable`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is a `SingleOptimizable`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, SingleOptimizable)
 
@@ -103,22 +90,12 @@ def is_single_optimizable(obj: object, /) -> "TypeGuard[SingleOptimizable[t.Any]
 def is_single_optimizable_class(
     obj: object, /
 ) -> "TypeGuard[type[SingleOptimizable[t.Any]]]":
-    """Check whether the given type is a subclass of `SingleOptimizable`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `SingleOptimizable`."""
     return isinstance(obj, type) and issubclass(obj, SingleOptimizable)  # type: ignore[misc]
 
 
 def is_function_optimizable(obj: object, /) -> "TypeGuard[FunctionOptimizable]":
-    """Check whether the given `Problem` is a `FunctionOptimizable`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is a `FunctionOptimizable`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, FunctionOptimizable)
 
@@ -126,12 +103,7 @@ def is_function_optimizable(obj: object, /) -> "TypeGuard[FunctionOptimizable]":
 def is_function_optimizable_class(
     obj: object, /
 ) -> "TypeGuard[type[FunctionOptimizable]]":
-    """Check whether the given type is a subclass of `FunctionOptimizable`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `FunctionOptimizable`."""
     return isinstance(obj, type) and issubclass(obj, FunctionOptimizable)  # type: ignore[misc]
 
 
@@ -141,23 +113,13 @@ AnyOptimizable: "TypeAlias" = (
 
 
 def is_optimizable(obj: object, /) -> "TypeGuard[AnyOptimizable]":
-    """Combined check for `SingleOptimizable`/`FunctionOptimizable`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Combined check for `SingleOptimizable`/`FunctionOptimizable`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, (SingleOptimizable, FunctionOptimizable))
 
 
 def is_optimizable_class(obj: object, /) -> "TypeGuard[type[AnyOptimizable]]":
-    """Combined check for `SingleOptimizable`/`FunctionOptimizable`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Combined check for `SingleOptimizable`/`FunctionOptimizable`."""
     return isinstance(obj, type) and issubclass(  # type: ignore[misc]
         obj,
         (SingleOptimizable, FunctionOptimizable),
@@ -165,98 +127,53 @@ def is_optimizable_class(obj: object, /) -> "TypeGuard[type[AnyOptimizable]]":
 
 
 def is_env(obj: object, /) -> "TypeGuard[Env]":
-    """Check whether the given `Problem` is a `~gymnasium.Env`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is an `~gymnasium.Env`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, Env)
 
 
 def is_env_class(obj: object, /) -> "TypeGuard[type[Env]]":
-    """Check whether the given type is a subclass of `~gymnasium.Env`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `~gymnasium.Env`."""
     return isinstance(obj, type) and issubclass(obj, Env)
 
 
 def is_goal_env(obj: object, /) -> "TypeGuard[GoalEnv]":
-    """Check whether the given `Problem` is a `GoalEnv`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is a `GoalEnv`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, GoalEnv)
 
 
 def is_goal_env_class(obj: object, /) -> "TypeGuard[type[GoalEnv]]":
-    """Check whether the given type is a subclass of `GoalEnv`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `GoalEnv`."""
     return isinstance(obj, type) and issubclass(obj, GoalEnv)
 
 
 def is_separable_env(obj: object, /) -> "TypeGuard[SeparableEnv]":
-    """Check whether the given `Problem` is a `SeparableEnv`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is a `SeparableEnv`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, SeparableEnv)
 
 
 def is_separable_env_class(obj: object, /) -> "TypeGuard[type[SeparableEnv]]":
-    """Check whether the given type is a subclass of `SeparableEnv`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `SeparableEnv`."""
     return isinstance(obj, type) and issubclass(obj, SeparableEnv)
 
 
 def is_separable_goal_env(obj: object, /) -> "TypeGuard[SeparableGoalEnv]":
-    """Check whether the given `Problem` is a `SeparableGoalEnv`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is a `SeparableGoalEnv`."""
     unwrapped = getattr(obj, "unwrapped", None)
     return isinstance(unwrapped, SeparableGoalEnv)
 
 
 def is_separable_goal_env_class(obj: object, /) -> "TypeGuard[type[SeparableGoalEnv]]":
-    """Check whether the given type is a subclass of `SeparableGoalEnv`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the given type is a subclass of `SeparableGoalEnv`."""
     return isinstance(obj, type) and issubclass(obj, SeparableGoalEnv)
 
 
 def is_custom_optimizer_provider(
     obj: object, /
 ) -> "TypeGuard[CustomOptimizerProvider]":
-    """Check whether the given `Problem` is a `CustomOptimizerProvider`.
-
-    Unlike naive `isinstance()` checks, this takes gymnasium wrappers
-    into account and unwraps them. For convenience when using Mypy, this
-    is a `~typing.TypeGuard`.
-    """
+    """Check whether the given object is a `CustomOptimizerProvider`."""
     # This class is special! it may not have an `unwrapped` property.
     unwrapped = getattr(obj, "unwrapped", obj)
     return isinstance(unwrapped, CustomOptimizerProvider)
@@ -265,10 +182,5 @@ def is_custom_optimizer_provider(
 def is_custom_optimizer_provider_class(
     obj: object, /
 ) -> "TypeGuard[type[CustomOptimizerProvider]]":
-    """Check whether the type is a subclass of `CustomOptimizerProvider`.
-
-    This is a simple wrapper around `issubclass()`. Its purpose is to
-    work around some weaknesses in Mypy's reporting, and symmetry with
-    the ``is_*()`` functions based on `isinstance()`.
-    """
+    """Check whether the type is a subclass of `CustomOptimizerProvider`."""
     return isinstance(obj, type) and issubclass(obj, CustomOptimizerProvider)

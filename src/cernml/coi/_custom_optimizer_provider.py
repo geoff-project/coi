@@ -40,8 +40,7 @@ class CustomOptimizerProvider(AttrCheckProtocol, t.Protocol):
     This is an :term:`std:abstract base class`. This means even classes
     that don't inherit from it may be considered a subclass. To be
     considered a subclass, a class must merely provide
-    a `std:classmethod` (*not* a `std:staticmethod` or regular instance
-    :term:`std:method`!) with the name ``get_optimizers``.
+    a `std:classmethod` with the name ``get_optimizers``.
 
     Custom optimizers may also be provided through an :doc:`entry point
     <pkg:specifications/entry-points>`. Entry points in the group

@@ -1,0 +1,26 @@
+{# SPDX-FileCopyrightText: 2020-2023 CERN #}
+{# SPDX-FileCopyrightText: 2023-2024 GSI Helmholtzzentrum für Schwerionenforschung #}
+{# SPDX-FileCopyrightText: 2001-2017 Python Software Foundation #}
+{# SPDX-FileNotice: All rights not expressly granted are reserved. #}
+
+{# SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+ #}
+
+{% extends "!layout.html" %}
+{# modified from https://github.com/python/python-docs-theme/blob/main/python_docs_theme/layout.html #}
+{% block footer %}
+    <div class="footer">
+    &copy; {% if theme_copyright_url or hasdoc('copyright') %}<a href="{% if theme_copyright_url %}{{ theme_copyright_url }}{% else %}{{ pathto('copyright') }}{% endif %}">{% endif %}{% trans %}Copyright{% endtrans %}{% if theme_copyright_url or hasdoc('copyright') %}</a>{% endif %} {{ copyright|e }}.
+    <br />
+    {% trans %}Except as otherwise noted, this work is licensed under GPL-3.0-or-later OR EUPL-1.2.{% endtrans %}
+    <br />
+    {% if theme_license_url %}{% trans license_file=theme_license_url %}See <a href="{{ license_file }}">COPYING</a> for more information.{% endtrans %}<br />{% endif %}
+    {% if theme_hosted_on %}{% trans hosted_on=theme_hosted_on %}Hosted on {{ hosted_on }}.{% endtrans %}<br />{% endif %}
+    <br />
+
+    {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+    {% if theme_issues_url %}{% trans %}<a href="{{ theme_issues_url }}">Found a bug</a>?{% endtrans %}{% endif %}
+    <br />
+
+    {% trans sphinx_version=sphinx_version|e %}Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
+    </div>
+{% endblock %}

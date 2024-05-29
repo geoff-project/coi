@@ -9,6 +9,7 @@
 import sys
 import typing as t
 from functools import partial
+from types import FunctionType
 from unittest.mock import Mock
 
 import pytest
@@ -59,8 +60,8 @@ class MyProtocol(Base, t.Protocol):
         (1, False),
     ],
 )
-def test_is_subprotocol(obj: object, expected: bool) -> None:
-    assert _machinery.is_subprotocol(obj) == expected
+def test_is_protocol(obj: object, expected: bool) -> None:
+    assert _machinery.is_protocol(obj) == expected
 
 
 @pytest.mark.parametrize("cls", [MyAttrProtocol, MyProtocol])
@@ -189,6 +190,19 @@ class TestAttrCheckProtocolEdgeCases:
 
         assert MyProto.__protocol_attrs__ == {"attr"}
 
+    def test_protocol_attrs_preexists(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        def interject(
+            cls: type, name: str, bases: tuple[type, ...], namespace: dict[str, object]
+        ) -> None:
+            cls.__protocol_attrs__: set[str] = t._get_protocol_attrs(cls)  # type: ignore[attr-defined,misc]
+
+        monkeypatch.setattr(t._ProtocolMeta, "__init__", interject)
+
+        class MyProto(_machinery.AttrCheckProtocol):
+            attr: int
+
+        assert MyProto.__protocol_attrs__ == {"attr"}
+
     def test_is_protocol_override(self) -> None:
         class WeirdProtocol(MyAttrProtocol):
             _is_protocol = True
@@ -238,6 +252,16 @@ class TestAttrCheckProtocolEdgeCases:
         assert not isinstance(None, MyImpl)
         assert not isinstance(UnrelatedImpl(), MyImpl)
         assert not isinstance(UnrelatedImpl(), Subclass)
+
+    @pytest.mark.parametrize("mcs", [type, _machinery.AttrCheckProtocolMeta])
+    def test_bases_no_tuple(self, mcs: type[type]) -> None:
+        # Inherit from AttrCheckProtocol instead of Protocol to enter
+        # the section of `__new__` that we want to test.
+        bad_bases = {_machinery.AttrCheckProtocol, object}
+        with pytest.raises(
+            TypeError, match=r"^type\.__new__\(\) argument 2 must be tuple, not set$"
+        ):
+            mcs("name", t.cast(tuple, bad_bases), {})
 
 
 class TestAttrsMatch:
@@ -361,7 +385,13 @@ class TestAttrsMatch:
 
 
 @pytest.mark.parametrize(
-    "impl", [_machinery.get_class_annotations, _machinery.get_class_annotations_impl]
+    "impl",
+    [
+        pytest.param(_machinery.get_class_annotations, id="get_class_annotations"),
+        pytest.param(
+            _machinery.get_class_annotations_impl, id="get_class_annotations_impl"
+        ),
+    ],
 )
 class TestGetClassAnnotations:
     def make_type(
@@ -404,6 +434,14 @@ class TestGetClassAnnotations:
         expected = vars(obj)["__annotations__"]
         actual = impl(obj)
         assert expected is actual
+
+    def test_function_type(self, impl: t.Callable[[object], dict[str, object]]) -> None:
+        assert "__annotations__" in vars(FunctionType)
+        with pytest.raises(
+            AttributeError,
+            match="type object 'function' has no attribute '__annotations__'",
+        ):
+            impl(FunctionType)
 
     def test_type(self, impl: t.Callable[[object], dict[str, object]]) -> None:
         if sys.version_info < (3, 10):

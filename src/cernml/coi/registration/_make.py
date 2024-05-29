@@ -245,16 +245,14 @@ def _add_wrappers(
         )
         env = _wrap_compatibility(env, compatibility_render_mode)
     if not disable_env_checker:
-        env = _wrap_if_env(env, wrappers.PassiveEnvChecker, stacklevel=1 + stacklevel)
+        env = _wrap_if_env(env, wrappers.PassiveEnvChecker)
     if order_enforce:
-        env = _wrap_if_env(env, wrappers.OrderEnforcing, stacklevel=1 + stacklevel)
+        env = _wrap_if_env(env, wrappers.OrderEnforcing)
     if max_episode_steps is not None:
-        env = _wrap_if_env(
-            env, wrappers.TimeLimit, max_episode_steps, stacklevel=1 + stacklevel
-        )
+        env = _wrap_if_env(env, wrappers.TimeLimit, max_episode_steps)
     if autoreset:
         warnings.warn(errors.GymDeprecationWarning("autoreset"), stacklevel=stacklevel)
-        env = _wrap_if_env(env, wrappers.AutoResetWrapper, stacklevel=1 + stacklevel)
+        env = _wrap_if_env(env, wrappers.AutoResetWrapper)
     for wrapper_spec in extra_wrappers:
         if wrapper_spec.kwargs is None:
             raise errors.WrapperClassError(wrapper_spec.name)
@@ -265,9 +263,9 @@ def _add_wrappers(
     if apply_human_rendering:
         env = wrappers.HumanRendering(env)
     if apply_render_collection:
-        env = _wrap_if_env(env, wrappers.RenderCollection, stacklevel=1 + stacklevel)
-    # TODO: Compatibility wrapper for SingleOptimizable and
-    # FunctionOptimizable.
+        env = _wrap_if_env(env, wrappers.RenderCollection)
+    # TODO: Wrappers for SingleOptimizable and FunctionOptimizable.
+    # https://gitlab.cern.ch/geoff/cernml-coi/-/issues/13
     return env
 
 
@@ -297,15 +295,7 @@ def _wrap_compatibility(env: protocols.Problem, render_mode: str | None) -> Env:
 P = t.TypeVar("P", bound="protocols.Problem")
 
 
-def _wrap_if_env(
-    env: P, wrap_class: type[Wrapper], *args: t.Any, stacklevel: int
-) -> P | Env:
+def _wrap_if_env(env: P, wrap_class: type[Wrapper], *args: t.Any) -> P | Env:
     if isinstance(env, Env):
         return wrap_class(env, *args)
-    warnings.warn(
-        errors.TypeWarning(
-            f"ignored attempt to wrap {wrap_class.__name__!r} around non-Env {env}"
-        ),
-        stacklevel=stacklevel,
-    )
     return env

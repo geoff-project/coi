@@ -8,7 +8,7 @@
 # pylint: disable = too-few-public-methods
 # pylint: disable = too-many-ancestors
 
-"""An interface that splits calculations into reusable parts."""
+"""These are subclasses of `~.coi.Env` for less common use cases."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ InfoDict = dict[str, t.Any]
 class SeparableEnv(Env[ObsType, ActType]):
     """An environment whose calculations nicely separate.
 
-    This interface is superficially similar to `~.GoalEnv`, but doesn't
+    This interface is superficially similar to `GoalEnv`, but doesn't
     pose any requirements to the observation space. (By contrast,
     `.GoalEnv` requires that the observation space is a dict with keys
     ``"observation"``, ``"desired_goal"`` and ``"achieved_goal"``.) The
@@ -58,7 +58,7 @@ class SeparableEnv(Env[ObsType, ActType]):
     def step(
         self, action: ActType
     ) -> tuple[ObsType, t.SupportsFloat, bool, bool, InfoDict]:
-        """Implementation of `.Env.step()`.
+        """Implementation of :func:`gymnasium.Env.step()`.
 
         This calls in turn the four new abstract methods:
         `compute_observation()`, `compute_reward()`,
@@ -73,7 +73,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         return obs, reward, terminated, truncated, info
 
     def compute_observation(self, action: ActType, info: InfoDict) -> ObsType:
-        """Compute the next observation if *action* is taken.
+        """Apply the given *action* and return the next observation.
 
         This should encapsulate all state transitions of the
         environment. This means that after any call to
@@ -94,11 +94,12 @@ class SeparableEnv(Env[ObsType, ActType]):
     def compute_reward(
         self, obs: ObsType, goal: None, info: InfoDict
     ) -> t.SupportsFloat:
-        """Compute the next observation if *action* is taken.
+        """Calculate the reward for the given observation and current state.
 
         This externalizes the reward function. In this regard, it is
-        similar to `.GoalEnv.compute_reward()`, but it doesn't impose
-        any structure on the observation space.
+        similar to
+        :func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`, but
+        it doesn't impose any structure on the observation space.
 
         Note that this function should be free of side-effects or
         modifications of *self*. In particular, the user is allowed to
@@ -106,19 +107,20 @@ class SeparableEnv(Env[ObsType, ActType]):
         always expect the same result.
 
         Args:
-            obs: The observation calculated by `~.Env.reset()` or
+            obs: The observation calculated by
+                :func:`~gymnasium.Env.reset()` or
                 `compute_observation()`.
             goal: A dummy parameter to stay compatible with the
-                `.GoalEnv` API. This parameter generally is None. If
-                you want a multi-goal environment, consider
+                `GoalEnv` API. This parameter generally is None. If you
+                want a multi-goal environment, consider
                 `SeparableGoalEnv`.
             info: an info dictionary with additional information.
                 It may or may not have been passed to
                 `compute_observation()` before.
 
         Returns:
-            float: the reward that corresponds to the given observation.
-                This value is returned by `step()`.
+            The reward that corresponds to the given observation. This
+            value is returned by `step()`.
         """
         raise NotImplementedError
 
@@ -136,11 +138,12 @@ class SeparableEnv(Env[ObsType, ActType]):
         consider setting ``info["success"] = True``.
 
         Args:
-            obs: The observation calculated by `~gymnasium.Env.reset()`
-                or `compute_observation()`.
+            obs: The observation calculated by
+                :func:`~gymnasium.Env.reset()` or
+                `compute_observation()`.
             goal: A dummy parameter to stay compatible with the
-                `.GoalEnv` API. This parameter generally is None. If
-                you want a multi-goal environment, consider
+                `GoalEnv` API. This parameter generally is None. If you
+                want a multi-goal environment, consider
                 `SeparableGoalEnv`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to `compute_reward()`
@@ -148,8 +151,8 @@ class SeparableEnv(Env[ObsType, ActType]):
                 contains the result of `compute_reward()`.
 
         Returns:
-            bool: True if the episode has reached a terminal state,
-                False otherwise.
+            True if the episode has reached a terminal state, False
+            otherwise.
         """
         raise NotImplementedError
 
@@ -164,11 +167,12 @@ class SeparableEnv(Env[ObsType, ActType]):
         always get the same result.
 
         Args:
-            obs: The observation calculated by `~gymnasium.Env.reset()`
-                or `compute_observation()`.
+            obs: The observation calculated by
+                :func:`~gymnasium.Env.reset()` or
+                `compute_observation()`.
             goal: A dummy parameter to stay compatible with the
-                `.GoalEnv` API. This parameter generally is None. If
-                you want a multi-goal environment, consider
+                `GoalEnv` API. This parameter generally is None. If you
+                want a multi-goal environment, consider
                 `SeparableGoalEnv`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to `compute_reward()`
@@ -176,8 +180,8 @@ class SeparableEnv(Env[ObsType, ActType]):
                 contains the result of `compute_reward()`.
 
         Returns:
-            bool: True if the episode has been terminated by outside
-                forces, False otherwise.
+            True if the episode has been terminated by outside forces,
+            False otherwise.
         """
         raise NotImplementedError
 
@@ -186,7 +190,7 @@ class OptEnv(Env[ObsType, ActType], SingleOptimizable[ParamType], metaclass=ABCM
     """An optimizable environment.
 
     This is an intersection of `~.Env` and `SingleOptimizable`. Any
-    class that inherits from both, also inherits from this class.
+    class that inherits from both also inherits from this class.
     """
 
     @classmethod
@@ -205,7 +209,7 @@ class SeparableOptEnv(
     """An optimizable and separable environment.
 
     This is an intersection of `SeparableEnv` and `SingleOptimizable`.
-    Any class that inherits from both, also inherits from this class.
+    Any class that inherits from both also inherits from this class.
     """
 
     @classmethod

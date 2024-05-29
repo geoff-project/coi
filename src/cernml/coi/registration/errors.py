@@ -4,7 +4,13 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""Exceptions raised by this package."""
+"""These are all exceptions and warnings raised by the registry.
+
+.. inheritance-diagram:: cernml.coi.registration.errors
+    :parts: 1
+    :caption: Inheritance hierarchy of the exceptions. Mix-in standard
+        library exceptions like `TypeError` are not shown.
+"""
 
 from __future__ import annotations
 
@@ -36,7 +42,6 @@ __all__ = (
     "RegistryError",
     "RegistryWarning",
     "RenderModeWarning",
-    "TypeWarning",
     "UnversionedExistsError",
     "VersionNotFoundError",
     "VersionedExistsError",
@@ -48,7 +53,7 @@ __all__ = (
 
 
 class RegistryError(Exception):
-    """An error occurred in the `EnvRegistry`."""
+    """An error occurred in the `.EnvRegistry`."""
 
 
 class EntryPointError(RegistryError, TypeError):
@@ -56,7 +61,7 @@ class EntryPointError(RegistryError, TypeError):
 
 
 class HumanRenderingError(RegistryError, TypeError):
-    """The `HumanRendering` wrapper couldn't be created."""
+    """The `~gymnasium.wrappers.HumanRendering` wrapper couldn't be created."""
 
     def __init__(self, env_id: str) -> None:
         super().__init__(
@@ -133,7 +138,7 @@ class WrapperError(RegistryError, ValueError):
 
 
 class WrapperClassError(WrapperError):
-    """Attempt to load a wrapper without `RecordConstructorArgs`."""
+    """Attempt to load a wrapper that does not support reconstruction."""
 
     def __init__(self, name: str, /) -> None:
         super().__init__(
@@ -165,7 +170,7 @@ class WrapperMismatchError(WrapperError):
 
 
 class RegistryWarning(UserWarning):
-    """A warning emitted by the `EnvRegistry`."""
+    """A warning emitted by the `.EnvRegistry`."""
 
 
 class EnvSpecExistsWarning(RegistryWarning, RuntimeWarning):
@@ -198,10 +203,6 @@ class AmbiguousNamespaceWarning(RegistryWarning, RuntimeWarning):
             )
         self.current_ns = current_ns
         self.arg_ns = arg_ns
-
-
-class TypeWarning(RegistryWarning, RuntimeWarning):
-    """An object has an unexpected type or attribute."""
 
 
 class RenderModeWarning(RegistryWarning):

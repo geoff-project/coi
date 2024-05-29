@@ -19,14 +19,14 @@ from gymnasium import make_vec as make_vec_impl
 from . import _base, errors
 from ._make import make as make_impl
 from ._plugins import Plugins
+from ._sentinel import MISSING, Sentinel
 from ._spec import EnvSpec, bump_stacklevel, downcast_spec
-from ._specdict import EnvSpecDict, _Empty, _empty, raise_env_not_found
+from ._specdict import EnvSpecDict, raise_env_not_found
 
 if t.TYPE_CHECKING:
     from contextlib import AbstractContextManager
 
-    from gymnasium import Env, Wrapper
-    from gymnasium.experimental.vector import VectorEnv
+    import gymnasium.experimental.vector
 
     from .. import protocols
 
@@ -34,20 +34,21 @@ __all__ = ("EnvRegistry",)
 
 
 class EnvRegistry:
-    """Class of the environment `registry`.
+    """Class of the environment `.registry`.
 
-    Note that this package uses its own registry that is independent of
-    `gymnasium.registry`. An environment registered via
-    `gymnasium.register()` is not findable via `cernml.coi.make()` and
-    vice versa.
+    Note that this package uses its own registry, which is independent
+    of Gymnasium's `~gymnasium.envs.registration.registry`. An
+    environment registered via :func:`gymnasium.register()` is not
+    findable via `cernml.coi.make()` and vice versa.
 
     To create your own, local registry, simply instantiate this class
     again.
 
     Args:
-        ep_group: If passed, a string with the :doc:`entry point
+        ep_group: Optional. If passed, a string with the :doc:`entry point
             <pkg:specifications/entry-points>` group that should be used
-            for namespace lookups.
+            for namespace lookups. If not passed, no entry points are
+            used to dynamically load environments.
     """
 
     def __init__(self, ep_group: str | None = None) -> None:
@@ -72,9 +73,9 @@ class EnvRegistry:
     def all(
         self,
         *,
-        ns: str | None | _Empty = _empty,
-        name: str | _Empty = _empty,
-        version: int | bool | None | _Empty = _empty,
+        ns: str | None | Sentinel = MISSING,
+        name: str | Sentinel = MISSING,
+        version: int | bool | None | Sentinel = MISSING,
     ) -> t.Iterator[EnvSpec]:
         """Yield all environment specs that match a given filter.
 
@@ -98,7 +99,7 @@ class EnvRegistry:
         return self._registry.select(ns=ns, name=name, version=version)
 
     def spec(self, env_id: str, /) -> EnvSpec:
-        """Implementation of `spec`."""
+        """Implementation of `~.coi.spec()`."""  # noqa: D402
         env_spec = self._registry.get(env_id)
         if env_spec is None:
             raise_env_not_found(EnvSpec(env_id), self._registry)
@@ -111,7 +112,7 @@ class EnvRegistry:
         exclude_namespaces: list[str] | None = None,
         disable_print: bool = False,
     ) -> str | None:
-        """Implementation of `pprint_registry`."""
+        """Implementation of `~.coi.pprint_registry()`."""
         return _base.pprint_registry(
             print_registry=t.cast(dict[str, _base.EnvSpec], self._registry),
             num_cols=num_cols,
@@ -127,7 +128,7 @@ class EnvRegistry:
         vector_entry_point: _base.VectorEnvCreator | str | None = None,
         **kwargs: t.Any,
     ) -> None:
-        """Implementation of `register`."""
+        """Implementation of `~.coi.register()`."""  # noqa: D402
         stacklevel = kwargs.pop("stacklevel", 2)
         if entry_point is None and vector_entry_point is None:
             raise ValueError(
@@ -160,7 +161,7 @@ class EnvRegistry:
         disable_env_checker: bool | None = None,
         **kwargs: t.Any,
     ) -> protocols.Problem:
-        """Implementation of `make`."""
+        """Implementation of `~.coi.make()`."""  # noqa: D402
         stacklevel = bump_stacklevel(kwargs)
         allow_imports = kwargs.pop("allow_imports", True)
         if isinstance(env_id, EnvSpec):
@@ -185,10 +186,12 @@ class EnvRegistry:
         num_envs: int = 1,
         vectorization_mode: str = "async",
         vector_kwargs: dict[str, t.Any] | None = None,
-        wrappers: t.Sequence[t.Callable[[Env], Wrapper]] | None = None,
+        wrappers: (
+            t.Sequence[t.Callable[[gymnasium.Env], gymnasium.Wrapper]] | None
+        ) = None,
         **kwargs: t.Any,
-    ) -> VectorEnv:
-        """Implementation of `make_vec`."""
+    ) -> gymnasium.experimental.vector.VectorEnv:
+        """Implementation of `~.coi.make_vec()`."""  # noqa: D402
         stacklevel = kwargs.pop("stacklevel", 2)
         allow_imports = kwargs.pop("allow_imports", True)
         if isinstance(env_id, EnvSpec):

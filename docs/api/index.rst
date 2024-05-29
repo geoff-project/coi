@@ -8,16 +8,38 @@
 API Reference
 =============
 
+.. currentmodule:: cernml.coi
+
 .. automodule:: cernml.coi
+   :no-members:
+
+COI Core
+--------
 
 .. toctree::
     :maxdepth: 2
 
-    coi
-    spaces
-    config
-    registry
-    otherenvs
-    checkers
+    classes
+    registration
+    configurable
+
+Intermediate Features and Interfaces
+------------------------------------
+
+.. toctree::
+    :maxdepth: 2
+
     cancellation
-    optproviders
+    checkers
+    goalenv
+    extras
+    typeguards
+
+Implementation Details
+----------------------
+
+.. toctree::
+    :maxdepth: 2
+
+    protocols
+    machinery

@@ -5,13 +5,18 @@
 
     SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-The Cancellation API
-====================
+Additional Interfaces
+=====================
 
-.. automodule:: cernml.coi.cancellation
+.. automodule:: cernml.coi._extra_envs
     :no-members:
 
-.. autoclass:: TokenSource
-.. autoclass:: Token
-.. autoexception:: CancelledError
-.. autoexception:: CannotReset
+.. currentmodule:: cernml.coi
+
+.. autoclass:: SeparableEnv
+
+.. autoclass:: OptEnv
+
+.. autoclass:: SeparableOptEnv
+
+.. autoclass:: InfoDict

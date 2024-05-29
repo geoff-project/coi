@@ -34,11 +34,18 @@ GoalType = TypeVar("GoalType")  # pylint: disable = invalid-name
 
 
 class GoalObs(TypedDict, Generic[ObsType, GoalType]):
-    """Type annotation for the observation type of `.GoalEnv`."""
+    """Type annotation for the observation type of `GoalEnv`."""
 
     observation: ObsType
+    """The actual observation of the environment."""
+
     desired_goal: GoalType
+    """The goal that the agent has to achieved."""
+
     achieved_goal: GoalType
+    """The goal that the agent has currently achieved instead. The
+    objective of the environments is for this value to be close to
+    *desired_goal*."""
 
 
 class GoalEnv(gym.Env[Any, ActType], Generic[ObsType, GoalType, ActType]):

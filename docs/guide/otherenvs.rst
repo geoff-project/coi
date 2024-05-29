@@ -20,7 +20,12 @@ Configurable
     :caption: Fig. 1: Sequence diagram of the Configurable API
 
     newrank = true;
-    node[shape=box, style=rounded];
+    node[
+        shape=box,
+        fontname="Open Sans",
+        style="rounded, filled",
+        fillcolor="white",
+    ];
 
     subgraph cluster_user {
         label = "User";
@@ -382,33 +387,37 @@ GoalEnv
 
     rankdir = "BT";
     bgcolor = "#00000000";
-    node [shape=record, fontname="Latin Modern Sans", style=filled, fillcolor="white"];
+    node [shape=plaintext, fontname="Open Sans", style=filled, fillcolor="white"];
     edge [style=dashed];
 
     node[color=gray, fontcolor=gray];
 
     problem[shape=rectangle, label=<cernml.coi.<b>Problem</b>>];
     sopt[shape=rectangle, label=<cernml.coi.<b>SingleOptimizable</b>>];
-    env[shape=rectangle, label=<gym.<b>Env</b>>];
-    optenv[label=<cernml.coi.<b>OptEnv</b>>];
+    env[shape=rectangle, label=<gymnasium.<b>Env</b>>];
+    optenv[shape=rectangle, label=<cernml.coi.<b>OptEnv</b>>];
 
     node[color=black, fontcolor=black];
-    goalenv[label=<{
-        gym.<b>GoalEnv</b>|
-        compute_reward(<i>achieved</i>: Obs, <i>desired</i>: Obs, <i>info</i>: Dict) → float}>,
-    ];
+    goalenv[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>gymnasium_robotics.<b>GoalEnv</b></td></tr>
+            <tr>
+                <td>compute_reward(<i>achieved</i>: Obs, <i>desired</i
+                >: Obs, <i>info</i>: dict) → float</td>
+            </tr>
+        </table>
+    >];
 
-    optgoalenv[label=<cernml.coi.<b>OptGoalEnv</b>>];
+    optgoalenv[shape=rectangle, label=<cernml.coi.<b>OptGoalEnv</b>>];
 
     optenv -> sopt -> problem;
     optenv -> env -> problem;
     optgoalenv -> goalenv -> env;
     optgoalenv -> sopt;
 
-Gym provides `~gym.GoalEnv` as a specialization of `~gym.Env`. To accommodate
-it, this package also provides `OptGoalEnv` as a similar abstract base class
-for everything that inherits both from `SingleOptimizable` and from
-`~gym.GoalEnv`.
+Gymnasium provides `GoalEnv` as a specialization of `Env`. To accommodate it,
+this package also provides `OptGoalEnv` as a similar abstract base class for
+everything that inherits both from `SingleOptimizable` and from `GoalEnv`.
 
 SeparableEnv
 ------------
@@ -418,27 +427,46 @@ SeparableEnv
 
     rankdir = "BT";
     bgcolor = "#00000000";
-    node [shape=record, fontname="Latin Modern Sans", style=filled, fillcolor="white"];
+    node [shape=plaintext, fontname="Open Sans", style=filled, fillcolor="white"];
     edge [style=dashed];
 
     node[color=gray, fontcolor=gray];
-    env[shape=rectangle, label=<gym.<b>Env</b>>];
-    goalenv[label=<{
-        gym.<b>GoalEnv</b>|
-        compute_reward(<i>achieved</i>: Obs, <i>desired</i>: Obs, <i>info</i>: Dict) → float}>,
-    ];
+    env[shape=rectangle, label=<gymnasium.<b>Env</b>>];
+    goalenv[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>gymnasium.<b>GoalEnv</b></td></tr>
+            <tr>
+                <td>compute_reward(<i>achieved</i>: Obs, <i>desired</i
+                >: Obs, <i>info</i>: Dict) → float</td>
+            </tr>
+        </table>
+    >];
 
     node[color=black, fontcolor=black];
-    sepenv[label=<{
-        gym.<b>SeparableEnv</b>|
-        compute_observation(<i>action</i>: Action, <i>info</i>: Dict) →
-        float<br/>compute_reward(<i>achieved</i>: Obs, <i>desired</i>: None, <i>info</i>: Dict) → float<br/>compute_done(<i>achieved</i>: Obs, <i>reward</i>: float, <i>info</i>: Dict) → float}>,
-    ];
-    sepgoalenv[label=<{
-        gym.<b>SeparableGoalEnv</b>|
-        compute_observation(<i>action</i>: Action, <i>info</i>: Dict) →
-        float<br/>compute_done(<i>achieved</i>: Obs, <i>reward</i>: float, <i>info</i>: Dict) → float}>,
-    ];
+    sepenv[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>SeparableEnv</b></td></tr>
+            <tr>
+                <td>compute_observation(<i>action</i>: Action, <i>info</i
+                >: Dict) → float<br
+                />compute_reward(<i>achieved</i>: Obs, <i>desired</i
+                >: None, <i>info</i>: Dict) → float<br
+                />compute_done(<i>achieved</i>: Obs, <i>reward</i
+                >: float, <i>info</i>: Dict) → float}</td>
+            </tr>
+        </table>
+    >];
+    sepgoalenv[label=<
+        <table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+            <tr><td>cernml.coi.<b>SeparableGoalEnv</b></td></tr>
+            <tr>
+                <td>compute_observation(<i>action</i>: Action, <i>info</i
+                >: Dict) → float<br
+                />compute_done(<i>achieved</i>: Obs, <i>reward</i
+                >: float, <i>info</i>: Dict) → float</td>
+            </tr>
+        </table>
+    >];
 
     sepenv -> env;
     sepgoalenv -> goalenv -> env;
@@ -451,20 +479,21 @@ Such environments may expose this fact through the `SeparableEnv` interface.
 This is useful to e.g. calculate the reward that would correspond to the
 initial observation. (if there *were* a reward to associate with it.)
 
-The `SeparableEnv` interface implements `Env.step() <SeparableEnv.step()>` for
-you by means of three new abstract methods:
-`~SeparableEnv.compute_observation()`, `~SeparableEnv.compute_reward()` and
-`~SeparableEnv.compute_done()`.
+The `SeparableEnv` interface implements `~SeparableEnv.step()` for you by means
+of four new abstract methods: `~SeparableEnv.compute_observation()`,
+`~SeparableEnv.compute_reward()`, `~SeparableEnv.compute_terminated()` and
+`~SeparableEnv.compute_truncated()`.
 
-Similarly, `SeparableGoalEnv` adds `~SeparableGoalEnv.compute_observation()`
-and `~SeparableGoalEnv.compute_done()` in addition to the already existing
-`~gym.GoalEnv.compute_reward()`.
+Similarly, `SeparableGoalEnv` adds `~SeparableGoalEnv.compute_observation()`,
+in addition to the already existing
+:func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`,
+:func:`~gymnasium_robotics.core.GoalEnv.compute_terminated()` and
+:func:`~gymnasium_robotics.core.GoalEnv.compute_truncated()`.
 
 One quirk of this interface is that `~SeparableEnv.compute_reward()` takes
 a dummy parameter *desired* that must always be None. This is for compatibility
-with `~gym.GoalEnv`, ensuring that both methods have the same signature. This
-makes it easier to write generic code that can handle both interfaces equally
-well.
+with `GoalEnv`, ensuring that both methods have the same signature. This makes
+it easier to write generic code that can handle both interfaces equally well.
 
 In an analogous manner to `OptEnv`, convenience base classes exist that combine
 each of the separable interfaces with `SingleOptimizable`. They are

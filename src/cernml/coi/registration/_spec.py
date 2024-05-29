@@ -51,7 +51,7 @@ def bump_stacklevel(kwargs: dict[str, t.Any]) -> int:
 
 if sys.version_info < (3, 10):
     decorator = dc.dataclass(frozen=True)
-else:
+else:  # pragma: no cover
     decorator = dc.dataclass(frozen=True, match_args=False)
 
 
@@ -82,7 +82,19 @@ class MinimalEnvSpec(t.Protocol):
 
 @dc.dataclass
 class EnvSpec(metaclass=ABCMeta):
-    """Same as `gymnasium.envs.EnvSpec`, except using `coi.make()`."""
+    """Reimplementation of `gymnasium.envs.registration.EnvSpec`.
+
+    This dataclass is largely identical to Gymnasium's version with
+    exception of the following differences:
+
+    - its `make()` implementation uses `.coi.make()` rather than
+      :func:`gym:gymnasium.make()`;
+    - it is an :term:`abstract base class` and has registered
+      `gymnasium.envs.registration.EnvSpec` as a subclass.
+
+    If you need a Gymnasium EnvSpec for typing purposes, you can convert
+    this class via `downcast_spec()`.
+    """
 
     id: str
     entry_point: _base.EnvCreator | str | None = None
@@ -116,7 +128,7 @@ class EnvSpec(metaclass=ABCMeta):
         self.namespace, self.name, self.version = _base.parse_env_id(self.id)
 
     def make(self, **kwargs: t.Any) -> protocols.Problem:
-        """Call `cernml.coi.make` using this spec."""
+        """Call `.coi.make()` using this spec."""  # noqa: D402
         # Delayed import to avoid a cyclic dependency between modules.
         from ._make import make
 
