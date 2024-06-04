@@ -103,9 +103,10 @@ v0.8
 ----
 
 v0.8.16
--------
+^^^^^^^
 
-- ADD: `~cernml.coi.CustomPolicyProvider` and a :ref:`user guide section <CustomPolicyProvider>` about it.
+- ADD: `~cernml.coi.CustomPolicyProvider` and a :ref:`user guide section
+  <CustomPolicyProvider>` about it.
 
 v0.8.15
 ^^^^^^^
