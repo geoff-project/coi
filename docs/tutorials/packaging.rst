@@ -354,8 +354,8 @@ fill in the blanks. This is what the new requirements look like:
     # setup.py
     REQUIREMENTS: dict = {
         "core": [
-            "cernml.coi ~= 0.8.0",
-            "gym >= 0.21",
+            "cernml-coi ~= 0.9.0",
+            "gymnasium >= 0.29",
             "matplotlib ~= 3.0",
             "numpy ~= 1.0",
             "pyjapc ~= 2.0",
@@ -379,15 +379,16 @@ And this is the new ``setup()`` call:
         long_description=LONG_DESCRIPTION,
         long_description_content_type="text/markdown",
         packages=find_packages(),
-        python_requires=">=3.7, <4",
+        python_requires=">=3.9",
         classifiers=[
             "Programming Language :: Python :: 3",
             "Intended Audience :: Science/Research",
             "Natural Language :: English",
             "Operating System :: OS Independent",
             "Programming Language :: Python :: 3 :: Only",
-            "Programming Language :: Python :: 3.7",
-            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
             "Topic :: Scientific/Engineering :: Artificial Intelligence",
             "Topic :: Scientific/Engineering :: Physics",
         ],

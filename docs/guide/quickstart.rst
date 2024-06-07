@@ -21,7 +21,7 @@ is supported by the application that will optimize your problem:
         [project]
         dependencies = [
             'gymnasium > 0.29',
-            'cernml-coi >= 0.8.0',
+            'cernml-coi >= 0.9.0',
         ]
 
 .. tab:: setup.cfg
@@ -31,7 +31,7 @@ is supported by the application that will optimize your problem:
         [options]
         install_requires =
             gymnasium >= 0.29
-            cernml-coi >= 0.8.0
+            cernml-coi >= 0.9.0
 
 .. tab:: setup.py
 
@@ -43,7 +43,7 @@ is supported by the application that will optimize your problem:
             # ...,
             install_requires=[
                 'gymnasium >= 0.29',
-                'cernml-coi >= 0.8.0',
+                'cernml-coi >= 0.9.0',
             ],
         )
 
@@ -74,7 +74,8 @@ application that imports your package may find it. See the
             self.pos = np.zeros(2)
             self._train = True
 
-        def reset(self):
+        def reset(self, *, seed=None, options=None):
+            super.reset(seed=seed, options=options)
             self.pos = self.action_space.sample()
             return self.pos.copy()
 
@@ -83,11 +84,12 @@ application that imports your package may find it. See the
             ob_space = self.observation_space
             self.pos = np.clip(next_pos, ob_space.low, ob_space.high)
             reward = -sum(self.pos ** 2)
-            done = (reward > -0.05) or next_pos not in ob_space
-            return self.pos.copy(), reward, done, {}
+            terminated = (reward > -0.05) or next_pos not in ob_space
+            truncated = False
+            return self.pos.copy(), reward, terminated, truncated, {}
 
-        def get_initial_params(self):
-            return self.reset()
+        def get_initial_params(self, *, seed=None, options=None):
+            return self.reset(seed=seed, options=options)
 
         def compute_single_objective(self, params):
             ob_space = self.observation_space
