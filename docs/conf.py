@@ -140,6 +140,7 @@ graphviz_dot_args = ["-Tsvg:cairo"]
 # -- Options for Autosectionlabel --------------------------------------
 
 autosectionlabel_prefix_document = True
+autosectionlabel_maxdepth = 3
 
 # -- Options for Intersphinx -------------------------------------------
 
