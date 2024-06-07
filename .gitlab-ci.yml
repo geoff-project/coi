@@ -68,6 +68,27 @@ test_dev:
       --cov-report=xml:coverage-report.xml
       --junitxml=junit-report.xml
 
+test_dev_robotics:
+  extends:
+    - .acc_py_dev_test
+    - .coi_run_on_all_currently_supported
+  # Override `before_script` to also install gymnasium_robotics
+  before_script:
+    - !reference [.acc_py_run_on_manylinux_py_version, before_script]
+    - yum -y install glfw
+    - python -m pip install
+        -e "${project_root}"[test,robotics]
+        pytest-cov
+  # Override `script` to change the precise pytest-cov arguments.
+  script:
+    - cd ${project_root}
+    - python -m pytest
+      --cov
+      --cov-report=term
+      --cov-report=html:coverage-html
+      --cov-report=xml:coverage-report.xml
+      --junitxml=junit-report.xml
+
 test_examples:
   extends:
     - .acc_py_run_on_manylinux_py_version
