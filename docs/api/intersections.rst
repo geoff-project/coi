@@ -21,6 +21,7 @@ Intersection Interfaces
 .. autoclass:: OptEnv
 
 .. autoclass:: OptGoalEnv
+    :no-members:
 
 .. autoclass:: SeparableOptEnv
 

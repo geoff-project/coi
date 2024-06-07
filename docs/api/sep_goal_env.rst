@@ -63,6 +63,8 @@ same methods as them.
 .. currentmodule:: cernml.coi
 .. autoclass:: SeparableEnv
 .. autoclass:: SeparableGoalEnv
+    :no-members:
+    :members: step, compute_observation
 
 .. autoclass:: InfoDict
 
