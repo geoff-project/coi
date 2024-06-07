@@ -49,5 +49,5 @@ def test_works(monkeypatch: pytest.MonkeyPatch) -> None:
         observation_space = gym.spaces.Dict(spaces)
 
     res = Subclass().reset(seed=seed)  # type: ignore[abstract]
-    assert res == reset.return_value
+    assert res is None
     reset.assert_called_once_with(seed=seed)

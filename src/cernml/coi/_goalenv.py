@@ -83,7 +83,7 @@ class GoalEnv(gym.Env[Any, ActType], Generic[ObsType, GoalType, ActType]):
         inspecting the `observation`, `achieved_goal`, and
         `desired_goal` keys.
         """
-        res = super().reset(seed=seed)
+        super().reset(seed=seed)
         # Enforce that each GoalEnv uses a Goal-compatible observation
         # space.
         ob_space = self.observation_space
@@ -97,7 +97,7 @@ class GoalEnv(gym.Env[Any, ActType], Generic[ObsType, GoalType, ActType]):
                     f'GoalEnv requires the "{key}" key to be part of the '
                     f"observation dictionary."
                 )
-        return res
+        return None  # type: ignore[return-value]
 
     @abstractmethod
     def compute_reward(
