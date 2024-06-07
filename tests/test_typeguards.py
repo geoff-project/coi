@@ -106,16 +106,15 @@ def test_typeguard(
     is_instance: t.Callable[[object], bool],
     is_subclass: t.Callable[[object], bool],
 ) -> None:
-    attr_list = protocol_attrs(cls)
-    bases = (coi.SeparableGoalEnv, coi.GoalEnv, coi.SeparableEnv, gym.Env)
-    for base in bases:
+    base: type
+    for base in (coi.SeparableGoalEnv, coi.GoalEnv, coi.SeparableEnv, gym.Env):
         if base in cls.__mro__:
             break
     else:
         base = object
 
     class Subclass(base):  # type: ignore[misc, valid-type]
-        for name in attr_list:
+        for name in protocol_attrs(cls):
             locals()[name] = (
                 classmethod(Mock(name=name))
                 if isinstance(vars(cls).get(name), classmethod)
