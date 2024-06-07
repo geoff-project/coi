@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-"""These are all exceptions and warnings raised by the registry.
+"""These are all exceptions and warnings raised by :doc:`registration`.
 
 .. inheritance-diagram:: cernml.coi.registration.errors
     :parts: 1

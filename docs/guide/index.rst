@@ -22,6 +22,7 @@ application must be able to query such properties.
 .. toctree::
     :maxdepth: 2
 
+    quickstart
     core
     registration
     custom_optimizers

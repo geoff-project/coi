@@ -66,14 +66,14 @@ Quickstart
 ----------
 
 Start a Python project. In your `setup.cfg` or `setup.py`, add dependencies on
-Gym and the COI. Make sure to pick a COI version that is supported by the
+Gymnasium and the COI. Make sure to pick a COI version that is supported by the
 application that will optimize your problem.
 
 ```conf
 # setup.cfg
 [options]
 install_requires =
-    gym >= 0.11
+    gymnasium >= 0.29
     cernml-coi >= 0.8.0
 ```
 

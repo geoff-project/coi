@@ -330,26 +330,25 @@ Every optimization problem should have a class attribute called
 defined at the class level and immutable [#mdimmut]_. It communicates
 fundamental properties of the class and how a host application can use it.
 
-The following keys are defined and understood by this package:
+While the API reference contains the full definition of the
+:ref:`api/classes:standard metadata keys`, the following is an abridged
+version:
 
-``"render_modes"``
+:mdkey:`"render_modes"`
     the render modes that the optimization problem understands (see
     :ref:`guide/core:Rendering`);
 
-``"cern.machine"``
-    the accelerator that an optimization problem is associated with;
+:mdkey:`"cern.machine"`
+    the accelerator that an optimization problem is associated with (see
+    `cernml.coi.Machine`);
 
-``"cern.japc"``
+:mdkey:`"cern.japc"`
     a boolean flag indicating whether the problem's constructor expects an
     argument named *japc* of type :class:`~japc:pyjapc.PyJapc`;
 
-``"cern.cancellable"``
-    A boolean flag indicating whether the problem's constructor expects an
-    argument named *cancellation_token* of type `cancellation.Token
-    <cernml.coi.cancellation.Token>` (see
-    :ref:`guide/cancellation:Cancellation`).
-
-See the :attr:`API docs<Problem.metadata>` for a full spec.
+:mdkey:`"cern.cancellable"`
+    A boolean flag indicating whether the problem's constructor expects
+    a cancellation token. (see :ref:`guide/cancellation:Cancellation`).
 
 .. [#mdimmut] While authors of optimization problems are strongly encouraged to
    make `~Problem.metadata` immutable and class-scoped, host applications
@@ -360,27 +359,27 @@ See the :attr:`API docs<Problem.metadata>` for a full spec.
 Rendering
 ---------
 
-The metadata entry ``"render_modes"`` allows a problem to declare that its
+The metadata entry :mdkey:`"render_modes"` allows a problem to declare that its
 internal state can be visualized. It should be a list of strings where each
 string is a supported render mode. Host applications may pick one of these
-strings and pass it to the problems {meth}`~Problem.render()` method. For this
+strings and pass it to the problems :meth:`~Problem.render()` method. For this
 to work, render modes need to have well-defined semantics.
 
 The following render modes are standardized by either Gym or this package:
 
-``"human"``
+:rmode:`"human"`
     The default mode, for interactive use. This should e.g. open a window and
     display the problem's current state in it. Displaying the window should not
     block control flow.
 
-``"ansi"``
+:rmode:`"ansi"`
     Return a text-only representation of the problem. This may contain e.g.
     terminal control codes for color effects.
 
-``"rgb_array"``
+:rmode:`"rgb_array"`
     Return a Numpy array representing color image data.
 
-``"matplotlib_figures"``
+:rmode:`"matplotlib_figures"`
     Return a list of Matplotlib :class:`~matplotlib.figure.Figure` objects,
     suitable for embedding into a GUI application.
 
@@ -443,8 +442,8 @@ restrictions on environments:
   the *human*, *ansi* and *matplotlib_figures*. The former two facilitate
   debugging and stand-alone usage, the latter makes it possible to embed the
   environment into a GUI.
-- At CERN, The environment metadata must contain a key ``"cern.machine"`` with
-  a value of type `Machine`. It tells users which CERN accelerator the
+- At CERN, The environment metadata must contain a key :mdkey:`"cern.machine"`
+  with a value of type `Machine`. It tells users which CERN accelerator the
   environment belongs to. Outside of CERN, authors are free to omit this key
   and institutes are allowed to define a category key of their own.
 

@@ -6,7 +6,7 @@
 
 """Test the inheritance behavior of `CustomOptimizerProvider`."""
 
-import typing as t
+from __future__ import annotations
 
 import numpy as np
 import pytest
@@ -21,19 +21,19 @@ class DirectPolicy(coi.Policy):
 
     def predict(
         self,
-        observation: t.Union[np.ndarray, t.Dict[str, np.ndarray]],
-        state: t.Optional[t.Tuple[np.ndarray, ...]] = None,
-        episode_start: t.Optional[np.ndarray] = None,
+        observation: np.ndarray | dict[str, np.ndarray],
+        state: tuple[np.ndarray, ...] | None = None,
+        episode_start: np.ndarray | None = None,
         deterministic: bool = False,
-    ) -> t.Tuple[np.ndarray, t.Optional[t.Tuple[np.ndarray, ...]]]:
+    ) -> tuple[np.ndarray, tuple[np.ndarray, ...] | None]:
         return np.zeros(3), None
 
 
 class DirectProvider(coi.CustomPolicyProvider):
     # pylint: disable = too-few-public-methods
     @classmethod
-    def get_policy_names(cls) -> t.List[str]:
-        return super().get_policy_names() + ["name"]
+    def get_policy_names(cls) -> list[str]:
+        return [*super().get_policy_names(), "name"]
 
     def load_policy(self, name: str) -> coi.Policy:
         return DirectPolicy(name)
@@ -46,11 +46,11 @@ class IndirectPolicy:
 
     def predict(
         self,
-        observation: t.Union[np.ndarray, t.Dict[str, np.ndarray]],
-        state: t.Optional[t.Tuple[np.ndarray, ...]] = None,
-        episode_start: t.Optional[np.ndarray] = None,
+        observation: np.ndarray | dict[str, np.ndarray],
+        state: tuple[np.ndarray, ...] | None = None,
+        episode_start: np.ndarray | None = None,
         deterministic: bool = False,
-    ) -> t.Tuple[np.ndarray, t.Optional[t.Tuple[np.ndarray, ...]]]:
+    ) -> tuple[np.ndarray, tuple[np.ndarray, ...] | None]:
         # pylint: disable = unused-argument
         return np.zeros(3), None
 
@@ -58,7 +58,7 @@ class IndirectPolicy:
 class IndirectProvider:
     # pylint: disable = too-few-public-methods
     @classmethod
-    def get_policy_names(cls) -> t.List[str]:
+    def get_policy_names(cls) -> list[str]:
         return ["name"]
 
     def load_policy(self, name: str) -> IndirectPolicy:
@@ -67,7 +67,7 @@ class IndirectProvider:
 
 @pytest.mark.parametrize("subclass", [DirectProvider, IndirectProvider])
 def test_custom_optimizer_provider_defaults(
-    subclass: t.Type[coi.CustomOptimizerProvider],
+    subclass: type[coi.CustomOptimizerProvider],
 ) -> None:
     env = subclass()
     # pylint: disable = assignment-from-none

@@ -276,11 +276,11 @@ snippet shows how to declare your :ref:`entry point using Setuptools
             },
         )
 
-The entry point *group* is always ``cernml.envs``. The entry point *name* must
-be exactly the *namespace* of your environment ID. The registry always loads an
-entire namespace at once. Finally, the entry point *object reference* (the part
-after the equals sign ``=``) should be the name of a module plus optionally the
-name of a function in that module.
+The entry point *group* is always :ep:`cernml.envs`. The entry point *name*
+must be exactly the *namespace* of your environment ID. The registry always
+loads an entire namespace at once. Finally, the entry point *object reference*
+(the part after the equals sign ``=``) should be the name of a module plus
+optionally the name of a function in that module.
 
 When the user requests an environment from that namespace, the registry will
 import the given module and, if a function was given, call that function.

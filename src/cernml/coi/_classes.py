@@ -10,7 +10,7 @@ They provide an extension of the API provided by :doc:`Gymnasium
 <gym:README>` and are heavily inspired by it. They are in turn:
 
 - `~.coi.Problem`: The root of the interface hierarchy. Both the
-  following two classes _and_ `.coi.Env` are subclasses of it.
+  following two classes *and* `.coi.Env` are subclasses of it.
 - `~.coi.SingleOptimizable`: an `.coi.Env`-like class for numerical
   optimization problems;
 - `~.coi.FunctionOptimizable`: A variant of `~.coi.SingleOptimizable`
@@ -138,8 +138,8 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
     direct inheritance provides the following additional benefits:
 
     - Its `__init__() <Problem>` method requires *render_mode*, verifies
-      it with the ``"render_modes"`` key of `metadata` and assigns it to
-      the `render_mode` attribute. This reduces the amount of
+      it with the :mdkey:`"render_modes"` key of `metadata` and assigns
+      it to the `render_mode` attribute. This reduces the amount of
       boilerplate code you have to write yourself.
     - It implements the :term:`context manager` protocol to
       automatically call `close()` when the user is done with a problem.
@@ -159,50 +159,24 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
             }
         ),
     )
-    """The capabilities and behavior of this problem. This should be
-    a class-level constant attribute. It must be a mapping with
-    string-type keys. Instances may replace this dict with a custom one,
-    but they should never modify the existing dict. It communicates
+    """The capabilities and behavior of this problem. It communicates
     fundamental properties of the class and how a host application can
-    use it.
+    use it. While the dict keys are free-form, there is a list of
+    `standard metadata keys`_.
 
-    The following keys are defined and understood by this
-    package:
-
-    ``"render_modes"``
-        The render modes that the optimization problem
-        understands. Standard render modes are documented under
-        `render()`. This replaces the deprecated key
-        ``"render.modes"`` with the same meaning.
-    ``"cern.machine"``
-        The accelerator that an optimization problem is
-        associated with. This must be a value of type `Machine`.
-    ``"cern.japc"``
-        A boolean flag indicating that the problem's constructor
-        expects an argument named *japc* of type
-        :class:`~pyjapc.PyJapc`. Enable it if your class
-        performs any machine communication via JAPC. Do not
-        create your own :class:`~pyjapc.PyJapc` instance. Among
-        other things, this ensures that the correct timing
-        selector is set.
-    ``"cern.cancellable"``
-        A boolean flag indicating that the problem's constructor
-        expects an argument named *cancellation_token* of type
-        `~cernml.coi.cancellation.Token`. Enable it if your
-        class ever enters any long-running loops that the user
-        may want to interrupt. A classic example is the
-        acquisition and validation of cycle-bound data.
-
-    Additionally, all keys that start with ``"cern."`` are
-    reserved for future use.
+    This should be a class-level constant attribute. Instances should
+    replace this dict with a custom one, but they should never modify
+    the existing dict.
     """
 
     render_mode: str | None = None
-    """The chosen render mode. This is expected to be set inside
-    ``__init__()`` and not changed again afterwards. The value should be
-    either None (which implies no rendering) or one of the strings in
-    ``metadata["render_modes"]``. Standard render modes are documented
-    under `render()`."""
+    """The chosen render mode. This is either None (no rendering) or an
+    item from the list in the :mdkey:`"render_modes"` metadata. See also
+    the list of `standard render modes`_.
+
+    This attribute is expected to be set inside
+    :meth:`~object.__init__()` and not changed again afterwards.
+    """
 
     # HACK: We say this is a Gym EnvSpec, but in fact it will almost
     # always be a COI EnvSpec. This is so that `OptEnv` can be
@@ -270,26 +244,9 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
     def render(self) -> t.Any:
         """Render the environment according to the `render_mode`.
 
-        The set of supported modes varies. Some problems do not support
-        rendering at all. See :func:`gymnasium.Env.render()` for a list
-        of render modes standardized by Gymnasium.
-
-        This package currently standardizes one additional render mode:
-
-        ``"matplotlib_figures"``
-            Render to one or more :class:`~matplotlib.figure.Figure`
-            objects. This should return all figures whose contents have
-            changed. The following return types are allowed:
-
-            - a single :class:`~matplotlib.figure.Figure` object;
-            - an iterable of bare :class:`~matplotlib.figure.Figure`
-              objects or 2-tuples of `str` and
-              :class:`~matplotlib.figure.Figure` or both;
-            - a mapping with `str` keys and
-              :class:`~matplotlib.figure.Figure` values.
-
-            Strings are interpreted as window titles for their
-            associated figure.
+        The list of render modes supported by a problem is given by its
+        :mdkey:`"render_modes"` metadata. See also the list of `standard
+        render modes`_.
 
         Example:
 
@@ -307,12 +264,6 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
             ...             return None
             ...         # just raise an exception
             ...         return super().render(mode)
-
-        Note:
-            Make sure to declare all modes that you support in the
-            ``"render_modes"`` key of your `metadata`. It's recommended
-            to call `super` in implementations to use the functionality
-            of this method.
         """
         assert True
         raise NotImplementedError
@@ -397,7 +348,7 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
     - correct default values for all optional attributes;
     - `get_initial_params()` correctly handles the *seed* argument and
       seeds `~Problem.np_random` if it is passed.
-    - ``__init__()`` handles *render_mode* correctly;
+    - `__init__() <Problem>` handles *render_mode* correctly;
     - the :term:`context manager` protocol to automatically call
       `~Problem.close()`;
     - a property `~Problem.np_random` for convenient random-number
@@ -540,7 +491,7 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
       implementations for optional methods;
     - `get_initial_params()` correctly handles the *seed* argument and
       seeds `~Problem.np_random` if it is passed.
-    - ``__init__()`` handles *render_mode* correctly;
+    - `__init__() <Problem>` handles *render_mode* correctly;
     - the :term:`context manager` protocol to automatically call
       `~Problem.close()`;
     - a property `~Problem.np_random` for convenient random-number

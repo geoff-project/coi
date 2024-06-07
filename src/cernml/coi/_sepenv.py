@@ -8,11 +8,18 @@
 
 from __future__ import annotations
 
+import sys
 import typing as t
+from abc import abstractmethod
 
 from gymnasium.core import ActType, Env, ObsType
 
 from ._goalenv import GoalEnv, GoalObs, GoalType
+
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 
 __all__ = (
     "ActType",
@@ -51,6 +58,7 @@ class SeparableEnv(Env[ObsType, ActType]):
     state of the environment.
     """
 
+    @override
     def step(
         self, action: ActType
     ) -> tuple[ObsType, t.SupportsFloat, bool, bool, InfoDict]:
@@ -68,6 +76,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         truncated = self.compute_truncated(obs, freward, info)
         return obs, reward, terminated, truncated, info
 
+    @abstractmethod
     def compute_observation(self, action: ActType, info: InfoDict) -> ObsType:
         """Apply the given *action* and return the next observation.
 
@@ -87,6 +96,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def compute_reward(
         self, obs: ObsType, goal: None, info: InfoDict
     ) -> t.SupportsFloat:
@@ -120,6 +130,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def compute_terminated(self, obs: ObsType, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
@@ -137,10 +148,7 @@ class SeparableEnv(Env[ObsType, ActType]):
             obs: The observation calculated by
                 :func:`~gymnasium.Env.reset()` or
                 `compute_observation()`.
-            goal: A dummy parameter to stay compatible with the
-                `GoalEnv` API. This parameter generally is None. If you
-                want a multi-goal environment, consider
-                `SeparableGoalEnv`.
+            reward: The return value of `compute_reward()`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to `compute_reward()`
                 before. The `step()` method adds a key ``"reward"`` that
@@ -152,6 +160,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def compute_truncated(self, obs: ObsType, reward: float, info: InfoDict) -> bool:
         """Compute whether the episode ends in this step.
 
@@ -166,10 +175,7 @@ class SeparableEnv(Env[ObsType, ActType]):
             obs: The observation calculated by
                 :func:`~gymnasium.Env.reset()` or
                 `compute_observation()`.
-            goal: A dummy parameter to stay compatible with the
-                `GoalEnv` API. This parameter generally is None. If you
-                want a multi-goal environment, consider
-                `SeparableGoalEnv`.
+            reward: The return value of `compute_reward()`.
             info: an info dictionary with additional information. It may
                 or may not have been passed to `compute_reward()`
                 before. The `step()` method adds a key ``"reward"`` that
@@ -182,7 +188,9 @@ class SeparableEnv(Env[ObsType, ActType]):
         raise NotImplementedError
 
 
-class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
+# We'd like to say `GoalEnv[ObsType, GoalType, ActType]` here, but
+# `gymnasium_robotics.GoalEnv` is not generic.
+class SeparableGoalEnv(GoalEnv, t.Generic[ObsType, GoalType, ActType]):
     """A multi-goal environment whose calculations nicely separate.
 
     This interface is superficially similar to `GoalEnv`, but
@@ -209,12 +217,13 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
     environment.
     """
 
+    @override
     def step(
         self, action: ActType
     ) -> tuple[GoalObs, t.SupportsFloat, bool, bool, InfoDict]:
         """Implementation of :func:`gymnasium.Env.step()`.
 
-        This calls in turn the three new abstract methods:
+        This calls in turn the four new abstract methods:
         `compute_observation()`,
         :func:`~gymnasium_robotics.core.GoalEnv.compute_reward()`,
         :func:`~gymnasium_robotics.core.GoalEnv.compute_terminated()`,
@@ -231,6 +240,7 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
         truncated = self.compute_truncated(achieved_goal, desired_goal, info)
         return obs, reward, terminated, truncated, info
 
+    @abstractmethod
     def compute_observation(
         self, action: ActType, info: InfoDict
     ) -> GoalObs[ObsType, GoalType]:
@@ -250,4 +260,27 @@ class SeparableGoalEnv(GoalEnv[ObsType, GoalType, ActType]):
         Returns:
             The next observation to be returned by `step()`.
         """
+        raise NotImplementedError
+
+    # Repeat GoalEnv methods here so that they get type annotations even
+    # if `gymnasium_robotics.GoalEnv` doesn't have any.
+    @override
+    @abstractmethod
+    def compute_reward(
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, t.Any]
+    ) -> t.SupportsFloat:
+        raise NotImplementedError
+
+    @override
+    @abstractmethod
+    def compute_terminated(
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, t.Any]
+    ) -> bool:
+        raise NotImplementedError
+
+    @override
+    @abstractmethod
+    def compute_truncated(
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, t.Any]
+    ) -> bool:
         raise NotImplementedError

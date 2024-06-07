@@ -64,7 +64,7 @@ robotics = [
     'gymnasium-robotics ~= 1.0',
 ]
 all = [
-    'cernml-coi[gymnasium-robotics,matplotlib,optimizers]',
+    'cernml-coi[matplotlib,optimizers]',
 ]
 doc = [
     'sphinx >= 4.0',

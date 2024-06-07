@@ -28,6 +28,7 @@ This repository can be found online on CERN's `Gitlab`_.
 
     tutorials/index
     guide/index
+    examples/index
     api/index
     roadmap
     changelog

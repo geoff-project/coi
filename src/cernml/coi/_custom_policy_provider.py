@@ -20,13 +20,16 @@ from ._machinery import AttrCheckProtocol
 class Policy(t.Protocol):
     """Interface of RL algorithms returned by `CustomPolicyProvider`.
 
-    This is an :term:`std:abstract base class`. This means even classes
-    that don't inherit from it may be considered a subclass. To be
-    considered a subclass, a class must merely provide a method called
-    `predict()`. The signature of this method has been chosen to be
-    compatible with :doc:`Stable Baselines <sb3:index>`.
+    This interface has been chosen to be compatible with both policy and
+    algorithm objects of :doc:`Stable Baselines <sb3:index>`.
 
-    .. warning::
+    This is an :term:`std:abstract base class`. This means even classes
+    that don't inherit from it may be considered a subclass. This means
+    even classes that don't inherit from it may be considered
+    a subclass, as long as they adhere to the interface defined by this
+    class.
+
+    Warning:
         When implementing this method yourself, be careful to return
         a :samp:`({action}, {state})` tuple! If your policy is
         non-recursive, the *state* should be simply None.
@@ -60,9 +63,10 @@ class Policy(t.Protocol):
                 enabling action noise.
 
         Returns:
-            The chosen action and, if this is a recurrent policy, the
-            next hidden state. Non-recurrent policies always return None
-            as a state.
+            A tuple :samp:`({action, state})`, where *action* is the
+            next environment action chosen by the policy. If this is
+            a recurrent policy, *state* is the next hidden state; for
+            non-recurrent policies, *state* should be None.
         """
 
 
@@ -70,11 +74,13 @@ class Policy(t.Protocol):
 class CustomPolicyProvider(AttrCheckProtocol, t.Protocol):
     """Interface for optimization problems with custom RL algorithms.
 
-    This protocol gives subclasses of `~gym.Env` the opportunity to
-    dynamically collect and return RL agents that are tailored to the
+    This protocol gives subclasses of `~gymnasium.Env` the opportunity
+    to dynamically collect and return RL agents that are tailored to the
     problem. Host applications are expected to check the presence of
     this interface and, if possible, call `get_policy_names()` before
-    presenting a list of agents to the user.
+    presenting a list of agents to the user. Host applications must also
+    check the entry point :ep:`cernml.custom_policies` for matchin
+    policy providers.
 
     The interface is split into two parts:
 
@@ -88,20 +94,10 @@ class CustomPolicyProvider(AttrCheckProtocol, t.Protocol):
     `~Policy.predict()`. All algorithms and policy classes of
     :doc:`Stable Baselines <sb3:index>` satisfy this interface.
 
-    This is an :term:`std:abstract base class`. This means even classes
-    that don't inherit from it may be considered a subclass. To be
-    considered a subclass, a class must merely provide
-    a `std:classmethod` with the name ``get_policy_names`` and
-    a *regular* method with the name ``load_policy``.
-
-    Custom policies may also be provided through an :doc:`entry point
-    <pkg:specifications/entry-points>`. Entry points in the group
-    ``cernml.custom_policies`` that have the same name as the
-    *registered* name of the environment (not the class name!) must
-    point to a subclass of `CustomPolicyProvider`. The class must be
-    instantiable by calling it without arguments. A host application may
-    load and invoke such an entry point if and only if the user selects
-    an optimization problem with a matching name.
+    Like `Problem`, this is an :term:`std:abstract base class`. This
+    means even classes that don't inherit from it may be considered
+    a subclass, as long as they adhere to the interface defined by this
+    class.
     """
 
     @classmethod

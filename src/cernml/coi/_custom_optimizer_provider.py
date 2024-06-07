@@ -24,7 +24,9 @@ class CustomOptimizerProvider(AttrCheckProtocol, t.Protocol):
     specialized optimization algorithms that are tailored to the
     problem. Host applications are expected to check the presence of
     this interface and, if possible, call `get_optimizers()` before
-    presenting a list of optimization algorithms to the user.
+    presenting a list of optimization algorithms to the user. Host
+    applications must also check the entry point
+    :ep:`cernml.custom_optimizers` for matchin optimizer providers.
 
     Optimizers provided by this protocol should themselves follow the
     protocol defined by :class:`~cernml.optimizers.Optimizer`. Beware
@@ -37,20 +39,10 @@ class CustomOptimizerProvider(AttrCheckProtocol, t.Protocol):
         $ pip install cernml-coi[optimizers] # as extra of this package
         $ pip install cernml-coi[all]        # as part of all extras
 
-    This is an :term:`std:abstract base class`. This means even classes
-    that don't inherit from it may be considered a subclass. To be
-    considered a subclass, a class must merely provide
-    a `std:classmethod` with the name ``get_optimizers``.
-
-    Custom optimizers may also be provided through an :doc:`entry point
-    <pkg:specifications/entry-points>`. Entry points in the group
-    ``cernml.custom_optimizers`` that have the same name as the
-    *registered* name of the optimization problem (not the class name!)
-    must point to either a subclass of `CustomOptimizerProvider`, or
-    a function that acts as the `get_optimizers()` method of such
-    a subclass. A host application may load and invoke such an entry
-    point if and only if the user selects an optimization problem with
-    a matching name.
+    Like `Problem`, this is an :term:`std:abstract base class`. This
+    means even classes that don't inherit from it may be considered
+    a subclass, as long as they adhere to the interface defined by this
+    class.
     """
 
     @classmethod

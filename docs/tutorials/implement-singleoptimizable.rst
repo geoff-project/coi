@@ -79,7 +79,8 @@ machine.
 In any case, with this class in place, we can write methods to communicate with
 the corrector magnets. We define their addresses in a class-level attribute and
 use JAPC to send and receive values. Note that in good Python code, class
-attributes come *before* all your methods, including ``__init__()``.
+attributes come *before* all your methods, including
+:meth:`~object.__init__()`.
 
 In the setting method, we introduce a small delay to ensure that the values
 have arrived at the machine before we continue.
@@ -201,32 +202,32 @@ maximum visibility:
 
 Metadata is basically a free-form dictionary. You're free to put in your own
 information if you think you need to. However, some keys are standardized and
-have conventional meaning. The full list is given :attr:`elsewhere
-<cernml.coi.Problem.metadata>`, but the important parts are:
+have conventional meaning. The full list is given :ref:`elsewhere
+<api/classes:standard metadata keys>`, but the important parts are:
 
-``render_modes``
+:mdkey:`"render_modes"`
     This must be present and it must be a collection of strings. We'll get to
     the details :ref:`further down
     <tutorials/implement-singleoptimizable:custom rendering output>`, but this
     declares the ways in which a user can visualize your problem. Because this
     list is empty right now, it means our problem can't be visualized at all.
     (We'll change this later.)
-``cern.machine``
+:mdkey:`"cern.machine"`
     This declares the :class:`CERN accelerator <cernml.coi.Machine>` that your
     problem belongs to. If this is set to None or is missing, we assume that
     this problem isn't related to any accelerator at all.
-``cern.japc``
+:mdkey:`"cern.japc"`
     If this is present and True, it means that our problem requires JAPC
-    access. In such a case, our ``__init__()`` method must accept a keyword
-    argument *japc* (which it already does).
+    access. In such a case, our :meth:`~object.__init__()` method must accept
+    a keyword argument *japc* (which it already does).
 
 The Optimization Space
 ^^^^^^^^^^^^^^^^^^^^^^
 
 The `~cernml.coi.SingleOptimizable.optimization_space` is a definition of how
 many parameters we are optimizing (the degrees of freedom) and what their valid
-domains are. We define it in our ``__init__()`` method, which now looks like
-this:
+domains are. We define it in our :meth:`~object.__init__()` method, which now
+looks like this:
 
 .. code-block:: python
 
@@ -254,7 +255,7 @@ one!), we decide to measure the corrector values at instantiation and return
 those. This gives the host the possibility to always return to a known-good
 state: By simply using those initial settings without doing any optimization!
 
-We add two lines to the end of ``__init__()``:
+We add two lines to the end of :meth:`~object.__init__()`:
 
 .. code-block:: python
 
@@ -276,10 +277,10 @@ and implement the method:
         def get_initial_params(self) -> np.ndarray:
             return self.initial_kicks.copy() / self.corrector_scale
 
-Note the ``self.corrector_scale``: Our optimization space is normalized to the
-range from −1 to 1, but the actual corrector values may not. For now, the
-interface requires us to do this normalization manually. In the future, this
-restriction may be lifted in a backwards-compatible manner.
+Note the :samp:`{self}.corrector_scale`: Our optimization space is normalized
+to the range from −1 to 1, but the actual corrector values may not. For now,
+the interface requires us to do this normalization manually. In the future,
+this restriction may be lifted in a backwards-compatible manner.
 
 The Objective Function
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -443,10 +444,10 @@ A few render modes have already been predefined by Gym_ and the COI package.
 You can find the full list in the :meth:`API docs
 <cernml.coi.Problem.render()>`. The ones that interest us are:
 
-``"human"``
+:rmode:`"human"`
     The default render mode. The problem should present itself on the current
     display or terminal and return None.
-``"matplotlib_figures"``
+:rmode:`"matplotlib_figures"`
     Create one or more :class:`matplotlib.figure.Figure` objects and use them
     for visualization. Return a list of :class:`~matplotlib.figure.Figure`
     objects.
@@ -454,8 +455,7 @@ You can find the full list in the :meth:`API docs
 Like for many other parts of the COI, implementing rendering involves two
 steps:
 
-1. Declare the supported render modes in the ``render_modes``
-   `~cernml.coi.Problem.metadata`.
+1. Declare the supported render modes in the :mdkey:`"render_modes"` metadata.
 2. Override the `Problem.render() <cernml.coi.Problem.render()>` method.
 
 Rendering for Humans
@@ -535,8 +535,9 @@ base implementation, which raises a :class:`NotImplementedError`. This prevents
 us from silently swallowing typos in the render mode.
 
 Another notable choice is that we have put the rendering into a separate
-method. Not only does this keep the code cleaner, it will also be useful later,
-when we also implement the ``matplotlib_figures`` render mode.
+method. Not only does this keep the code cleaner, it will also be useful `later
+<#rendering-for-the-app>`_, when we also implement the
+:rmode:`"matplotlib_figures"` render mode.
 
 To test our implementation, we can simply call the method in an interactive
 Python session:
@@ -562,23 +563,26 @@ Rendering for the App
 ^^^^^^^^^^^^^^^^^^^^^
 
 The human render mode is useful for quick debugging, but it would not work when
-embedding our optimization problem into a GUI. Most crucially, ``pyplot.show()``
-is a blocking function – it waits indefinitely and only returns once the user
-closes the window. If we called it inside a GUI, the entire application would
-freeze indefinitely!
+embedding our optimization problem into a GUI. Most crucially, `pyplot.show()
+<matplotlib.pyplot.show>` is a blocking function – it waits indefinitely and
+only returns once the user closes the window. If we called it inside a GUI, the
+entire application would freeze indefinitely!
 
 Hence, we need another render mode, one that leaves the caller of
 `~cernml.coi.Problem.render()` in full control. At the same time, we don't
 want to give up the convenience of the Matplotlib API. This is exactly what
-``"matplotlib_figures"`` is for.
+:rmode:`"matplotlib_figures"` is for.
 
-**An important detail**: The Pyplot API is so convenient because it manages a
-lot of global state for us. When embedding our class into a GUI app, the app
-will do this state management for us. If we now used Pyplot *on top* of the
-GUI, the two might get into conflict with each other about who manages what.
-For this reason, *it is crucial* for ``"matplotlib_figures"`` that no
-:mod:`~matplotlib.pyplot` function is used. We will have to use the underlying
-Matplotlib API instead. Luckily, ``update_axes()`` already does so!
+.. note::
+
+    The Pyplot API is so convenient because it manages a lot of global state
+    for us. When embedding our class into a GUI app, the app will do this state
+    management for us. If we now used Pyplot *on top* of the GUI, the two might
+    get into conflict with each other about who manages what. For this reason,
+    *it is crucial* for :rmode:`"matplotlib_figures"` that no
+    :mod:`~matplotlib.pyplot` function is used. We will have to use the
+    underlying Matplotlib API instead. Luckily, our method ``update_axes()``
+    `already does so <#rendering-for-humans>`_!
 
 To implement the new render mode, once again, we need to make a few changes in
 the previous code:
@@ -657,7 +661,7 @@ exactly the same.
 In the case that the figure already exists, we access its
 :attr:`~matplotlib.figure.Figure.axes` attribute. This is a list of the axes
 that have already been created in this figure. We unpack this list using the
-``[axes] = ...`` syntax and then continue on as in the first case.
+:samp:`[{axes}] = ...` syntax and then continue on as in the first case.
 
 In both cases, we end up returning a list of all figures that we have created.
 (We could create more than one if we wanted!) Now the GUI can call our

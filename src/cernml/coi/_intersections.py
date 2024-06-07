@@ -106,6 +106,10 @@ given by the implementation:
 
 from __future__ import annotations
 
+import sys
+import typing as t
+from abc import abstractmethod
+
 from gymnasium.core import ActType, Env, ObsType
 
 from ._classes import ParamType, SingleOptimizable
@@ -117,6 +121,11 @@ from ._machinery import (
     proto_hook,
 )
 from ._sepenv import SeparableEnv, SeparableGoalEnv
+
+if sys.version_info < (3, 12):
+    from typing_extensions import override
+else:
+    from typing import override
 
 __all__ = (
     "OptEnv",
@@ -178,8 +187,9 @@ class SeparableOptEnv(
 
 
 class OptGoalEnv(
-    GoalEnv[ObsType, GoalType, ActType],
+    GoalEnv,
     SingleOptimizable[ParamType],
+    t.Generic[ObsType, GoalType, ActType, ParamType],
     metaclass=AttrCheckProtocolMeta,
 ):
     """An intersection of `GoalEnv` and `SingleOptimizable`.
@@ -201,6 +211,29 @@ class OptGoalEnv(
         if GoalEnv not in get_static_mro(other):
             return False
         return proto_hook.__get__(None, cls)(other)
+
+    # Repeat GoalEnv methods here so that they get type annotations even
+    # if `gymnasium_robotics.GoalEnv` doesn't have any.
+    @override
+    @abstractmethod
+    def compute_reward(
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, t.Any]
+    ) -> t.SupportsFloat:
+        raise NotImplementedError
+
+    @override
+    @abstractmethod
+    def compute_terminated(
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, t.Any]
+    ) -> bool:
+        raise NotImplementedError
+
+    @override
+    @abstractmethod
+    def compute_truncated(
+        self, achieved_goal: GoalType, desired_goal: GoalType, info: dict[str, t.Any]
+    ) -> bool:
+        raise NotImplementedError
 
 
 class SeparableOptGoalEnv(

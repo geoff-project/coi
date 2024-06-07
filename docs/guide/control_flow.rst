@@ -5,6 +5,8 @@
 
     SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
+:tocdepth: 3
+
 Control Flow of Optimization Problems
 =====================================
 
@@ -90,15 +92,16 @@ Rendering
 Host applications may call `~Problem.render()` at any point between other
 calls, including **before the first call** to
 `~SingleOptimizable.get_initial_params()`. Rendering may be requested multiple
-times between two calls to `SingleOptimizable.compute_single_objective()`, so
+times between two calls to `~SingleOptimizable.compute_single_objective()`, so
 it should not modify the state of the problem.
 
 Calls to `~SingleOptimizable.get_initial_params()` and
 `~SingleOptimizable.compute_single_objective()` should not automatically call
 `~Problem.render()` except when:
 
-- the render mode is ``"human"``;
-- the render mode is list-based, e.g. ``"rgb_array_list"`` or ``"ansi_list"``.
+- the render mode is :rmode:`"human"`;
+- the render mode is list-based, e.g. :rmode:`"rgb_array_list"` or
+  :rmode:`"ansi_list"`.
 
 SingleOptimizable Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -269,7 +272,9 @@ The Info Dict
 While the *info* `dict` is free to return any additional information
 imaginable, there are a few keys that have an established meaning:
 
-``"success"``
+.. infodictkey:: "success"
+    :type: bool
+
     is a bool indicating whether the episode has ended by reaching a "good"
     terminal state. Rendering wrappers may use this key to highlight the
     episode in a particular manner.
@@ -278,7 +283,11 @@ imaginable, there are a few keys that have an established meaning:
     the episode has ended and the key is absent, this must be interpreted as an
     indeterminate terminal state, and not necessarily as a bad one.
 
-``"final_observation"`` and ``"final_info"``
+.. infodictkey:: "final_observation"
+    :type: ~cernml.coi.ObsType
+.. infodictkey:: "final_info"
+    :type: ~cernml.coi.InfoDict
+
     are defined by `~gymnasium.wrappers.AutoResetWrapper`. They are added
     whenever an episode ends and :func:`~gymnasium.Env.reset()` is called
     automatically. They contain the observation and info from the last step of
@@ -286,12 +295,16 @@ imaginable, there are a few keys that have an established meaning:
     :func:`~gymnasium.Env.step()`, these values have been supplanted with those
     from :func:`~gymnasium.Env.reset()`.
 
-``"episode"``
+.. infodictkey:: "episode"
+    :type: dict[str, typing.Any]
+
     is defined by `~gymnasium.wrappers.RecordEpisodeStatistics`. It is a `dict`
     with the cumulative reward, the episode length in steps, and the length in
     time.
 
-``"reward"``
+.. infodictkey:: "reward"
+    :type: float
+
     is defined by `SeparableEnv` and `SeparableGoalEnv`. It contains the reward
     of the current step and is set by their default implementations of
     `~SeparableEnv.step()`.

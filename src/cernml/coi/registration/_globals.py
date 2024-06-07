@@ -49,7 +49,7 @@ def namespace(ns: str) -> AbstractContextManager:
 
 
 def spec(env_id: str) -> EnvSpec:
-    """Retrieve the `.EnvSpec` for a registered environment.
+    """Retrieve the `.EnvSpec` for a registered problem.
 
     Args:
         env_id: The environment ID in the usual format
@@ -70,11 +70,11 @@ def pprint_registry(
     exclude_namespaces: list[str] | None = None,
     disable_print: bool = False,
 ) -> str | None:
-    """Pretty print all environments in the `registry`.
+    """Pretty print all problems in the `registry`.
 
     Keyword Args:
         num_cols: The number of columns in which to print the
-            environments.
+            problems.
         exclude_namespaces: Optional. A list of namespaces to be
             excluded from printing.
         disable_print: If True, print nothing and return the message as
@@ -140,51 +140,50 @@ def register(
     additional_wrappers: tuple[_base.WrapperSpec, ...] = (),
     **kwargs: t.Any,
 ) -> None:
-    """Register an environment for later use with `make()`.
+    """Register an optimization problem for later use with `make()`.
 
-    This function must be called exactly once for every optimization
-    problem you want to create with `make()`.
+    This function must be called exactly once for every problem you want
+    to create with `make()`.
 
-    The environment ID follows the syntax:
-    ``[<namespace>/]<name>[-v<version>]``. See `make()` for information
-    how the namespace and version are used.
+    The ID follows the syntax: ``[<namespace>/]<name>[-v<version>]``.
+    See `make()` for information how the namespace and version are used.
 
     Args:
-        env_id: The ID to register the environment under.
-        entry_point: The entry point for creating the environment. May
+        env_id: The ID to register the problem under.
+        entry_point: The entry point for creating the problem. May
             be either a subclass of `~.coi.Problem`, a function that
             returns an instance of `~.coi.Problem`, or a string. If
             a string, it should be in the format ``<module>:<object>``
             with as many dots ``.`` on either side of the colon as
             necessary.
-        reward_threshold: With a reward above this threshold, an agent
-            is considered to have learnt the environment.
+        reward_threshold: With a reward above this threshold, an RL
+            agent is considered to have learnt the problem.
         nondeterministic: If True, the environment is nondeterministic;
             even with knowledge of the initial seed and all actions, the
             same state cannot be reached.
         max_episode_steps: If not None, the maximum number of steps before
             an episode is truncated. Implemented via
             `~gymnasium.wrappers.TimeLimit`.
-        order_enforce: If True, a wrapper around the environment ensures
+        order_enforce: If True, a wrapper around the problem ensures
             that all functions are called in the correct order.
             Implemented via `~gymnasium.wrappers.OrderEnforcing`.
-        autoreset: If True, a wrapper around the environment calls
+        autoreset: If True, a wrapper around the problem calls
             :func:`~gymnasium.Env.reset()` immediately whenever an
             episode ends. Implemented via
             `~gymnasium.wrappers.AutoResetWrapper`.
-        disable_env_checker: Normally, all environments are wrapped in
+        disable_env_checker: Normally, all problems are wrapped in
             `~gymnasium.wrappers.PassiveEnvChecker`. If True, don't do that
-            for this environment.
+            for this problem.
         apply_api_compatibility: If True, the class still follows the
             Gym v0.21 Step API. In this case,
             `~gymnasium.wrappers.StepAPICompatibility`
             wraps around it to ensure compatibility with the new API.
-        additional_wrappers: Additional wrappers to apply the
-            environment automatically when `make()` is called.
+        additional_wrappers: Additional wrappers to apply to the
+            problem automatically when `make()` is called.
         vector_entry_point: The entry point for creating a *vector*
             environment. Used by `make_vec()`.
         **kwargs: Any further keyword arguments are passed to the
-            environment itself upon initialization.
+            problem itself upon initialization.
     """
     bump_stacklevel(kwargs)
     registry.register(
@@ -214,35 +213,33 @@ def make(
     order_enforce: bool | None = None,
     **kwargs: t.Any,
 ) -> protocols.Problem:
-    """Create an environment according to the given ID.
+    """Create an optimization problem according to the given ID.
 
-    The environment must have been previously registered with
+    The problem must have been previously registered with
     `cernml.coi.register()`.
 
-    To find all available environments, use `registry.all()
+    To find all available problems, use `registry.all()
     <.EnvRegistry.all>`.
 
-    Unlike in `register()`, the env ID may follow the syntax
+    Unlike in `register()`, the ID may follow the syntax
     ``"[<module>:][<namespace>/]<name>[-v<version>]"``. If a module is
-    given, it is imported unconditionally before looking up the
-    environment.
+    given, it is imported unconditionally before looking up the problem.
 
-    In addition, if you don't specify the version of an environment that
-    has been registered with a version, the *highest version* is picked
-    automatically.
+    In addition, if you don't specify the version of a problem that
+    *has* been registered with a version, the *highest version* is
+    picked automatically.
 
-    If a namespace is given and the environment cannot be found
+    If a namespace is given and the problem cannot be found
     immediately, an :doc:`entry point <pkg:specifications/entry-points>`
-    in the group ``cernml.envs`` with the same name as the namespace is
-    loaded. If the entry point points at a module, it is imported; if it
-    points at a function, the function is called. The function should do
-    nothing but call `register()` as necessary.
+    in the group :ep:`cernml.envs` with the same name as the namespace is
+    loaded. The entry point is expected register all its problems,
+    including the requested one.
 
     Args:
-        env_id: Name of the environment or an `~.EnvSpec`.
+        env_id: Name of the problem or an `~.EnvSpec`.
         max_episode_steps: Override the same parameter of `register()`.
             Implemented via `~gymnasium.wrappers.TimeLimit`.
-        autoreset: If True, to automatically reset the environment after
+        autoreset: If True, to automatically reset the problem after
             each episode. Implemented via
             `~gymnasium.wrappers.AutoResetWrapper`.
         apply_api_compatibility: Override the same parameter of
@@ -254,14 +251,13 @@ def make(
         order_enforce: Override the same parameter of
             `register()`. Implemented via
             `~gymnasium.wrappers.OrderEnforcing`.
-        kwargs: Additional arguments to pass to the environment
-            constructor.
+        kwargs: Additional arguments to pass to the constructor.
 
     Returns:
-        An instance of the environment with wrappers applied.
+        An instance of the problem with wrappers applied.
 
     Raises:
-        RegistryError: if the given ID doesn't exist or the environment
+        RegistryError: if the given ID doesn't exist or the problem
             constructor failed.
     """
     bump_stacklevel(kwargs)
