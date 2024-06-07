@@ -177,6 +177,24 @@ class EntryPointGroup(GenericObject):
         return ()
 
 
+class InstallExtra(GenericObject):
+    indextemplate = "install extra; %s"
+
+    def handle_signature(self, sig: str, signode: desc_signature) -> str:
+        signode.clear()
+        signode += desc_name(sig, sig)
+        signode["_toc_name"] = sig
+        return sphinx.util.ws_re.sub(" ", sig)
+
+    def _toc_entry_name(self, sig_node: desc_signature) -> str:
+        return sig_node.get("_toc_name", "")
+
+    def _object_hierarchy_parts(self, sig_node: desc_signature) -> tuple[str, ...]:
+        if name := sig_node.get("_toc_name"):
+            return (name,)
+        return ()
+
+
 def setup(app: Sphinx) -> ExtensionMetadata:
     add_object_type(
         app,
@@ -205,6 +223,13 @@ def setup(app: Sphinx) -> ExtensionMetadata:
         rolename="ep",
         objname="entry point",
         directive=EntryPointGroup,
+    )
+    add_object_type(
+        app,
+        directivename="extra",
+        rolename="extra",
+        objname="install extra",
+        directive=InstallExtra,
     )
     return {
         "version": "1.0",
