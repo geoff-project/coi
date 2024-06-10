@@ -1,5 +1,4 @@
 ..
-    SPDX-FileCopyrightText: 2016 OpenAI (https://openai.com)
     SPDX-FileCopyrightText: 2020-2024 CERN
     SPDX-FileCopyrightText: 2023-2024 GSI Helmholtzzentrum für Schwerionenforschung
     SPDX-FileNotice: All rights not expressly granted are reserved.

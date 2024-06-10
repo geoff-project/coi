@@ -9,6 +9,9 @@ above, without any additional terms or conditions.
 
 For full authorship information, see the version control history.
 
-* The documentation of Gym classes, located in docs/api/coi.rst, is
-  Copyright (c) 2016 OpenAI (https://openai.com) and licensed under the MIT
-  License <LICENSES/MIT.txt>.
+* The registration package, located in <src/cernml/coi/registration/>, is based
+  on parts of the Gymnasium package, available under at
+  <https://github.com/Farama-Foundation/Gymnasium/>. It is
+  Copyright (c) 2016 OpenAI
+  Copyright (c) 2022 Farama Foundation
+  and licensed under the MIT License <LICENSES/MIT.txt>.
