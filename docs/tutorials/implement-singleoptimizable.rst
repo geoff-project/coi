@@ -77,13 +77,7 @@ write simulation of an optimization problem and don't actually talk to the
 machine.
 
 In any case, with this class in place, we can write methods to communicate with
-the corrector magnets. We define their addresses in a class-level attribute and
-use JAPC to send and receive values. Note that in good Python code, class
-attributes come *before* all your methods, including
-:meth:`~object.__init__()`.
-
-In the setting method, we introduce a small delay to ensure that the values
-have arrived at the machine before we continue.
+the corrector magnets:
 
 .. code-block:: python
 
@@ -114,13 +108,15 @@ have arrived at the machine before we continue.
         def _recv_corrector_values(self) -> np.ndarray:
             return np.array(self.japc.getParam(self.CORRECTOR_ADDRS))
 
+Notice that we define their addresses in a class-level attribute and use JAPC
+to send and receive values. Notice also that in the setting method, we
+introduce a small delay to ensure that the values have arrived at the machine
+before we continue.
+
+
 Great! Let's do the same for the BPM readings. Because JAPC sends us back a
 *lot* of information about each BPM, we have to write a small helper function
-to extract the parts we are interested in. Note that the helper function is not
-part of the class because it doesn't need to access any attributes of it.
-
-Again, in real Python code, the class attribute ``BPM_ADDRS`` would come
-*before* all methods.
+to extract the parts we are interested in:
 
 .. code-block:: python
 
@@ -151,6 +147,9 @@ Again, in real Python code, the class attribute ``BPM_ADDRS`` would come
         hor_pos: np.ndarray = bpm_reading["horPos"][pos_ok]
         return np.mean(hor_pos)
 
+Note that the helper function ``_extract_bpm_reading()`` is *not* part of the
+class because it doesn't need to access any attributes of it.
+
 The Interface
 -------------
 
@@ -159,11 +158,16 @@ the optimization-problem interface. We kick this off by editing our class
 definition: Instead of being its own independent class, it now subclasses the
 `~cernml.coi.SingleOptimizable` interface:
 
-.. code-block:: diff
+.. code-block:: python
+    :emphasize-lines: 3
 
-      # coi_example/env.py
-    - class AwakeElectronBeamSteering:
-    + class AwakeElectronBeamSteering(coi.SingleOptimizable):
+    # coi_example/env.py
+
+    class AwakeElectronBeamSteering(coi.SingleOptimizable):
+        """Awake electron-beam steering optimization problem."""
+
+        # Rest same as before …
+
 
 The interface **requires** the following information from us:
 
@@ -187,8 +191,10 @@ application that runs it knows how to handle it. We insert the
 maximum visibility:
 
 .. code-block:: python
+    :emphasize-lines: 6-10
 
     # coi_example/env.py
+
     class AwakeElectronBeamSteering(coi.SingleOptimizable):
         """Awake electron-beam steering optimization problem."""
 
@@ -230,6 +236,7 @@ domains are. We define it in our :meth:`~object.__init__()` method, which now
 looks like this:
 
 .. code-block:: python
+    :emphasize-lines: 7
 
     # coi_example/env.py
         def __init__(self, japc: PyJapc = None) -> None:
@@ -258,6 +265,7 @@ state: By simply using those initial settings without doing any optimization!
 We add two lines to the end of :meth:`~object.__init__()`:
 
 .. code-block:: python
+    :emphasize-lines: 8-9
 
     # coi_example/env.py
         def __init__(self, japc: PyJapc = None) -> None:
@@ -315,6 +323,7 @@ application can find it without having to scour our entire package.
 Registration is done with a single line at the global scope:
 
 .. code-block:: python
+    :emphasize-lines: 6-9
 
     class AwakeElectronBeamSteering(coi.SingleOptimizable):
         # Same as before …
@@ -338,15 +347,14 @@ and everything runs on its own:
 
 .. code-block:: python
 
-    >>> import numpy as np
-    >>> from scipy.optimize import Bounds, minimize
-    >>> import coi_example
-    >>> from cernml import coi
     >>> # Instantiate our class. By virtue of importing coi_example, our
     >>> # class has appeared in the registry and can be found by name.
+    >>> import coi_example
+    >>> from cernml import coi
     >>> awake = coi.make("AwakeElectronBeamSteering-v0")
     >>> # Run minimization. This part is completely generic and works with
     >>> # every imaginable subclass of SingleOptimizable.
+    >>> from scipy.optimize import Bounds, minimize
     >>> opt_space = awake.optimization_space
     >>> minimize(
     ...     awake.compute_single_objective,
@@ -427,9 +435,7 @@ be written.
 Nonetheless, the COI provide way to implement fully flexible and customized
 plotting facilities for your optimization problem. This is provided through the
 `~cernml.coi.Problem.render()` method, which has been taken over from the
-`OpenAI Gym <Gym_>`_ interface for reinforcement learning.
-
-.. _Gym: https://github.com/openai/gym/
+:doc:`Gymnasium <gym:index>` interface for reinforcement learning.
 
 The Mechanics
 ^^^^^^^^^^^^^
@@ -437,12 +443,13 @@ The Mechanics
 The way it works is that every time the `~cernml.coi.Problem.render()`
 method is called on a problem, it should visualize its current state in some
 way. (In our case, the current state is the latest readings from the BPMs.) The
-way in which this should happen is the *render mode*, which is passed to the
-method as a string.
+way in which this should happen is the *render mode*. It is passed to your
+:meth:`~object.__init__()` method as a string and you should keep it around as
+a `~cernml.coi.Problem.render_mode` attribute.
 
-A few render modes have already been predefined by Gym_ and the COI package.
-You can find the full list in the :meth:`API docs
-<cernml.coi.Problem.render()>`. The ones that interest us are:
+A few :ref:`api/classes:standard render modes` have been defined by
+:doc:`Gymnasium <gym:index>` and the COI package. The ones that interest us
+are:
 
 :rmode:`"human"`
     The default render mode. The problem should present itself on the current
@@ -452,73 +459,99 @@ You can find the full list in the :meth:`API docs
     for visualization. Return a list of :class:`~matplotlib.figure.Figure`
     objects.
 
-Like for many other parts of the COI, implementing rendering involves two
-steps:
+Implementing rendering involves these three steps:
 
 1. Declare the supported render modes in the :mdkey:`"render_modes"` metadata.
-2. Override the `Problem.render() <cernml.coi.Problem.render()>` method.
+2. Accept a parameter *render_mode* in your :meth:`~object.__init__()` with
+   None as a default value.
+3. Override the `Problem.render() <cernml.coi.Problem.render()>` method.
 
 Rendering for Humans
 ^^^^^^^^^^^^^^^^^^^^
 
-We start out by modifying a few lines of code we've already written:
+We start out by modifying a few lines of code we've already written. We add
+imports of :doc:`Matplotlib <mpl:index>`:
 
-.. code-block:: diff
+.. code-block:: python
+    :emphasize-lines: 5-6
 
-      # coi_example/env.py
-      import gymnasium as gym
-      import numpy as np
-      from cernml import coi
-    + from matplotlib import pyplot
-    + from matplotlib.axes import Axes
-      from pyjapc import PyJapc
+    # coi_example/env.py
+    import gymnasium as gym
+    import numpy as np
+    from cernml import coi
+    from matplotlib import pyplot
+    from matplotlib.axes import Axes
+    from pyjapc import PyJapc
 
-.. code-block:: diff
+We add the render mode :rmode:`"human"` to the list of supported render modes:
 
-      # coi_example/env.py (cont.)
-          metadata = {
-    -         "render_modes": [],
-    +         "render_modes": ["human"],
-              "cern.machine": coi.Machine.AWAKE,
-              "cern.japc": True,
-          }
+.. code-block:: python
+    :emphasize-lines: 3
 
-.. code-block:: diff
+    # coi_example/env.py (cont.)
+        metadata = {
+            "render_modes": ["human"],
+            "cern.machine": coi.Machine.AWAKE,
+            "cern.japc": True,
+        }
 
-      # coi_example/env.py (cont.)
-          def __init__(self, japc: PyJapc = None) -> None:
-              ...
-              self.initial_kicks = self._recv_corrector_values()
-    +         self.latest_readings = self._recv_bpm_readings()
-              self.corrector_scale = 0.1
+And we now accept the *render_mode* parameter. We pass it to our super
+method in `~cernml.coi.SingleOptimizable` because that will automatically check
+it for correctness and set it as a :samp:`{self}.render_mode` attribute:
 
-.. code-block:: diff
+.. code-block:: python
+    :emphasize-lines: 2-3
 
-      # coi_example/env.py (cont.)
-          def compute_single_objective(self, params: np.ndarray) -> float:
-              self._send_corrector_values(params * self.corrector_scale)
-    -         pos = self._recv_bpm_readings()
-    -         rms = np.sqrt(np.mean(pos ** 2))
-    +         self.latest_readings = self._recv_bpm_readings()
-    +         rms = np.sqrt(np.mean(self.latest_readings ** 2))
-              return rms
+    # coi_example/env.py (cont.)
+        def __init__(self, japc: pyjapc = none, render_mode: str | none = none) -> none:
+            super().__init__(render_mode)
+            if japc is none:
+                japc = pyjapc(selector="", incaacceleratorname="awake")
+            self.japc = japc
+            ndim = len(self.corrector_addrs)
+            self.optimization_space = gym.spaces.box(-1.0, 1.0, shape=(ndim,))
+            self.initial_kicks = self._recv_corrector_values()
+            self.corrector_scale = 0.1
 
-In short, we import a few things that we will need; declare that we implement
-the human rendering mode; and we keep the latest BPM readings around. The last
-point is important to speed up the `~cernml.coi.Problem.render()` call.
+We will also add a new attribute :samp:`{self}.latest_readings` whose value we
+will visualize in `~cernml.coi.Problem.render()`:
 
-With this out of the way, we can start implementing the method.
+.. code-block:: python
+    :emphasize-lines: 10, 17-18
+
+    # coi_example/env.py (cont.)
+        def __init__(self, japc: pyjapc = none, render_mode: str | none = none) -> none:
+            super().__init__(render_mode)
+            if japc is none:
+                japc = pyjapc(selector="", incaacceleratorname="awake")
+            self.japc = japc
+            ndim = len(self.corrector_addrs)
+            self.optimization_space = gym.spaces.box(-1.0, 1.0, shape=(ndim,))
+            self.initial_kicks = self._recv_corrector_values()
+            self.latest_readings = self._recv_bpm_readings()
+            self.corrector_scale = 0.1
+
+        def compute_single_objective(self, params: np.ndarray) -> float:
+            self._send_corrector_values(params * self.corrector_scale)
+            pos = self._recv_bpm_readings()
+            rms = np.sqrt(np.mean(pos ** 2))
+            self.latest_readings = self._recv_bpm_readings()
+            rms = np.sqrt(np.mean(self.latest_readings ** 2))
+            return rms
+
+With this out of the way, we can start implementing
+`~cernml.coi.Problem.render()`:
 
 .. code-block:: python
 
     # coi_example/env.py (cont.)
-        def render(self, mode: str = "human") -> t.Any:
-            if mode == "human":
+        def render(self) -> t.Any:
+            if self.render_mode == "human":
                 _, axes = pyplot.subplots()
                 self.update_axes(axes)
                 pyplot.show()
                 return None
-            return super().render(mode)
+            return super().render()
 
         def update_axes(self, axes: Axes) -> None:
             """Render this problem into the given axes."""
@@ -527,12 +560,12 @@ With this out of the way, we can start implementing the method.
             axes.set_xlabel("BPM")
             axes.set_ylabel("Beam position (mm)")
 
-The implementation of `~cernml.coi.Problem.render()` follows a characteristic
-pattern: A series of ``if mode == ...`` statements (though it's only one here),
-followed by a call to ``super().render()``. Each ``if`` handles one of the
-defined render modes, and if the render mode is unknown, we delegate to the
-base implementation, which raises a :class:`NotImplementedError`. This prevents
-us from silently swallowing typos in the render mode.
+Our plan is to follow a specific pattern in this implementation: A series of
+statements of the form ``if self.render_mode == ...`` followed by a call to
+``super().render()``. Each ``if`` handles one of the defined render modes, and
+if the render mode is unknown, we delegate to the base implementation, which
+raises a :class:`NotImplementedError`. This prevents us from silently
+swallowing typos in the render mode.
 
 Another notable choice is that we have put the rendering into a separate
 method. Not only does this keep the code cleaner, it will also be useful `later
@@ -549,7 +582,7 @@ Python session:
     >>> # Create our own PyJapc and pass `noSet` so that we don't
     >>> # accidentally interfere with the accelerator operations.
     >>> japc = PyJapc("", noSet=True, incaAcceleratorName="AWAKE")
-    >>> env = AwakeElectronBeamSteering(japc)
+    >>> env = AwakeElectronBeamSteering(japc, render_mode="human")
     >>> env.render()
 
 Unfortunately, unless AWAKE itself is operational, this will likely only
@@ -576,71 +609,87 @@ want to give up the convenience of the Matplotlib API. This is exactly what
 .. note::
 
     The Pyplot API is so convenient because it manages a lot of global state
-    for us. When embedding our class into a GUI app, the app will do this state
-    management for us. If we now used Pyplot *on top* of the GUI, the two might
-    get into conflict with each other about who manages what. For this reason,
-    *it is crucial* for :rmode:`"matplotlib_figures"` that no
+    for us: it tracks the set of open windows, the *current* figure*, the
+    *current* axes into which all plotting goes, etc.
+
+    When embedding our class into a GUI app, this state management is already
+    being done *by the app*. If we now used Pyplot *on top* of the GUI, the two
+    would likely get into conflict with each other about who manages what.
+
+    For this reason, *it is crucial* for :rmode:`"matplotlib_figures"` that no
     :mod:`~matplotlib.pyplot` function is used. We will have to use the
-    underlying Matplotlib API instead. Luckily, our method ``update_axes()``
-    `already does so <#rendering-for-humans>`_!
+    underlying Matplotlib API instead. Luckily, our helper method :ref:`already
+    does so <tutorials/implement-singleoptimizable:rendering for humans>`!
 
 To implement the new render mode, once again, we need to make a few changes in
-the previous code:
+the previous code. We add another import:
 
-.. code-block:: diff
+.. code-block:: python
+    :emphasize-lines: 7
 
-      # coi_example/env.py
-      import gymnasium as gym
-      import numpy as np
-      from cernml import coi
-      from matplotlib import pyplot
-      from matplotlib.axes import Axes
-    + from matplotlib.figure import Figure
-      from pyjapc import PyJapc
+    # coi_example/env.py
+    import gymnasium as gym
+    import numpy as np
+    from cernml import coi
+    from matplotlib import pyplot
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+    from pyjapc import PyJapc
 
-.. code-block:: diff
+We add the new render mode:
 
-      # coi_example/env.py (cont.)
-          metadata = {
-    -         "render_modes": ["human"],
-    +         "render_modes": ["human", "matplotlib_figures"],
-              "cern.machine": coi.Machine.AWAKE,
-              "cern.japc": True,
-          }
+.. code-block:: python
+    :emphasize-lines: 3
 
-.. code-block:: diff
+    # coi_example/env.py (cont.)
+        metadata = {
+            "render_modes": ["human", "matplotlib_figures"],
+            "cern.machine": coi.Machine.AWAKE,
+            "cern.japc": True,
+        }
 
-      # coi_example/env.py (cont.)
-          def __init__(self, japc: PyJapc = None) -> None:
-              ...
-              self.latest_readings = self._recv_bpm_readings()
-              self.corrector_scale = 0.1
-    +         self.figure = None
+And we add a new attribute:
 
-Unlike ``render("human")``, our new code will be called many times in a loop.
-Hence, we want to avoid recreating the :class:`~matplotlib.figure.Figure`
-object again and again. To do so, we will bind it to an attribute after
-creation.
+.. code-block:: python
+    :emphasize-lines: 12
+
+    # coi_example/env.py (cont.)
+        def __init__(self, japc: pyjapc = none, render_mode: str | none = none) -> none:
+            super().__init__(render_mode)
+            if japc is none:
+                japc = pyjapc(selector="", incaacceleratorname="awake")
+            self.japc = japc
+            ndim = len(self.corrector_addrs)
+            self.optimization_space = gym.spaces.box(-1.0, 1.0, shape=(ndim,))
+            self.initial_kicks = self._recv_corrector_values()
+            self.latest_readings = self._recv_bpm_readings()
+            self.corrector_scale = 0.1
+            self.figure = None
+
+Unlike with :rmode:`"human"`, in the render mode :rmode:`"matplotlib_figures"`,
+our new code will be called many times in a loop. Hence, we want to avoid
+recreating the :class:`~matplotlib.figure.Figure` object again and again. To do
+so, we will bind it to an attribute after creation.
 
 We also import the :class:`~matplotlib.figure.Figure` class itself. The reason
 is, as mentioned, that we cannot use :mod:`~matplotlib.pyplot` to create our
-figure. Finally, we update our metadata to reflect the newly supported render
-mode.
+figure.
 
 With these changes in place, our new `~cernml.coi.Problem.render()` method
 looks as follows:
 
 .. code-block:: python
+    :emphasize-lines: 9-16
 
     # coi_example/env.py (cont.)
 
-        def render(self, mode: str = "human") -> t.Any:
-            if mode == "human":
+        def render(self) -> t.Any:
+            if self.render_mode == "human":
                 _, axes = pyplot.subplots()
                 self.update_axes(axes)
                 pyplot.show()
                 return None
-            if mode == "matplotlib_figures":
+            if self.render_mode == "matplotlib_figures":
                 if self.figure is None:
                     self.figure = Figure()
                     axes = self.figure.subplots()
@@ -648,15 +697,15 @@ looks as follows:
                     [axes] = self.figure.axes
                 self.update_axes(axes)
                 return [self.figure]
-            return super().render(mode)
+            return super().render()
 
 As you can see, the new code is not all that difficult! We first check if our
-figure already exists. If not, we create it by calling the constructor. We then
-call the :meth:`Figure.subplots() <matplotlib.figure.Figure.subplots()>`
-method; it works almost exactly like :func:`pyplot.subplots()
-<matplotlib.pyplot.subplots()>`, but uses an existing figure. This gives an
-:class:`~matplotlib.axes.Axes` object to pass to ``update_axes()``, which stays
-exactly the same.
+figure already exists. If not, we create it by calling :class:`Figure()
+<matplotlib.figure.Figure>`. We then call the :meth:`Figure.subplots()
+<matplotlib.figure.Figure.subplots()>` method; it works almost exactly like
+:func:`pyplot.subplots() <matplotlib.pyplot.subplots()>`, but uses an existing
+figure. This gives an :class:`~matplotlib.axes.Axes` object to pass to
+``update_axes()``, which stays exactly the same.
 
 In the case that the figure already exists, we access its
 :attr:`~matplotlib.figure.Figure.axes` attribute. This is a list of the axes
@@ -673,6 +722,7 @@ And just like that, our optimization problem is ready to be embedded into a GUI
 application. Here is a very simple one, in just 54 lines of code:
 
 .. code-block:: python
+    :linenos:
 
     import jpype
     from matplotlib.backends.qt_compat import QtWidgets
@@ -689,9 +739,12 @@ application. Here is a very simple one, in just 54 lines of code:
         def __init__(self) -> None:
             super().__init__()
             japc = PyJapc("", noSet=True, incaAcceleratorName="AWAKE")
-            self.problem = AwakeElectronBeamSteering(japc)
+            self.problem = AwakeElectronBeamSteering(
+                japc=japc,
+                render_mode="matplotlib_figures",
+            )
             self.x_0 = self.problem.get_initial_params()
-            figures = self.problem.render("matplotlib_figures")
+            figures = self.problem.render()
             # We assume just a single figure.
             for _, figure in iter_matplotlib_figures(figures):
               self.canvas = FigureCanvas(figure)
@@ -710,13 +763,13 @@ application. Here is a very simple one, in just 54 lines of code:
 
         def on_reset(self) -> None:
             self.problem.compute_single_objective(self.x_0)
-            self.problem.render("matplotlib_figures")
+            self.problem.render()
             self.canvas.draw_idle()
 
         def on_step(self) -> None:
             params = self.problem.optimization_space.sample()
             self.problem.compute_single_objective(params)
-            self.problem.render("matplotlib_figures")
+            self.problem.render()
             self.canvas.draw_idle()
 
     def main():
