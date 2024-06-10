@@ -297,8 +297,8 @@ configures a few tools. Note that the file would be only about 20 lines long:
     # We can require minimum versions and [extras]!
     [build-system]
     requires = [
-        'setuptools >= 42',
-        'setuptools-scm[toml] ~= 5.0',
+        'setuptools >= 64',
+        'setuptools-scm[toml] ~= 8.0',
         'wheel',
     ]
     build-backend = 'setuptools.build_meta'
