@@ -72,11 +72,14 @@ def make(
             metadata=metadata,
             stacklevel=1 + stacklevel,
         )
-    else:
+    elif "render_mode" in kwargs:
         flags = _deduce_render_mode(
-            kwargs.get("render_mode"), metadata=metadata, stacklevel=1 + stacklevel
+            kwargs["render_mode"], metadata=metadata, stacklevel=1 + stacklevel
         )
         kwargs["render_mode"] = flags.render_mode
+    else:
+        # Don"t set kwargs["render_mode'] if it didn't exist previously.
+        flags = _deduce_render_mode(None, metadata=metadata, stacklevel=1 + stacklevel)
     env = _create_env(
         env_spec,
         env_creator,

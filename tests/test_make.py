@@ -45,10 +45,25 @@ def test_make(entry_point: Mock) -> None:
         disable_env_checker=True,
     )
     # When:
-    res = spec.make()
+    res = spec.make(render_mode=None)
     # Then:
     assert res == entry_point.return_value
     entry_point.assert_called_once_with(render_mode=None)
+
+
+def test_make_no_render_mode(entry_point: Mock) -> None:
+    # Given:
+    spec = EnvSpec(
+        "ns/name-v1",
+        entry_point=entry_point,
+        order_enforce=False,
+        disable_env_checker=True,
+    )
+    # When:
+    res = spec.make()
+    # Then:
+    assert res == entry_point.return_value
+    entry_point.assert_called_once_with()
 
 
 def test_import(entry_point: Mock, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -68,7 +83,7 @@ def test_import(entry_point: Mock, monkeypatch: pytest.MonkeyPatch) -> None:
     # Then:
     assert res == entry_point.return_value
     import_module.assert_called_once_with("modname")
-    entry_point.assert_called_once_with(render_mode=None)
+    entry_point.assert_called_once_with()
 
 
 def test_require_entry_point() -> None:
@@ -277,11 +292,10 @@ def test_prior_wrappers(
     exc_type: type[Exception] | None,
     entry_point: Mock,
 ) -> None:
-    wrapped_entry_point = Mock(
-        name="wrap",
-        metadata=None,
-        side_effect=lambda render_mode: gym.Wrapper(entry_point(render_mode)),
-    )
+    def wrapper(render_mode: str | None = None) -> gym.Env:
+        return gym.Wrapper(entry_point(render_mode))
+
+    wrapped_entry_point = Mock(name="wrap", metadata=None, side_effect=wrapper)
     spec = EnvSpec(
         "ns/name-v1",
         entry_point=wrapped_entry_point,
