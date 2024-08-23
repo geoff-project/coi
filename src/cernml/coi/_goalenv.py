@@ -207,6 +207,6 @@ class GoalEnv(gym.Env[Any, ActType], Generic[ObsType, GoalType, ActType]):
 
 
 with suppress(ImportError):
-    from gymnasium_robotics import (  # type: ignore[no-redef, import-not-found] # noqa: F811
+    from gymnasium_robotics import (  # type: ignore[no-redef, import-not-found]
         GoalEnv,
     )
