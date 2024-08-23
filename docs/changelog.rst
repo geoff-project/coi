@@ -24,7 +24,8 @@ version 0.10.0.
 Unreleased
 ----------
 
-No changes yet!
+- Fix bug in which building the docs would fail due to double slashes in the
+  URLs of other package documentations.
 
 v0.9
 ----
