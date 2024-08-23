@@ -75,7 +75,8 @@ test_dev_robotics:
   # Override `before_script` to also install gymnasium_robotics
   before_script:
     - !reference [.acc_py_run_on_manylinux_py_version, before_script]
-    - yum -y install glfw
+    - dnf -y install epel-release
+    - dnf -y install glfw
     - python -m pip install
         -e "${project_root}"[test,robotics]
         pytest-cov
@@ -122,7 +123,7 @@ build_docs:
     PY_VERSION: "3.11" # required for inspect.getmembers_static
     SPHINX_BUILD_ADDOPTS: "-n -W" # nitpicky mode, warnings are errors
   before_script:
-    - yum -y install graphviz
+    - dnf -y install graphviz
     - python -m pip install anybadge
     - !reference [.acc_py_build_docs, before_script]
   script:
@@ -153,7 +154,7 @@ build_docs_on_tag:
     - .acc_py_build_docs_on_tag
     - .coi_use_pyqt_image
   before_script:
-    - yum -y install graphviz
+    - dnf -y install graphviz
     - !reference [.acc_py_build_docs_on_tag, before_script]
 
 # Release: Show the code to the world.
