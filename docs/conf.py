@@ -200,6 +200,7 @@ fix_xrefs_rules = [
         "reftarget": ("sub", "gymnasium.envs.registration."),
         "contnode": ("sub", ""),
     },
+    {"pattern": "^numpy.bool_"},
     {"pattern": "^numpy.typing.NDArray"},
     {"pattern": "^cernml\\.coi\\._goalenv\\.", "reftarget": ("sub", "cernml.coi.")},
     {"pattern": "^cernml\\.coi\\."},
