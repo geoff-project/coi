@@ -19,10 +19,8 @@ from abc import ABCMeta
 from . import _base
 
 if t.TYPE_CHECKING:
-    if sys.version_info < (3, 11):
-        from typing_extensions import Self
-    else:
-        from typing import Self
+    from typing_extensions import Self
+
     from .. import protocols
 
 __all__ = (

@@ -205,4 +205,9 @@ fix_xrefs_rules = [
     {"pattern": "^cernml\\.coi\\._goalenv\\.", "reftarget": ("sub", "cernml.coi.")},
     {"pattern": "^cernml\\.coi\\."},
     {"pattern": "^t\\.", "reftarget": ("sub", "typing."), "contnode": ("sub", "")},
+    {
+        "pattern": "^typing_extensions\\.",
+        "reftarget": ("sub", "typing."),
+        "contnode": ("sub", ""),
+    },
 ]

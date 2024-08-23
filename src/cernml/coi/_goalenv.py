@@ -12,7 +12,6 @@ installed, its `gymnasium_robotics.core.GoalEnv` class is used. if it
 isn't, this package provides its own, compatible implementation.
 """
 
-import sys
 from abc import abstractmethod
 from contextlib import suppress
 from typing import Any, Generic, Optional, SupportsFloat, TypeVar
@@ -20,11 +19,7 @@ from typing import Any, Generic, Optional, SupportsFloat, TypeVar
 import gymnasium as gym
 from gymnasium import error
 from gymnasium.core import ActType, ObsType
-
-if sys.version_info < (3, 11):
-    from typing_extensions import TypedDict
-else:
-    from typing import TypedDict
+from typing_extensions import TypedDict
 
 __all__ = (
     "GoalEnv",

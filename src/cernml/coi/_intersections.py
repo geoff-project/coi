@@ -106,11 +106,11 @@ given by the implementation:
 
 from __future__ import annotations
 
-import sys
 import typing as t
 from abc import abstractmethod
 
 from gymnasium.core import ActType, Env, ObsType
+from typing_extensions import override
 
 from ._classes import ParamType, SingleOptimizable
 from ._goalenv import GoalEnv, GoalType
@@ -121,11 +121,6 @@ from ._machinery import (
     proto_hook,
 )
 from ._sepenv import SeparableEnv, SeparableGoalEnv
-
-if sys.version_info < (3, 12):
-    from typing_extensions import override
-else:
-    from typing import override
 
 __all__ = (
     "OptEnv",
