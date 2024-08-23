@@ -24,21 +24,26 @@ version 0.10.0.
 Unreleased
 ----------
 
-- Relax dependencies to allow use of NumPy 2.0
-- Fix bug in which building the docs would fail due to double slashes in the
-  URLs of other package documentations.
+No changes yet!
 
 v0.9
 ----
-
-v0.9.0
-^^^^^^
 
 .. seealso::
 
     :doc:`guide/migration_090`
         User guide page listing all breaking changes and how to adapt your
         code.
+
+v0.9.1
+^^^^^^
+
+- Relax dependencies to allow use of NumPy 2.0
+- Fix bug in which building the docs would fail due to double slashes in the
+  URLs of other package documentations.
+
+v0.9.0
+^^^^^^
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
