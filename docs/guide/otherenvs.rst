@@ -193,13 +193,12 @@ Intersection Interfaces
     sepoptenv[label=<cernml.coi.<b>SeparableOptEnv</b>>];
     sepoptgoalenv[label=<cernml.coi.<b>SeparableOptGoalEnv</b>>];
 
-    {sopt env} -> problem;
-    {optenv goalenv sepenv} -> env;
-    {optgoalenv sepgoalenv} -> goalenv;
-    sepoptenv -> sepenv;
-    sepoptgoalenv -> sepgoalenv;
-
-    {optenv optgoalenv sepoptenv sepoptgoalenv} -> sopt;
+    optenv -> {sopt env} -> problem;
+    {goalenv sepenv} -> env;
+    optgoalenv -> {optenv goalenv};
+    sepgoalenv -> goalenv;
+    sepoptenv -> {optenv sepenv};
+    sepoptgoalenv -> {sepgoalenv optgoalenv};
 
 If you want to either implement multiple of :doc:`the core classes of this
 package <core>`, or you want to require that a problem implement multiple of
