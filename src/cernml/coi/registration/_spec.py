@@ -128,7 +128,7 @@ class EnvSpec(metaclass=ABCMeta):
         self.namespace, self.name, self.version = _base.parse_env_id(self.id)
 
     def make(self, **kwargs: t.Any) -> protocols.Problem:
-        """Call `.coi.make()` using this spec."""  # noqa: D402
+        """Call `.coi.make()` using this spec."""
         # Delayed import to avoid a cyclic dependency between modules.
         from ._make import make
 

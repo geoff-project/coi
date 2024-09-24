@@ -62,7 +62,7 @@ class SeparableEnv(Env[ObsType, ActType]):
         This calls in turn the four new abstract methods:
         `compute_observation()`, `compute_reward()`,
         `compute_terminated()` and `compute_truncated()`.
-        """  # noqa: D402
+        """
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
         reward = self.compute_reward(obs, None, info)
@@ -224,7 +224,7 @@ class SeparableGoalEnv(GoalEnv, t.Generic[ObsType, GoalType, ActType]):
         :func:`~gymnasium_robotics.core.GoalEnv.compute_terminated()`,
         and
         :func:`~gymnasium_robotics.core.GoalEnv.compute_truncated()`.
-        """  # noqa: D402
+        """
         info: InfoDict = {}
         obs = self.compute_observation(action, info)
         achieved_goal = t.cast(GoalType, obs["achieved_goal"])

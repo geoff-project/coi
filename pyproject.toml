@@ -104,7 +104,6 @@ target-version = 'py39'
 
 [tool.ruff.lint]
 # Missing warnings:
-# F822 not raised in __init__.py: https://github.com/astral-sh/ruff/issues/10095
 # D* not raised in _*.py: https://github.com/astral-sh/ruff/issues/9561
 extend-select = [
     'A', 'ARG', 'ASYNC', 'B', 'C4', 'C90', 'COM818', 'D', 'DTZ', 'EXE', 'FLY',

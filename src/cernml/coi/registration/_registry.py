@@ -101,7 +101,7 @@ class EnvRegistry:
         return self._registry.select(ns=ns, name=name, version=version)
 
     def spec(self, env_id: str, /) -> EnvSpec:
-        """Implementation of `~.coi.spec()`."""  # noqa: D402
+        """Implementation of `~.coi.spec()`."""
         env_spec = self._registry.get(env_id)
         if env_spec is None:
             raise_env_not_found(EnvSpec(env_id), self._registry)
@@ -130,7 +130,7 @@ class EnvRegistry:
         vector_entry_point: _base.VectorEnvCreator | str | None = None,
         **kwargs: t.Any,
     ) -> None:
-        """Implementation of `~.coi.register()`."""  # noqa: D402
+        """Implementation of `~.coi.register()`."""
         stacklevel = kwargs.pop("stacklevel", 2)
         if entry_point is None and vector_entry_point is None:
             raise ValueError(
@@ -164,7 +164,7 @@ class EnvRegistry:
         order_enforce: bool | None = None,
         **kwargs: t.Any,
     ) -> protocols.Problem:
-        """Implementation of `~.coi.make()`."""  # noqa: D402
+        """Implementation of `~.coi.make()`."""
         stacklevel = bump_stacklevel(kwargs)
         allow_imports = kwargs.pop("allow_imports", True)
         if isinstance(env_id, EnvSpec):
@@ -195,7 +195,7 @@ class EnvRegistry:
         ) = None,
         **kwargs: t.Any,
     ) -> gymnasium.experimental.vector.VectorEnv:
-        """Implementation of `~.coi.make_vec()`."""  # noqa: D402
+        """Implementation of `~.coi.make_vec()`."""
         stacklevel = kwargs.pop("stacklevel", 2)
         allow_imports = kwargs.pop("allow_imports", True)
         if isinstance(env_id, EnvSpec):
