@@ -1,11 +1,10 @@
 # SPDX-FileCopyrightText: 2016 OpenAI
-# SPDX-FileCopyrightText: 2022 Farama Foundation
-# SPDX-FileCopyrightText: 2020-2024 CERN
-# SPDX-FileCopyrightText: 2023-2024 GSI Helmholtzzentrum für Schwerionenforschung
+# SPDX-FileCopyrightText: 2020 - 2024 CERN
+# SPDX-FileCopyrightText: 2022 - 2024 Farama Foundation
+# SPDX-FileCopyrightText: 2023 - 2024 GSI Helmholtzzentrum für Schwerionenforschung
 # SPDX-FileNotice: All rights not expressly granted are reserved.
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
-
 
 """Dedicated module for `cernml.coi.make()` because it's honestly a lot of code."""
 
