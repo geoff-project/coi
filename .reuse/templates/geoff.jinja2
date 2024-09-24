@@ -1,0 +1,14 @@
+{% for copyright_line in copyright_lines %}
+{{ copyright_line }}
+{% endfor %}
+SPDX-FileNotice: All rights not expressly granted are reserved.
+{% if contributor_lines %}
+
+{% for contributor_line in contributor_lines %}
+SPDX-FileContributor: {{ contributor_line }}
+{% endfor %}
+{% endif %}
+
+{% for expression in spdx_expressions %}
+SPDX-License-Identifier: {{ expression }}
+{% endfor %}
