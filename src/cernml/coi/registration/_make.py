@@ -258,7 +258,7 @@ def _add_wrappers(
         )
         env = wrapper(env=env, **wrapper_spec.kwargs)
     if apply_human_rendering:
-        env = wrappers.HumanRendering(env)
+        env = wrappers.HumanRendering(t.cast(Env, env))
     if apply_render_collection:
         env = _wrap_if_env(env, wrappers.RenderCollection)
     # TODO: Wrappers for SingleOptimizable and FunctionOptimizable.
