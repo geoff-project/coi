@@ -173,26 +173,38 @@ def warn_deprecated_attrs(problem: Problem, warn: int = True) -> None:
 
         >>> from warnings import simplefilter
         >>> simplefilter("error")
-        >>> class Foo:
+        >>> class Foo(Problem):
         ...     reward_range = (0.0, 1.0)
         >>> warn_deprecated_attrs(Foo())
         Traceback (most recent call last):
         ...
         UserWarning: attribute 'reward_range' is deprecated, ...
-        >>> class Bar:
+        >>> class Bar(Problem):
         ...     objective_range = (0.0, 1.0)
         >>> warn_deprecated_attrs(Bar())
         Traceback (most recent call last):
         ...
         UserWarning: attribute 'objective_range' is deprecated, ...
-        >>> class Baz:
+        >>> class Baz(Problem):
         ...     pass
         >>> warn_deprecated_attrs(Baz())
+
+        No spurious warnings when used with a Gymnasium wrapper:
+
+        >>> from gymnasium import Env
+        >>> from gymnasium.wrappers import TimeLimit
+        ...
+        >>> class Baz(Env):
+        ...     pass
+        ...
+        >>> warn_deprecated_attrs(TimeLimit(Baz(), 10))
     """
     for attr in ("objective_range", "reward_range"):
-        attr_from_problem = getattr(problem, attr, None)
-        attr_from_env = getattr(gymnasium.Env, attr, None)
-        if attr_from_problem is not None and attr_from_problem is not attr_from_env:
+        try:
+            value = problem.get_wrapper_attr(attr)
+        except AttributeError:
+            continue
+        if value is not None and value is not getattr(gymnasium.Env, attr, None):
             warnings.warn(
                 f"attribute {attr!r} is deprecated, you should not define it anymore",
                 stacklevel=max(2, warn),

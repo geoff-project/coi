@@ -25,6 +25,12 @@ Unreleased
 
 No changes yet!
 
+v0.9.2
+^^^^^^
+
+- Fix superfluous warnings in `cernml.coi.checkers.check_problem()` when
+  looking for deprecated attributes.
+
 v0.9
 ----
 
