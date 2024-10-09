@@ -159,7 +159,11 @@ master.extension-pkg-whitelist = 'PyQt5'
 ]
 
 [tool.pytest.ini_options]
-addopts = '--doctest-modules --doctest-glob="*.rst" --ignore-glob="*/minimal_*_loop.py"'
+addopts = '''
+    --doctest-modules
+    --doctest-glob="*.rst"
+    --ignore-glob="*/minimal_*_loop.py"
+'''
 testpaths = [
     'docs/api',
     'docs/guide',
