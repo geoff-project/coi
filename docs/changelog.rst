@@ -28,8 +28,13 @@ No changes yet!
 v0.9.2
 ^^^^^^
 
+Bug fixes
+~~~~~~~~~
 - Fix superfluous warnings in `cernml.coi.checkers.check_problem()` when
   looking for deprecated attributes.
+- The function `cernml.coi.check()` now loads all plugins first before
+  executing them. It also logs faulty plugins, but otherwise ignores them. This
+  should catch bugs quicker.
 
 v0.9
 ----
@@ -43,6 +48,8 @@ v0.9
 v0.9.1
 ^^^^^^
 
+Bug fixes
+~~~~~~~~~
 - Relax dependencies to allow use of NumPy 2.0
 - Fix bug in which building the docs would fail due to double slashes in the
   URLs of other package documentations.

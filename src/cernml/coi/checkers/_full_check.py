@@ -6,16 +6,12 @@
 
 """Provide the main entry point check()."""
 
+import functools
 import logging
+import sys
 import typing as t
 
 import gymnasium as gym
-
-try:
-    import importlib_metadata
-except ImportError:
-    # Starting with Python 3.10 (see pyproject.toml).
-    import importlib.metadata as importlib_metadata  # type: ignore[import, no-redef]
 
 from ._configurable import Configurable, check_configurable
 from ._env import check_env
@@ -23,6 +19,11 @@ from ._func_opt import FunctionOptimizable, check_function_optimizable
 from ._generic import bump_warn_arg
 from ._problem import Problem, check_problem
 from ._single_opt import SingleOptimizable, check_single_optimizable
+
+if sys.version_info < (3, 10):
+    import importlib_metadata
+else:
+    import importlib.metadata as importlib_metadata
 
 LOG = logging.getLogger(__name__)
 
@@ -73,10 +74,49 @@ def check(env: Problem, warn: int = True, headless: bool = True) -> None:
     if isinstance(unwrapped_env, Configurable):
         LOG.debug("Checking Configurable interface of %s", env)
         check_configurable(t.cast(Configurable, env), warn=warn)
-    entry_points = importlib_metadata.entry_points().select(group="cernml.checkers")
     # Run plug-in checkers.
+    for name, checker in load_extra_checkers():
+        LOG.debug("Running checker plugin %r on %s", name, env)
+        checker(env, warn=warn, headless=headless)
+
+
+class Checker(t.Protocol):
+    """Expected signature of checker plugins."""
+
+    def __call__(
+        self, problem: Problem, *, warn: int = True, headless: bool = True
+    ) -> None: ...
+
+
+@functools.cache
+def load_extra_checkers(
+    group: str = "cernml.checkers",
+) -> t.Sequence[tuple[str, Checker]]:
+    """Load all checker plugins.
+
+    Args:
+        group: The entry point group to load.
+
+    Returns:
+        A sequence of tuples :samp:`({entry point name}, {loaded
+        checker})`. Faulty plugins are logged, but otherwise excluded
+        from the list.
+
+        The return value is cached, so you can call this function as
+        often as you want.
+    """
+    checkers = []
+    entry_points = importlib_metadata.entry_points().select(group=group)
     for entry_point in entry_points:
-        LOG.debug("Loading checker plugin %s", entry_point.name)
-        check_extra = entry_point.load()
-        LOG.debug("Running checker plugin %s on %s", entry_point.name, env)
-        check_extra(env, warn=warn, headless=headless)
+        name = entry_point.name
+        LOG.debug("Loading checker plugin: %s", name)
+        try:
+            checker: Checker = entry_point.load()
+        except Exception:
+            LOG.exception("ignored due to an error", name)
+            continue
+        if not callable(checker):
+            LOG.error("ignored because not callable: %r", checker)
+            continue
+        checkers.append((name, checker))
+    return tuple(checkers)
