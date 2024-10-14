@@ -186,8 +186,7 @@ module. It also documents the behavior of several internal items of the
     Safely access a type's :term:`method resolution order`.
 
     This is the :term:`descriptor` method :meth:`~object.__get__()` bound to
-    the descriptor `type.__mro__ <class.__mro__>`. Binding it this way ensures
-    that:
+    the descriptor `type.__mro__`. Binding it this way ensures that:
 
     1. it can only be called on `type` objects;
     2. it cannot be overridden by subclass or metaclass descriptors.
@@ -248,7 +247,7 @@ since the two may be different. This is e.g. the case for `Mock
 The subclass check of `~abc.ABCMeta` (which the instance check uses) is
 recursive: Whenever you ask whether ``A`` is a subclass of ``B``, the check
 asks ``B`` **and all subclasses** of ``B``. These subclasses include real
-subclasses (via :meth:`class.__subclasses__()`) and virtual subclasses (via
+subclasses (via :meth:`type.__subclasses__()`) and virtual subclasses (via
 :meth:`~abc.ABCMeta.register()`). This means that any particular magic
 implemented in this package must be careful not to cause infinite recursion
 when running subclass checks within their own hooks.

@@ -252,7 +252,7 @@ class AttrCheckProtocolMeta(t._ProtocolMeta):
 
         1. If the call is :samp:`isinstance({obj}, AttrCheckProtocol)`),
            we ignore all overloads and defer to the default
-           implementation of :meth:`class.__instancecheck__()`, which
+           implementation of :meth:`type.__instancecheck__()`, which
            only regards regular subclassing.
 
         2. If this gets called via a concrete class, we defer to
@@ -378,8 +378,8 @@ def attrs_match(proto: AttrCheckProtocolMeta, obj: object) -> bool:
     If the protocol member is a `classmethod` (determined by
     `proto_classmethods()`), we only look it up on *obj* if *obj* is
     a type. If it isn't a type, we look it up on :samp:`type({obj})`. We
-    *don't* use `~instance.__class__` because `type` is what is used in
-    the :term:`method resolution order`. (See :ref:`api/machinery:the
+    *don't* use :samp:`{obj}.__class__` because `type` is what is used
+    in the :term:`method resolution order`. (See :ref:`api/machinery:the
     instance check of ABCMeta`.)
 
     If the attribute is found on *obj*, further tests depend on the
