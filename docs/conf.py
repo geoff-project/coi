@@ -157,7 +157,7 @@ def rtd_link(name: str, branch: str = "stable") -> str:
 
 intersphinx_mapping = {
     "black": (rtd_link("black"), None),
-    "gym": ("https://gymnasium.farama.org", None),
+    "gym": ("https://gymnasium.farama.org/v0.29.0", None),
     "gymrob": ("https://robotics.farama.org", None),
     "importlib_metadata": (rtd_link("importlib-metadata"), None),
     "japc": (acc_py_docs_link("scripting-tools/pyjapc"), None),

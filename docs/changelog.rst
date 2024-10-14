@@ -35,6 +35,9 @@ Bug fixes
 - The function `cernml.coi.check()` now loads all plugins first before
   executing them. It also logs faulty plugins, but otherwise ignores them. This
   should catch bugs quicker.
+- Restrict Gymnasium to versions below `v1.0
+  <https://github.com/Farama-Foundation/Gymnasium/releases/tag/v1.0.0>`_ until
+  our compatibility story is figured out.
 
 v0.9
 ----

@@ -24,7 +24,8 @@ readme = 'README.md'
 license = {file='COPYING'}
 requires-python = '>=3.9'
 dependencies = [
-    'gymnasium < 2',
+    # See https://gitlab.cern.ch/geoff/cernml-coi/-/issues/16
+    'gymnasium < 1',
     'numpy >= 1.22',
     'scipy >= 1.1',
     # Dependencies on importlib-metadata and typing-extensions are identical
