@@ -25,6 +25,15 @@ Unreleased
 
 No changes yet!
 
+v0.9
+----
+
+.. seealso::
+
+    :doc:`guide/migration_090`
+        User guide page listing all breaking changes and how to adapt your
+        code.
+
 v0.9.2
 ^^^^^^
 
@@ -38,15 +47,6 @@ Bug fixes
 - Restrict Gymnasium to versions below `v1.0
   <https://github.com/Farama-Foundation/Gymnasium/releases/tag/v1.0.0>`_ until
   our compatibility story is figured out.
-
-v0.9
-----
-
-.. seealso::
-
-    :doc:`guide/migration_090`
-        User guide page listing all breaking changes and how to adapt your
-        code.
 
 v0.9.1
 ^^^^^^
