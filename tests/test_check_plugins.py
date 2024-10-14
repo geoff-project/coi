@@ -7,7 +7,7 @@
 """Test the `cernml.checkers` entry point."""
 
 import typing as t
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, NonCallableMock, patch
 
 import pytest
 
@@ -48,3 +48,51 @@ def test_check_plugins(
         entry_point.load.assert_called_once_with()
         checker = entry_point.load.return_value
         checker.assert_called_once_with(problem, warn=3, headless=headless)
+
+
+def test_load_checkers_catches_exceptions(
+    mock_entry_points: MagicMock, caplog: pytest.LogCaptureFixture
+) -> None:
+    # Given:
+    all_entry_points = mock_entry_points.return_value
+    our_entry_points = all_entry_points.select.return_value = [
+        Mock(name=f"plugin_{i}") for i in range(1, 4)
+    ]
+    for i, ep in enumerate(our_entry_points, 1):
+        ep.name = f"plugin_{i}"
+    our_entry_points[1].load.side_effect = ValueError
+    # When:
+    caplog.set_level("ERROR")
+    coi.checkers._full_check.load_extra_checkers.cache_clear()
+    checkers = coi.checkers._full_check.load_extra_checkers()
+    # Then:
+    assert len(checkers) == 2
+    assert checkers[0] == ("plugin_1", our_entry_points[0].load.return_value)
+    assert checkers[1] == ("plugin_3", our_entry_points[2].load.return_value)
+    assert caplog.messages == [
+        "ignored plugin 'plugin_2': loading raised an exception",
+    ]
+
+
+def test_load_checkers_checks_callable(
+    mock_entry_points: MagicMock, caplog: pytest.LogCaptureFixture
+) -> None:
+    # Given:
+    all_entry_points = mock_entry_points.return_value
+    our_entry_points = all_entry_points.select.return_value = [
+        Mock(name=f"plugin_{i}") for i in range(1, 4)
+    ]
+    for i, ep in enumerate(our_entry_points, 1):
+        ep.name = f"plugin_{i}"
+    our_entry_points[1].load.return_value = NonCallableMock(name="plugin_2.load()")
+    # When:
+    caplog.set_level("ERROR")
+    coi.checkers._full_check.load_extra_checkers.cache_clear()
+    checkers = coi.checkers._full_check.load_extra_checkers()
+    # Then:
+    assert len(checkers) == 2
+    assert checkers[0] == ("plugin_1", our_entry_points[0].load.return_value)
+    assert checkers[1] == ("plugin_3", our_entry_points[2].load.return_value)
+    assert len(caplog.records) == 1
+    assert caplog.records[0].msg == "ignored plugin %r: %r is not callable"
+    assert caplog.records[0].args == ("plugin_2", our_entry_points[1].load.return_value)

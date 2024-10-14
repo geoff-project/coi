@@ -85,7 +85,8 @@ class Checker(t.Protocol):
 
     def __call__(
         self, problem: Problem, *, warn: int = True, headless: bool = True
-    ) -> None: ...
+    ) -> None:
+        raise NotImplementedError
 
 
 @functools.cache
@@ -113,10 +114,10 @@ def load_extra_checkers(
         try:
             checker: Checker = entry_point.load()
         except Exception:
-            LOG.exception("ignored due to an error", name)
+            LOG.exception("ignored plugin %r: loading raised an exception", name)
             continue
         if not callable(checker):
-            LOG.error("ignored because not callable: %r", checker)
+            LOG.error("ignored plugin %r: %r is not callable", name, checker)
             continue
         checkers.append((name, checker))
     return tuple(checkers)
