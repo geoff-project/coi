@@ -9,7 +9,7 @@
 # If the user hasn't already set up a proxy ...
 if [ -z "$HTTPS_PROXY" ]; then
     acc_py_addr="https://acc-py.web.cern.ch/"
-    proxy_addr="socks5://localhost:12345"
+    proxy_addr="socks5://localhost:3694"
 
     # Check if we can reach Acc-Py docs server.
     # If we can't normally, but we can with a proxy, use that proxy.
@@ -17,7 +17,7 @@ if [ -z "$HTTPS_PROXY" ]; then
     if ! curl -sI "$acc_py_addr" >/dev/null; then
         if ! curl -sIx "$proxy_addr" "$acc_py_addr" >/dev/null; then
             echo >&2 'warning: cannot reach acc-py docs server'
-            echo >&2 'hint: run `ssh -ND localhost:12345 lxtunnel.cern.ch` ' \
+            echo >&2 'hint: run `ssh -ND localhost:3694 lxtunnel.cern.ch` ' \
                 'in the background'
         else
             export HTTPS_PROXY="$proxy_addr"
