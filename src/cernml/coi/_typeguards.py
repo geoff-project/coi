@@ -60,7 +60,9 @@ __all__ = (
 
 def is_configurable(obj: object, /) -> "TypeGuard[Configurable]":
     """Check whether the given object is `Configurable`."""
-    unwrapped = getattr(obj, "unwrapped", None)
+    # Unlike the `Problem` subclasses, `Configurable` need not have
+    # an `unwrapped` property; but it _might_!
+    unwrapped = getattr(obj, "unwrapped", obj)
     return isinstance(unwrapped, Configurable)
 
 

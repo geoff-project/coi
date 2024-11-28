@@ -34,6 +34,14 @@ v0.9
         User guide page listing all breaking changes and how to adapt your
         code.
 
+v0.9.3
+^^^^^^
+
+Bug fixes
+~~~~~~~~~
+- Fix the type guard `is_configurable()` erroneously requiring the object to
+  have the `~Problem.unwrapped` property.
+
 v0.9.2
 ^^^^^^
 

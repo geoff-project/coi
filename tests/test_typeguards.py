@@ -128,3 +128,25 @@ def test_typeguard(
     instance = Subclass()
     assert is_instance(instance)
     assert is_subclass(Subclass)
+
+
+def test_configurable_need_not_unwrapped() -> None:
+    class MyConfigurable(coi.Configurable):
+        def get_config(self) -> coi.Config:
+            return coi.Config()
+
+        def apply_config(self, values: coi.ConfigValues) -> None:
+            pass
+
+    assert coi.is_configurable(MyConfigurable())
+
+
+def test_configurable_handles_unwrapped() -> None:
+    class MyConfigurable(gym.Env, coi.Configurable):
+        def get_config(self) -> coi.Config:
+            return coi.Config()
+
+        def apply_config(self, values: coi.ConfigValues) -> None:
+            pass
+
+    assert coi.is_configurable(gym.wrappers.TimeLimit(MyConfigurable(), 10))
