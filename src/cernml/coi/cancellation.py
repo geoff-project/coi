@@ -253,7 +253,7 @@ class TokenSource:
     # cancelled"). We support none of these, so the current architecture
     # is good enough.
 
-    __slots__ = ("_token", "__weakref__")
+    __slots__ = ("__weakref__", "_token")
 
     # pylint: disable = protected-access
 
@@ -397,7 +397,7 @@ class Token:
         (True, True)
     """
 
-    __slots__ = ("_state", "_wait_handle", "_source")
+    __slots__ = ("_source", "_state", "_wait_handle")
 
     def __init__(self, cancelled: bool = False) -> None:
         self._wait_handle: t.Optional[threading.Condition] = None

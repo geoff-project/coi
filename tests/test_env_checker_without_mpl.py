@@ -18,7 +18,7 @@ from numpy.typing import NDArray
 
 
 @pytest.fixture
-def no_matplotlib() -> t.Iterator[None]:  # noqa: PT004
+def no_matplotlib() -> t.Iterator[None]:
     backup = sys.modules.copy()
     try:
         # Force reload of cernml packages.

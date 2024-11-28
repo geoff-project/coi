@@ -24,8 +24,8 @@ if t.TYPE_CHECKING:
     from .. import protocols
 
 __all__ = (
-    "MinimalEnvSpec",
     "EnvSpec",
+    "MinimalEnvSpec",
     "bump_stacklevel",
     "downcast_spec",
 )

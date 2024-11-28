@@ -33,8 +33,8 @@ import enum
 import typing
 
 __all__ = (
-    "Sentinel",
     "MISSING",
+    "Sentinel",
 )
 
 

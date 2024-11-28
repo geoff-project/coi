@@ -18,10 +18,10 @@ from ._goalenv import GoalEnv, GoalObs, GoalType
 
 __all__ = (
     "ActType",
+    "GoalObs",
+    "GoalType",
     "InfoDict",
     "ObsType",
-    "GoalType",
-    "GoalObs",
     "SeparableEnv",
     "SeparableGoalEnv",
 )

@@ -30,7 +30,7 @@ T = t.TypeVar("T", bound=t.Callable)
 class nondescriptor(t.Generic[T]):
     """Function wrapper that can be used as enum value."""
 
-    __slots__ = ("__func__", "__call__")
+    __slots__ = ("__call__", "__func__")
 
     def __init__(self, func: T) -> None:
         self.__call__ = self.__func__ = func
