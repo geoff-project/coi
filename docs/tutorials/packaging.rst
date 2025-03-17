@@ -210,11 +210,12 @@ starting point.
    If you use an IDE like `PyCharm`_, it is very common that IDE-specific
    config and manifest files will end up in your project directory. You *could*
    manually add these files to the :file:`.gitignore` file of every single
-   project. However, there's an easier way.
+   project.
 
-   Instead, you can add these file names to a `global gitignore
-   <git-excludelist_>`_ file that is specific to your machine (and not your
-   project).
+   However, it's easier in the long to instead add these file names to
+   the `global gitignore <git-excludelist_>`_ file that is used for your entire
+   computer. This means you don't have to ignore these files in the next
+   project again.
 
 .. _PyCharm: https://www.jetbrains.com/pycharm/
 .. _git-excludelist:

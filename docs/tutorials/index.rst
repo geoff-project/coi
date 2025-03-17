@@ -7,7 +7,8 @@
 Tutorials
 =========
 
-A list of tutorials.
+A list of detailed step-by-step explanations of various topics. Each tutorial
+is independent of the others and you can read either one without the other.
 
 .. toctree::
     :maxdepth: 2
