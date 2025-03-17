@@ -9,12 +9,12 @@
 from __future__ import annotations
 
 import enum
-import logging
 import re
 import typing as t
 
 from docutils.nodes import Element, Text, TextElement, reference
 from sphinx.ext import intersphinx
+from sphinx.util.logging import getLogger
 
 if t.TYPE_CHECKING:
     from sphinx.addnodes import pending_xref
@@ -22,7 +22,7 @@ if t.TYPE_CHECKING:
     from sphinx.environment import BuildEnvironment
     from sphinx.util.typing import ExtensionMetadata
 
-LOG = logging.getLogger(__name__)
+LOG = getLogger(__name__)
 
 T = t.TypeVar("T", bound=t.Callable)
 
@@ -111,12 +111,25 @@ def fix_xrefs(
             if cont_transform := rule.get("contnode"):
                 target = replace(match, cont_transform)
                 contnode = t.cast(TextElement, Text(target))
-            LOG.info("fix xref: %s -> %s", target, node["reftarget"])
+            LOG.info(
+                "fix xref: %s -> %s",
+                target,
+                node["reftarget"],
+                type="fix_xrefs",
+                location=node,
+            )
             break
     else:
         if app.config.fix_xrefs_try_typing and hasattr(t, target):
             # Some typing members don't get their module resolved.
             node["reftarget"] = "typing." + target
+            LOG.info(
+                "fix xref: %s -> %s",
+                target,
+                node["reftarget"],
+                type="fix_xrefs",
+                location=node,
+            )
 
     return retry_resolve_xref(app, env, node, contnode)
 

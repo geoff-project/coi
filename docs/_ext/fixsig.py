@@ -11,9 +11,14 @@ from __future__ import annotations
 import enum
 import typing as t
 
+from sphinx.util.logging import getLogger
+
 if t.TYPE_CHECKING:
     from sphinx.application import Config, Sphinx
     from sphinx.util.typing import ExtensionMetadata
+
+
+LOG = getLogger(__name__)
 
 
 def hide_enum_init_args(
@@ -27,9 +32,17 @@ def hide_enum_init_args(
 ) -> tuple[str, str] | None:
     """Hide all enum args except the first one."""
     if what == "class" and isinstance(obj, type) and issubclass(obj, enum.Enum):
+        oldsig = signature
         # Extract all args and only keep the first.
         arg = signature.strip("()").split(", ", 1)[0]
         signature = f"({arg!s}: str)"
+        LOG.info(
+            "hide enum args: %s -> %s",
+            oldsig,
+            signature,
+            type="fixsig",
+            subtype="hide_enum_init_args",
+        )
         return signature, return_annotation
     return None
 
@@ -44,8 +57,20 @@ def hide_exception_init_args(
     return_annotation: str,
 ) -> tuple[str, str] | None:
     """Hide all exception args."""
-    if what == "exception" and isinstance(obj, type) and issubclass(obj, Exception):
-        return "", ""
+    if (
+        what == "exception"
+        and isinstance(obj, type)
+        and issubclass(obj, Exception)
+        and signature
+    ):
+        LOG.info(
+            "hide exc args: %s%s",
+            name,
+            signature,
+            type="fixsig",
+            subtype="hide_exception_init_args",
+        )
+        return "", return_annotation
     return None
 
 
@@ -60,7 +85,14 @@ def hide_mcs_init_args(
 ) -> tuple[str, str] | None:
     """Hide all metaclass args."""
     if what == "class" and isinstance(obj, type) and issubclass(obj, type):
-        return "", ""
+        LOG.info(
+            "hide mcs args: %s%s",
+            name,
+            signature,
+            type="fixsig",
+            subtype="hide_mcs_init_args",
+        )
+        return "", return_annotation
     return None
 
 
