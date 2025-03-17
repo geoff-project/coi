@@ -59,7 +59,7 @@ matplotlib = [
     'matplotlib ~= 3.8',
 ]
 optimizers = [
-    'cernml-coi-optimizers  ~= 2.0',
+    'cernml-coi-optimizers  ~= 3.0',
 ]
 robotics = [
     'gymnasium-robotics ~= 1.0',

@@ -11,6 +11,7 @@ from __future__ import annotations
 import functools
 import typing as t
 from collections import Counter
+from contextlib import suppress
 from unittest.mock import Mock
 
 import gymnasium as gym
@@ -43,6 +44,10 @@ def pyplot(monkeypatch: pytest.MonkeyPatch) -> Mock:
     # attribute (unlike the return value of `plt.figure()`). Otherwise,
     # it won't pass for an unmanaged figure.
     mock.Figure.return_value.mock_add_spec(plt.Figure, spec_set=True)
+    # Compatibility with Matplotlib 3.10+, where `Figure.number` now is
+    # a static property.
+    with suppress(AttributeError):
+        mock.Figure.return_value.number = None
 
     class MockFigure(metaclass=MockFigureMeta):
         figure_class = mock.Figure
@@ -242,7 +247,7 @@ class FunctionParabola(coi.FunctionOptimizable, CallStatsMixin):
         return self.pos.copy()
 
     def compute_function_objective(
-        self, cycle_time: float, params: NDArray[np.double]
+        self, cycle_time: float, params: np.ndarray[tuple[int], np.dtype[np.float64]]
     ) -> float:
         assert params in self.get_optimization_space(cycle_time)
         self.time = cycle_time
@@ -257,11 +262,11 @@ class FunctionParabola(coi.FunctionOptimizable, CallStatsMixin):
     def render(self) -> t.Any:
         if self.render_mode == "human":
             plt.figure()
-            xdata, ydata = zip(self.pos, self.goals.get(self.time, [0, 0]))
+            xdata, ydata = zip(self.pos, self.goals.get(self.time, np.zeros(2)))
             plt.scatter(xdata, ydata, c=[0, 1])
             return None
         if self.render_mode == "matplotlib_figures":
-            xdata, ydata = zip(self.pos, self.goals.get(self.time, [0, 0]))
+            xdata, ydata = zip(self.pos, self.goals.get(self.time, np.zeros(2)))
             figure = plt.Figure()
             figure.add_subplot(1, 1, 1).scatter(xdata, ydata, c=[0, 1])
             return [figure]

@@ -66,7 +66,7 @@ class Parabola(coi.OptEnv):
 
     def __init__(self, *, render_mode: str | None = None) -> None:
         self.render_mode = render_mode
-        self.pos = np.zeros(2)
+        self.pos: NDArray[np.double] = np.zeros(2)
         self._train = True
         self.figure: Figure | None = None
 
@@ -84,6 +84,11 @@ class Parabola(coi.OptEnv):
         self, seed: int | None = None, options: coi.InfoDict | None = None
     ) -> tuple[NDArray[np.double], coi.InfoDict]:
         super().reset(seed=seed)
+        if seed is not None:
+            next_seed = self.np_random.bit_generator.random_raw
+            self.action_space.seed(next_seed())
+            self.observation_space.seed(next_seed())
+            self.optimization_space.seed(next_seed())
         # Don't use the full observation space for initial states.
         self.pos = self.action_space.sample()
         return self.pos.copy(), {}

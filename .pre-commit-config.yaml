@@ -36,7 +36,7 @@ repos:
   - id: mypy
     exclude: ^docs/
     additional_dependencies:
-    - numpy ~= 1.10
+    - numpy >= 1.22
     - gym >= 0.11, <0.23
     - pytest >= 6.0
     - PyQt5-stubs ~= 5.0

@@ -80,7 +80,7 @@ class ConfParabola(
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(dim,))
         self.observation_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
         self.optimization_space = gym.spaces.Box(-box_width, box_width, shape=(dim,))
-        self.pos = np.zeros((dim,))
+        self.pos: NDArray[np.double] = np.zeros((dim,))
         self.figure: Figure | None = None
 
     @override
@@ -110,12 +110,17 @@ class ConfParabola(
         self, *, seed: int | None = None, options: coi.InfoDict | None = None
     ) -> tuple[NDArray[np.double], coi.InfoDict]:
         super().reset(seed=seed)
+        if seed is not None:
+            next_seed = self.np_random.bit_generator.random_raw
+            self.action_space.seed(next_seed())
+            self.observation_space.seed(next_seed())
+            self.optimization_space.seed(next_seed())
+        self.pos = self.optimization_space.sample()
         # This is not good usage. In practice, you should only accept
         # and use cancellation tokens if your environment contains a
         # loop that waits for data. This is only for demonstration
         # purposes.
         self.token.raise_if_cancellation_requested()
-        self.pos = self.optimization_space.sample()
         return self.pos.copy(), {}
 
     @override

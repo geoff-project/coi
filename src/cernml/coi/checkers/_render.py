@@ -157,7 +157,7 @@ def assert_matplotlib_figures(result: t.Any) -> None:
 
 def assert_unmanaged_figure(figure: "Figure") -> None:
     """Assert that *figure* is not managed by PyPlot."""
-    assert not hasattr(figure, "number"), (
+    assert getattr(figure, "number", None) is None, (
         "figures returned by render('matplotlib_figures') "
         "must not be managed by PyPlot; create them via "
         "`matplotlib.figure.Figure()`"

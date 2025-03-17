@@ -470,17 +470,17 @@ def deduce_type(value: typing.Any, /) -> typing.Callable[[str], typing.Any]:
     If you don't pass an explicit *type* to `.Config.add()`, this
     function determines it based on the *value*. In almost all cases,
     this simply returns :samp:`type(value)`. However, in the case of
-    `bool` and `numpy.bool_`, a special wrapper `StrSafeBool` is
+    `bool` and `numpy.bool`, a special wrapper `StrSafeBool` is
     returned. This wrapper ensures that
     :samp:`deduce_type({bool})(str({bool}))` round-trips correctly:
 
         >>> sbool = deduce_type(np.bool_(True))
         >>> sbool  # doctest: +ELLIPSIS
-        <...StrSafeBool(<class 'numpy.bool_'>)>
-        >>> sbool(str(True))
+        <coi.configurable.StrSafeBool(<class 'numpy.bool...'>)>
+        >>> sbool(str(True)) is np.True_
         True
-        >>> sbool(str(False))
-        False
+        >>> sbool(str(False)) is np.False_
+        True
 
     The naive choice would produce the wrong result for `False` because
     ``bool("False")`` actually tests whether the string ``"False"`` is
