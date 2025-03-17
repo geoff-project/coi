@@ -175,8 +175,8 @@ intersphinx_mapping = {
 
 # -- Options for custom extension FixSig -------------------------------
 
-fixsig_fix_dot_t = True
 fixsig_hide_enum_init_args = True
+fixsig_hide_type_alias_forward_ref = True
 fixsig_hide_exception_init_args = True
 fixsig_hide_mcs_init_args = True
 
