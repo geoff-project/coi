@@ -17,6 +17,8 @@ numerical optimization and reinforcement learning (RL) on the same optimization
 problems. This makes it possible to unify both approaches into a generic
 optimization application.
 
+**To get started**, please read :doc:`guide/quickstart`.
+
 The :doc:`cernml-coi-utils <utils:index>` package provides many additional
 features that complement the COIs.
 

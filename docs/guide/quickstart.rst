@@ -208,6 +208,22 @@ provides a simple optimization loop:
     # Uses the BOBYQA algorithm to solve our quadratic problem.
     optimizers.solve(opt, env)
 
+.. seealso::
+
+    :doc:`/examples/parabola`
+        A more fully featured version of the above code.
+
+    :doc:`core`
+        The rest of the user guide.
+
+    :doc:`/tutorials/packaging`
+        A tutorial on how to package your Python code so it can be installed
+        and reused.
+
+    :doc:`/tutorials/implement-singleoptimizable`
+        A thorough and step-by-step tour of one optimization interface and all
+        the customization points that it provides.
+
 Install Extras
 --------------
 
