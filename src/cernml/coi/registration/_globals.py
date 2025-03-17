@@ -22,7 +22,7 @@ if t.TYPE_CHECKING:
     from gymnasium.experimental.vector import VectorEnv
 
     from .. import protocols
-    from . import _base
+    from ._base import EnvCreator, VectorEnvCreator, WrapperSpec
     from ._spec import EnvSpec
 
 __all__ = (
@@ -93,8 +93,8 @@ def pprint_registry(
 def register(
     env_id: str,
     /,
-    entry_point: type[protocols.Problem] | _base.EnvCreator | str,
-    vector_entry_point: _base.VectorEnvCreator | str | None = None,
+    entry_point: type[protocols.Problem] | EnvCreator | str,
+    vector_entry_point: VectorEnvCreator | str | None = None,
     *,
     reward_threshold: float | None = None,
     nondeterministic: bool = False,
@@ -103,7 +103,7 @@ def register(
     autoreset: bool = False,
     disable_env_checker: bool = False,
     apply_api_compatibility: bool = False,
-    additional_wrappers: tuple[_base.WrapperSpec, ...] = (),
+    additional_wrappers: tuple[WrapperSpec, ...] = (),
     **kwargs: t.Any,
 ) -> None: ...
 
@@ -113,7 +113,7 @@ def register(
     env_id: str,
     /,
     *,
-    vector_entry_point: _base.VectorEnvCreator | str,
+    vector_entry_point: VectorEnvCreator | str,
     reward_threshold: float | None = None,
     nondeterministic: bool = False,
     max_episode_steps: int | None = None,
@@ -121,7 +121,7 @@ def register(
     autoreset: bool = False,
     disable_env_checker: bool = False,
     apply_api_compatibility: bool = False,
-    additional_wrappers: tuple[_base.WrapperSpec, ...] = (),
+    additional_wrappers: tuple[WrapperSpec, ...] = (),
     **kwargs: t.Any,
 ) -> None: ...
 
@@ -129,8 +129,8 @@ def register(
 def register(
     env_id: str,
     /,
-    entry_point: type[protocols.Problem] | _base.EnvCreator | str | None = None,
-    vector_entry_point: _base.VectorEnvCreator | str | None = None,
+    entry_point: type[protocols.Problem] | EnvCreator | str | None = None,
+    vector_entry_point: VectorEnvCreator | str | None = None,
     *,
     reward_threshold: float | None = None,
     nondeterministic: bool = False,
@@ -139,7 +139,7 @@ def register(
     autoreset: bool = False,
     disable_env_checker: bool = False,
     apply_api_compatibility: bool = False,
-    additional_wrappers: tuple[_base.WrapperSpec, ...] = (),
+    additional_wrappers: tuple[WrapperSpec, ...] = (),
     **kwargs: t.Any,
 ) -> None:
     """Register an optimization problem for later use with `make()`.

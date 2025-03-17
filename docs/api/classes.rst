@@ -275,6 +275,8 @@ interfaces of this package.
 
 .. autodata:: Constraint
 
+.. autoclass:: InfoDict
+
 .. data:: ParamType
     :type: typing.TypeVar
 
@@ -283,12 +285,14 @@ interfaces of this package.
 
 .. data:: ActType
     :type: typing.TypeVar
+    :canonical: gymnasium.core.ActType
 
     The generic type variable for the actions of `~gymnasium.Env` and its
     subclasses. Reexported from Gymnasium for the user's convenience.
 
 .. data:: ObsType
     :type: typing.TypeVar
+    :canonical: gymnasium.core.ObsType
 
     The generic type variable for the observables of `~gymnasium.Env` and its
     subclasses. Reexported from Gymnasium for the user's convenience.

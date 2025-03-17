@@ -46,11 +46,15 @@ __all__ = (
     "Env",
     "FunctionOptimizable",
     "HasNpRandom",
+    "InfoDict",
     "ParamType",
     "Problem",
     "SingleOptimizable",
     "Space",
 )
+
+
+InfoDict = dict[str, t.Any]
 
 
 # See note in AttrCheckProtocol on why we also subclass Protocol itself.
@@ -82,8 +86,8 @@ class Problem(AttrCheckProtocol, t.Protocol):
     # Subclasses should make `metadata` just a regular dict. This is
     # a mapping proxy here to prevent accidental mutation through
     # inheritance.
-    metadata: dict[str, t.Any] = t.cast(
-        dict[str, t.Any],
+    metadata: InfoDict = t.cast(
+        InfoDict,
         MappingProxyType(
             {
                 "render_modes": [],
@@ -300,7 +304,7 @@ class SingleOptimizable(Problem, t.Protocol[ParamType]):
 
     @abstractmethod
     def get_initial_params(
-        self, *, seed: int | None = None, options: dict[str, t.Any] | None = None
+        self, *, seed: int | None = None, options: InfoDict | None = None
     ) -> ParamType:
         """Return an initial set of parameters for optimization.
 
@@ -382,7 +386,7 @@ class FunctionOptimizable(Problem, t.Protocol[ParamType]):
         cycle_time: float,
         *,
         seed: int | None = None,
-        options: dict[str, t.Any] | None = None,
+        options: InfoDict | None = None,
     ) -> ParamType:
         """Return an initial set of parameters for optimization.
 

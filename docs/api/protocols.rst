@@ -34,6 +34,8 @@ Common Optimization Interfaces
 
 .. autodata:: Constraint
 
+.. autoclass:: InfoDict
+
 .. data:: ParamType
     :type: typing.TypeVar
 

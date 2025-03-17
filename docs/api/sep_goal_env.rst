@@ -50,6 +50,7 @@ same methods as them.
 .. currentmodule:: cernml.coi
 .. class:: GoalEnv
     :module: cernml.coi
+    :canonical: cernml.coi._goalenv.GoalEnv
 
     Bases: `Env`\ [`Any`, `ActType`], `Generic`\ [`ObsType`, `GoalType`, `ActType`]
 
@@ -65,10 +66,9 @@ same methods as them.
     :no-members:
     :members: step, compute_observation
 
-.. autoclass:: InfoDict
-
 .. data:: GoalType
     :type: typing.TypeVar
+    :canonical: cernml.coi._goalenv.GoalType
 
     The generic type variable for the *achieved_goal* and *desired_goal* of
     `GoalEnv`. This is exported for the user's convenience.

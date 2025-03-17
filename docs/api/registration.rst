@@ -105,12 +105,14 @@ Advanced Registration Features
 
 .. function:: gymnasium.envs.registration.EnvCreator(**kwargs: typing.Any) -> ~gymnasium.Env
     :single-line-parameter-list:
+    :canonical: cernml.coi.registration._base.EnvCreator
 
     The call signature of entry points accepted by `~cernml.coi.register()`.
     This is used merely for type annotations.
 
 .. function:: gymnasium.envs.registration.VectorEnvCreator(**kwargs: typing.Any) -> ~gymnasium.experimental.vector.VectorEnv
     :single-line-parameter-list:
+    :canonical: cernml.coi.registration._base.VectorEnvCreator
 
     The call signature of vector entry points accepted by
     `~cernml.coi.register()`. This is used merely for type annotations.

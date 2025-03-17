@@ -65,7 +65,7 @@ from gymnasium.utils import seeding
 
 from . import protocols
 from ._machine import Machine
-from .protocols import Constraint, ParamType
+from .protocols import Constraint, InfoDict, ParamType
 from .registration import errors
 
 if t.TYPE_CHECKING:
@@ -77,6 +77,7 @@ __all__ = (
     "Env",
     "FunctionOptimizable",
     "HasNpRandom",
+    "InfoDict",
     "ParamType",
     "Problem",
     "SingleOptimizable",
@@ -148,8 +149,8 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
     """
 
     # pylint: disable = missing-function-docstring
-    metadata: dict[str, t.Any] = t.cast(
-        dict[str, t.Any],
+    metadata: InfoDict = t.cast(
+        InfoDict,
         MappingProxyType(
             {
                 "render_modes": [],
@@ -209,8 +210,7 @@ class Problem(HasNpRandom, metaclass=ABCMeta):
             )
             if render_mode not in modes:
                 raise ValueError(
-                    f"invalid render mode: expected one of {modes}, "
-                    f"got {render_mode!r}"
+                    f"invalid render mode: expected one of {modes}, got {render_mode!r}"
                 )
         self.render_mode = render_mode
 
@@ -387,7 +387,7 @@ class SingleOptimizable(Problem, t.Generic[ParamType]):
 
     @abstractmethod
     def get_initial_params(
-        self, *, seed: int | None = None, options: dict[str, t.Any] | None = None
+        self, *, seed: int | None = None, options: InfoDict | None = None
     ) -> ParamType:
         """Return an initial set of parameters for optimization.
 
@@ -530,7 +530,7 @@ class FunctionOptimizable(Problem, t.Generic[ParamType]):
         cycle_time: float,
         *,
         seed: int | None = None,
-        options: dict[str, t.Any] | None = None,
+        options: InfoDict | None = None,
     ) -> ParamType:
         """Return an initial set of parameters for optimization.
 

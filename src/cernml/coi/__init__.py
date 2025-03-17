@@ -53,6 +53,7 @@ from ._classes import (
     Env,
     FunctionOptimizable,
     HasNpRandom,
+    InfoDict,
     ParamType,
     Problem,
     SingleOptimizable,
@@ -73,7 +74,6 @@ from ._intersections import (
 from ._machine import Machine
 from ._sepenv import (
     ActType,
-    InfoDict,
     ObsType,
     SeparableEnv,
     SeparableGoalEnv,

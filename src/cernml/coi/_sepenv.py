@@ -15,6 +15,7 @@ from gymnasium.core import ActType, Env, ObsType
 from typing_extensions import override
 
 from ._goalenv import GoalEnv, GoalObs, GoalType
+from .protocols import InfoDict
 
 __all__ = (
     "ActType",
@@ -25,8 +26,6 @@ __all__ = (
     "SeparableEnv",
     "SeparableGoalEnv",
 )
-
-InfoDict = dict[str, t.Any]
 
 
 class SeparableEnv(Env[ObsType, ActType]):
