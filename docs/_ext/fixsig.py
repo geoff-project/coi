@@ -28,8 +28,8 @@ def hide_enum_init_args(
     obj: object,
     options: dict[str, bool],
     signature: str,
-    return_annotation: str,
-) -> tuple[str, str] | None:
+    return_annotation: str | None,
+) -> tuple[str, str | None] | None:
     """Hide all enum args except the first one."""
     if what == "class" and isinstance(obj, type) and issubclass(obj, enum.Enum):
         oldsig = signature
@@ -54,8 +54,8 @@ def hide_exception_init_args(
     obj: object,
     options: dict[str, bool],
     signature: str,
-    return_annotation: str,
-) -> tuple[str, str] | None:
+    return_annotation: str | None,
+) -> tuple[str, str | None] | None:
     """Hide all exception args."""
     if (
         what == "exception"
@@ -82,7 +82,7 @@ def hide_mcs_init_args(
     options: dict[str, bool],
     signature: str,
     return_annotation: str,
-) -> tuple[str, str] | None:
+) -> tuple[str, str | None] | None:
     """Hide all metaclass args."""
     if what == "class" and isinstance(obj, type) and issubclass(obj, type):
         LOG.info(
