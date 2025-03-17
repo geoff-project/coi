@@ -175,7 +175,6 @@ intersphinx_mapping = {
 
 # -- Options for custom extension FixSig -------------------------------
 
-fixsig_hide_enum_init_args = True
 fixsig_hide_type_alias_forward_ref = True
 fixsig_hide_exception_init_args = True
 fixsig_hide_mcs_init_args = True
@@ -187,27 +186,19 @@ fix_xrefs_try_typing = True
 fix_xrefs_try_class_as_obj = True
 fix_xrefs_rules = [
     {
-        "pattern": "(\\.T$|gymnasium.core.ObsType|gymnasium.core.ActType)",
+        "pattern": r"\.T$",
         "reftarget": ("const", "typing.TypeVar"),
     },
     {
         "pattern": "^VectorEnv$",
         "reftarget": ("const", "gymnasium.experimental.vector.VectorEnv"),
     },
-    {"pattern": "^Wrapper$", "reftarget": ("const", "gymnasium.Wrapper")},
-    {"pattern": "^(ParamType|Constraint|AnyOptimizable)$"},
     {
-        "pattern": "^_base\\.",
-        "reftarget": ("sub", "gymnasium.envs.registration."),
-        "contnode": ("sub", ""),
+        "pattern": "^Wrapper$",
+        "reftarget": ("const", "gymnasium.Wrapper"),
     },
-    {"pattern": "^numpy.bool_"},
-    {"pattern": "^numpy.typing.NDArray"},
-    {"pattern": "^cernml\\.coi\\._goalenv\\.", "reftarget": ("sub", "cernml.coi.")},
-    {"pattern": "^cernml\\.coi\\."},
-    {"pattern": "^t\\.", "reftarget": ("sub", "typing."), "contnode": ("sub", "")},
     {
-        "pattern": "^typing_extensions\\.",
+        "pattern": r"^(t|typing_extensions)\.",
         "reftarget": ("sub", "typing."),
         "contnode": ("sub", ""),
     },
