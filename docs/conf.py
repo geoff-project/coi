@@ -184,6 +184,7 @@ fixsig_hide_mcs_init_args = True
 
 
 fix_xrefs_try_typing = True
+fix_xrefs_try_class_as_obj = True
 fix_xrefs_rules = [
     {
         "pattern": "(\\.T$|gymnasium.core.ObsType|gymnasium.core.ActType)",

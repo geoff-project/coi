@@ -57,7 +57,6 @@ class XrefRule(t.TypedDict, total=False):
     """Description of the dicts accepted as xref fixing rules."""
 
     pattern: str | t.Pattern
-    reftype: str | None
     reftarget: tuple[str | TransformKind, str]
     contnode: tuple[str | TransformKind, str]
 
@@ -102,10 +101,10 @@ def fix_xrefs(
     """Link type variables to `typing.TypeVar`."""
     target: str = node["reftarget"]
     rules: list[XrefRule] = app.config.fix_xrefs_rules
+    if app.config.fix_xrefs_try_class_as_obj and node["reftype"] == "class":
+        node["reftype"] = "obj"
     for rule in rules:
         if match := re.search(rule["pattern"], target):
-            if reftype := rule.get("reftype", "obj"):
-                node["reftype"] = reftype
             if reftarget_transform := rule.get("reftarget"):
                 node["reftarget"] = replace(match, reftarget_transform)
             if cont_transform := rule.get("contnode"):
@@ -139,6 +138,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.setup_extension("sphinx.ext.intersphinx")
     app.add_config_value("fix_xrefs_rules", [], "env", list[XrefRule])
     app.add_config_value("fix_xrefs_try_typing", False, "env", bool)
+    app.add_config_value("fix_xrefs_try_class_as_obj", False, "env", bool)
     app.connect("missing-reference", fix_xrefs)
     return {
         "version": "1.0",
