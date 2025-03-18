@@ -114,7 +114,9 @@ def assert_matching_names(opt: SingleOptimizable) -> None:
 def assert_opt_return_values(opt: SingleOptimizable) -> None:
     """Check the return types of `SingleOptimizable` methods."""
     params = opt.get_initial_params()
-    assert params in opt.optimization_space, "parameters outside of space"
+    assert (
+        params in opt.optimization_space
+    ), f"parameters {params} outside of space {opt.optimization_space}"
     assert isinstance(params, np.ndarray), "parameters must be NumPy array"
     params = opt.optimization_space.sample()
     with assert_human_render_called(opt):

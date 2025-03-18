@@ -98,7 +98,7 @@ def assert_opt_return_values(opt: FunctionOptimizable) -> None:
     for point in _select_skeleton_points(opt):
         opt_space = opt.get_optimization_space(point)
         params = opt.get_initial_params(point)
-        assert params in opt_space, "parameters outside of space"
+        assert params in opt_space, f"parameters {params} outside of space {opt_space}"
         assert isinstance(params, np.ndarray), "parameters must be NumPy array"
         params = opt_space.sample()
         with assert_human_render_called(opt):
