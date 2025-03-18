@@ -34,6 +34,21 @@ v0.9
         User guide page listing all breaking changes and how to adapt your
         code.
 
+v0.9.4
+^^^^^^
+
+Bug fixes
+~~~~~~~~~
+- `cernml.coi.check()` now reports for `SingleOptimizable` and
+  `FunctionOptimizable` the values of parameters that are out of range of their
+  respective optimization space
+
+Other changes
+~~~~~~~~~~~~~
+- The package is now tested on NumPy 2.0 and Matplotlib 3.10.
+- the :doc:`/guide/quickstart` document has been expanded and more links have
+  been added to guide newcomers.
+
 v0.9.3
 ^^^^^^
 
