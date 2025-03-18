@@ -317,9 +317,9 @@ class TestAttrsMatch:
                 pass
 
         assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl), "subclass"
-        assert not _machinery.attrs_match(
-            proto=MyAttrProtocol, obj=MyImpl()
-        ), "instance"
+        assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl()), (
+            "instance"
+        )
 
     def test_missing_attr(self) -> None:
         class MyImpl:
@@ -341,9 +341,9 @@ class TestAttrsMatch:
                 pass
 
         assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl), "subclass"
-        assert not _machinery.attrs_match(
-            proto=MyAttrProtocol, obj=MyImpl()
-        ), "instance"
+        assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl()), (
+            "instance"
+        )
 
     def test_not_classmethod(self) -> None:
         class MyImpl:
@@ -363,9 +363,9 @@ class TestAttrsMatch:
                 pass
 
         assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl), "subclass"
-        assert not _machinery.attrs_match(
-            proto=MyAttrProtocol, obj=MyImpl()
-        ), "instance"
+        assert not _machinery.attrs_match(proto=MyAttrProtocol, obj=MyImpl()), (
+            "instance"
+        )
 
     def test_sub_protocol(self) -> None:
         class MySubProtocol(_machinery.AttrCheckProtocol):

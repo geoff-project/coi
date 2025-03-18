@@ -44,17 +44,17 @@ def assert_machine(problem: Problem) -> None:
 
 def assert_render_modes_defined(problem: Problem) -> None:
     """Check that the environment defines render modes correctly."""
-    assert (
-        "render.modes" not in problem.metadata
-    ), "The metadata key `render.modes` is deprecated; use `render_modes` instead"
+    assert "render.modes" not in problem.metadata, (
+        "The metadata key `render.modes` is deprecated; use `render_modes` instead"
+    )
     render_modes = t.cast(t.Collection[str], problem.metadata.get("render_modes"))
-    assert (
-        render_modes is not None
-    ), "missing key render_modes in the environment metadata"
+    assert render_modes is not None, (
+        "missing key render_modes in the environment metadata"
+    )
     # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
-    assert isinstance(
-        render_modes, collections.abc.Collection
-    ), "render_modes must be a collection"
+    assert isinstance(render_modes, collections.abc.Collection), (
+        "render_modes must be a collection"
+    )
     for mode in render_modes:
         assert isinstance(mode, str), f"render mode must be string: {mode!r}"
 
@@ -94,8 +94,7 @@ def assert_render_mode_valid(problem: Problem, *, warn: int = True) -> None:
     render_modes = problem.metadata.get("render.modes", None)
     if warn and render_modes is not None:
         warnings.warn(
-            "The metadata key `render.modes` is deprecated; "
-            "use `render_modes` instead",
+            "The metadata key `render.modes` is deprecated; use `render_modes` instead",
             stacklevel=max(2, warn),
         )
     render_modes = problem.metadata.get("render_modes", render_modes or ())

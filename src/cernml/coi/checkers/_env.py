@@ -52,9 +52,9 @@ def assert_observation_space(env: Env) -> None:
             f"GoalEnv observation space must have keys {expected_keys}, "
             f"not {actual_keys}"
         )
-        assert is_box(
-            space["observation"]
-        ), f'observation space {space["observation"]} must be a gym.spaces.Box'
+        assert is_box(space["observation"]), (
+            f"observation space {space['observation']} must be a gym.spaces.Box"
+        )
     else:
         assert is_box(space), f"observation space {space} must be a gym.spaces.Box"
 
@@ -63,9 +63,9 @@ def assert_action_space(env: Env) -> None:
     """Check that the action space has symmetric/normalized limits."""
     space = env.action_space
     assert is_box(space), f"action space {space} must be a gym.spaces.Box"
-    assert np.all(
-        abs(space.low) == abs(space.high)
-    ), "action space must have symmetric limits"
+    assert np.all(abs(space.low) == abs(space.high)), (
+        "action space must have symmetric limits"
+    )
     assert np.any(abs(space.high) <= 1.0), "action space limits must be 1.0 or less"
 
 
@@ -98,9 +98,9 @@ def _check_env_reset(env: Env) -> None:
     assert len(data) == 2, f"step() must return two values: obs, info; not {data!r}"
     obs, info = data
     _check_obs(obs, env)
-    assert isinstance(
-        info, dict
-    ), f"`info` returned by `reset()` must be a dictionary: {info!r}"
+    assert isinstance(info, dict), (
+        f"`info` returned by `reset()` must be a dictionary: {info!r}"
+    )
 
 
 def _check_env_step(env: Env) -> None:
@@ -117,9 +117,9 @@ def _check_env_step(env: Env) -> None:
     assert np.isfinite(float(reward)), f"reward should be finite, not {reward!r}"
     assert is_bool(terminated), f"`terminated` signal must be a bool: {terminated!r}"
     assert is_bool(truncated), f"`truncated` signal must be a bool: {truncated!r}"
-    assert isinstance(
-        info, dict
-    ), f"`info` returned by `step()` must be a dictionary: {info}"
+    assert isinstance(info, dict), (
+        f"`info` returned by `step()` must be a dictionary: {info}"
+    )
     if is_goal_env(env):
         expected = env.compute_reward(obs["achieved_goal"], obs["desired_goal"], info)
         assert reward == expected, f"reward does not match: {reward} != {expected}"
@@ -130,13 +130,13 @@ def _check_env_step(env: Env) -> None:
 
 def _check_obs(obs: np.ndarray, env: Env) -> None:
     """Assert that observation matches the observation space."""
-    assert (
-        obs in env.observation_space
-    ), f"observation {obs} outside of space {env.observation_space}"
+    assert obs in env.observation_space, (
+        f"observation {obs} outside of space {env.observation_space}"
+    )
     inner_obs = obs["observation"] if is_goal_env(env) else obs
-    assert isinstance(
-        inner_obs, np.ndarray
-    ), f"obs['observation'] {inner_obs} must be NumPy array"
+    assert isinstance(inner_obs, np.ndarray), (
+        f"obs['observation'] {inner_obs} must be NumPy array"
+    )
 
 
 def assert_env_no_nan(env: Env) -> None:
@@ -243,21 +243,21 @@ def warn_observation_space(env: Env, warn: int = True) -> None:
     warn = bump_warn_arg(warn)
     space = env.observation_space
     if is_goal_env(env):
-        assert isinstance(
-            space, spaces.Dict
-        ), f"observation space for GoalEnv {env!r} must be Dict, not {space!r}"
+        assert isinstance(space, spaces.Dict), (
+            f"observation space for GoalEnv {env!r} must be Dict, not {space!r}"
+        )
         nested_space = space.get("observation")
-        assert (
-            nested_space is not None
-        ), f"Dict space is missing required key 'observation': {space!r}"
-        assert is_box(
-            nested_space
-        ), f"observation_space['observation'] is not a Box: {nested_space!r}"
+        assert nested_space is not None, (
+            f"Dict space is missing required key 'observation': {space!r}"
+        )
+        assert is_box(nested_space), (
+            f"observation_space['observation'] is not a Box: {nested_space!r}"
+        )
         warn_flat_observation_space(nested_space, warn=warn)
     else:
-        assert is_box(
-            space
-        ), f"observation space for non-GoalEnv {env!r} must be Box, not {space!r}"
+        assert is_box(space), (
+            f"observation space for non-GoalEnv {env!r} must be Box, not {space!r}"
+        )
         warn_flat_observation_space(space, warn=warn)
 
 

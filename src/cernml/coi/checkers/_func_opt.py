@@ -39,9 +39,9 @@ def assert_optimization_space(opt: FunctionOptimizable) -> None:
     """Check that the optimization space is a box.."""
     for point in _select_skeleton_points(opt):
         opt_space = opt.get_optimization_space(point)
-        assert is_box(
-            opt_space
-        ), f"optimization space {opt_space} at t={point} must be a gym.spaces.Box"
+        assert is_box(opt_space), (
+            f"optimization space {opt_space} at t={point} must be a gym.spaces.Box"
+        )
 
 
 def assert_constraints(constraints: t.Sequence[Constraint]) -> None:
@@ -74,23 +74,23 @@ def assert_matching_names(opt: FunctionOptimizable) -> None:
     if name := opt.get_objective_function_name():
         assert isinstance(name, str), f"objective name {name!r} must be a string"
     if names := opt.get_param_function_names():
-        assert not isinstance(
-            names, str
-        ), f"param names {names} must not be a single string"
+        assert not isinstance(names, str), (
+            f"param names {names} must not be a single string"
+        )
         for point in _select_skeleton_points(opt):
             opt_space = opt.get_optimization_space(point)
             shape: t.Optional[tuple[int, ...]] = getattr(opt_space, "shape", None)
-            assert (
-                shape is not None
-            ), f"param names require optimization space with a shape: {opt_space!r}"
+            assert shape is not None, (
+                f"param names require optimization space with a shape: {opt_space!r}"
+            )
             expected = int(np.prod(shape))
-            assert (
-                len(names) == expected
-            ), f"expected {expected} parameter names, got {len(names)}"
+            assert len(names) == expected, (
+                f"expected {expected} parameter names, got {len(names)}"
+            )
         for param_name in names:
-            assert isinstance(
-                param_name, str
-            ), f"parameter name {param_name} must be a string"
+            assert isinstance(param_name, str), (
+                f"parameter name {param_name} must be a string"
+            )
 
 
 def assert_opt_return_values(opt: FunctionOptimizable) -> None:

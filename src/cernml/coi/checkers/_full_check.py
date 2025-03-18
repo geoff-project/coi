@@ -55,9 +55,9 @@ def check(env: Problem, warn: int = True, headless: bool = True) -> None:
     """
     unwrapped_env = getattr(env, "unwrapped", None)
     assert unwrapped_env is not None, f'missing property "unwrapped" on {type(env)}'
-    assert isinstance(
-        unwrapped_env, Problem
-    ), f"{type(unwrapped_env)} must inherit from Problem"
+    assert isinstance(unwrapped_env, Problem), (
+        f"{type(unwrapped_env)} must inherit from Problem"
+    )
     # Run built-in checkers.
     warn = bump_warn_arg(warn)
     LOG.debug("Checking Problem interface of %s", env)

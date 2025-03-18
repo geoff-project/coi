@@ -49,9 +49,9 @@ def assert_rgb_array_list(result: t.Any) -> None:
         AssertionError: item #2 of the render('rgb_array_list')
         result is invalid, see the exception above
     """
-    assert is_iterable(
-        result
-    ), "render('rgb_array_list') should return a list of NumPy arrays, not {result!r}"
+    assert is_iterable(result), (
+        "render('rgb_array_list') should return a list of NumPy arrays, not {result!r}"
+    )
     try:
         for i, image in enumerate(result):  # noqa: B007
             assert_rgb_array(image)
@@ -69,9 +69,9 @@ def assert_rgb_array(result: t.Any) -> None:
 
         >>> assert_rgb_array(np.zeros((36, 36, 3)))
     """
-    assert isinstance(
-        result, np.ndarray
-    ), f"render('rgb_array') should return a NumPy array, not {result!r}"
+    assert isinstance(result, np.ndarray), (
+        f"render('rgb_array') should return a NumPy array, not {result!r}"
+    )
     num_dims = np.ndim(result)
     assert num_dims == 3, f"render('rgb_array') array should be 3D, not {num_dims}D"
     num_colors = np.shape(result)[-1]
@@ -103,9 +103,9 @@ def assert_ansi_list(result: t.Any) -> None:
         AssertionError: image #2 of the render('rgb_array_list')
         result is invalid, see the exception above
     """
-    assert is_iterable(
-        result
-    ), "render('ansi_list') should return a list of strings, not {result!r}"
+    assert is_iterable(result), (
+        "render('ansi_list') should return a list of strings, not {result!r}"
+    )
     try:
         for i, string in enumerate(result):  # noqa: B007
             assert_ansi(string)
@@ -123,9 +123,9 @@ def assert_ansi(result: t.Any) -> None:
 
         >>> assert_ansi("")
     """
-    assert isinstance(
-        result, (str, io.StringIO)
-    ), f"render('ansi') should return str or StringIO, not {result!r}"
+    assert isinstance(result, (str, io.StringIO)), (
+        f"render('ansi') should return str or StringIO, not {result!r}"
+    )
 
 
 def assert_matplotlib_figures(result: t.Any) -> None:

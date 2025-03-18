@@ -20,9 +20,9 @@ from ._reseed import assert_reseed
 
 def check_single_optimizable(opt: SingleOptimizable, warn: int = True) -> None:
     """Check the run-time invariants of the given interface."""
-    assert is_single_optimizable(
-        opt
-    ), f"doesn't implement the SingleOptimizable API: {opt!r}"
+    assert is_single_optimizable(opt), (
+        f"doesn't implement the SingleOptimizable API: {opt!r}"
+    )
     assert_optimization_space(opt)
     assert_constraints(opt.constraints)
     assert_matching_names(opt)
@@ -77,46 +77,46 @@ def assert_matching_names(opt: SingleOptimizable) -> None:
         >>> assert_matching_names(GoodEnv())
     """
     if opt.objective_name:
-        assert isinstance(
-            opt.objective_name, str
-        ), f"objective name {opt.objective_name!r} must be a string"
+        assert isinstance(opt.objective_name, str), (
+            f"objective name {opt.objective_name!r} must be a string"
+        )
     if opt.param_names:
-        assert not isinstance(
-            opt.param_names, str
-        ), f"param names {opt.param_names!r} must not be a single string"
+        assert not isinstance(opt.param_names, str), (
+            f"param names {opt.param_names!r} must not be a single string"
+        )
         opt_space = opt.optimization_space
         shape: t.Optional[tuple[int, ...]] = getattr(opt_space, "shape", None)
-        assert (
-            shape is not None
-        ), f"param names require optimization space with a shape: {opt_space!r}"
+        assert shape is not None, (
+            f"param names require optimization space with a shape: {opt_space!r}"
+        )
         expected = int(np.prod(shape))
-        assert (
-            len(opt.param_names) == expected
-        ), f"expected {expected} parameter names, got {len(opt.param_names)}"
+        assert len(opt.param_names) == expected, (
+            f"expected {expected} parameter names, got {len(opt.param_names)}"
+        )
         for param_name in opt.param_names:
-            assert isinstance(
-                param_name, str
-            ), f"parameter name {param_name!r} must be a string"
+            assert isinstance(param_name, str), (
+                f"parameter name {param_name!r} must be a string"
+            )
     if opt.constraint_names:
-        assert not isinstance(
-            opt.constraint_names, str
-        ), f"param names {opt.constraint_names!r} must not be a single string"
+        assert not isinstance(opt.constraint_names, str), (
+            f"param names {opt.constraint_names!r} must not be a single string"
+        )
         expected = len(opt.constraints)
-        assert (
-            len(opt.constraint_names) == expected
-        ), f"expected {expected} parameter names, got {len(opt.constraint_names)}"
+        assert len(opt.constraint_names) == expected, (
+            f"expected {expected} parameter names, got {len(opt.constraint_names)}"
+        )
         for constraint_name in opt.constraint_names:
-            assert isinstance(
-                constraint_name, str
-            ), f"constraint name {constraint_name!r} must be a string"
+            assert isinstance(constraint_name, str), (
+                f"constraint name {constraint_name!r} must be a string"
+            )
 
 
 def assert_opt_return_values(opt: SingleOptimizable) -> None:
     """Check the return types of `SingleOptimizable` methods."""
     params = opt.get_initial_params()
-    assert (
-        params in opt.optimization_space
-    ), f"parameters {params} outside of space {opt.optimization_space}"
+    assert params in opt.optimization_space, (
+        f"parameters {params} outside of space {opt.optimization_space}"
+    )
     assert isinstance(params, np.ndarray), "parameters must be NumPy array"
     params = opt.optimization_space.sample()
     with assert_human_render_called(opt):

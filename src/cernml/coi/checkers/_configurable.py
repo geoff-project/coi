@@ -49,9 +49,9 @@ def assert_is_good_config(config: Config, warn: int = True) -> None:
     UserWarning: default [] of field 'foo' has unusual ...
     >>> assert_is_good_config(bad_config, warn=False)
     """
-    assert isinstance(
-        config, Config
-    ), f"result of get_config() must be a Config: {config!r}"
+    assert isinstance(config, Config), (
+        f"result of get_config() must be a Config: {config!r}"
+    )
     if warn:
         warning_template = (
             "{kind} {value!r} of field {dest!r} has unusual "
