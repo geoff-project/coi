@@ -37,7 +37,7 @@ def registry() -> EnvRegistry:
         registry.register(name, entry_point=Mock(name=f"{ns}_entry_point"))
 
     registry._plugins = Mock(Plugins)
-    registry._plugins.unloaded = unloaded
+    registry._plugins.unloaded.return_value = unloaded
     registry._plugins.load.side_effect = load
     return registry
 

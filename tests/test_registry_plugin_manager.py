@@ -32,7 +32,7 @@ def entry_points(importlib: MagicMock) -> MagicMock:
 
 def test_no_group(importlib: MagicMock) -> None:
     plugins = Plugins(group=None)
-    assert not plugins.unloaded
+    assert not plugins.unloaded()
     importlib.EntryPoints.assert_called_once_with()
 
 
@@ -45,7 +45,7 @@ def test_group(importlib: MagicMock) -> None:
 
 def test_unloaded(entry_points: MagicMock) -> None:
     plugins = Plugins(group=None)
-    assert plugins.unloaded == set(entry_points.names)
+    assert plugins.unloaded() == set(entry_points.names)
     assert entry_points.select.call_args_list == [
         call(name=name) for name in entry_points.names
     ]
@@ -56,7 +56,7 @@ def test_load_empty_ns() -> None:
     name = MagicMock(name="name")
     plugins = Plugins(group=None)
     plugins.load(name)
-    assert not plugins.loaded
+    assert not plugins.loaded()
 
 
 def test_load(entry_points: MagicMock) -> None:
@@ -66,11 +66,11 @@ def test_load(entry_points: MagicMock) -> None:
     name = entry_points.names[0]
     # When:
     plugins = Plugins(group=None)
-    assert plugins.unloaded == set(entry_points.names)
+    assert plugins.unloaded() == set(entry_points.names)
     plugins.load(name)
     # Then:
-    assert plugins.loaded == {name}
-    assert plugins.unloaded == set(entry_points.names[1:])
+    assert plugins.loaded() == {name}
+    assert plugins.unloaded() == set(entry_points.names[1:])
     plugin.load.assert_called_once_with()
     plugin.load.return_value.assert_called_once_with()
 

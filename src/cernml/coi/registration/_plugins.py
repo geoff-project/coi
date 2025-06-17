@@ -63,12 +63,10 @@ class Plugins:
                 )
         self._loaded.add(ns)
 
-    @property
     def unloaded(self) -> frozenset[str]:
         """Return the set of namespaces that aren't loaded yet."""
         return frozenset(self._unloaded_plugins)
 
-    @property
     def loaded(self) -> frozenset[str]:
         """Return the set of namespaces that have been loaded."""
         return frozenset(self._loaded)

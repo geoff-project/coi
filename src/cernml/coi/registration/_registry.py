@@ -282,7 +282,7 @@ class EnvRegistry:
             min_spec = matching_spec
         else:
             min_spec = EnvSpec(env_name)
-            if min_spec.namespace in self._plugins.unloaded and allow_imports:
+            if min_spec.namespace in self._plugins.unloaded() and allow_imports:
                 self._load_namespace(min_spec.namespace, stacklevel=1 + stacklevel)
             matching_spec = self._registry.get(env_name)
         # At this stage, there are three options:
