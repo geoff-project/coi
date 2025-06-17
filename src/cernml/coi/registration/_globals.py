@@ -66,6 +66,24 @@ def spec(env_id: str) -> EnvSpec:
     return registry.spec(env_id)
 
 
+@t.overload
+def pprint_registry(
+    *,
+    num_cols: int = 3,
+    exclude_namespaces: list[str] | None = None,
+    disable_print: t.Literal[False] = False,
+) -> None: ...
+
+
+@t.overload
+def pprint_registry(
+    *,
+    num_cols: int = 3,
+    exclude_namespaces: list[str] | None = None,
+    disable_print: t.Literal[True],
+) -> str: ...
+
+
 def pprint_registry(
     *,
     num_cols: int = 3,

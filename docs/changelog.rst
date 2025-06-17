@@ -23,7 +23,7 @@ version 0.10.0.
 Unreleased
 ----------
 
-No changes yet!
+- Make the signature of `.pprint_registry()` more precise.
 
 v0.9
 ----
