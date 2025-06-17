@@ -45,7 +45,7 @@ def current_namespace() -> str | None:
     return registry.current_namespace
 
 
-def namespace(ns: str) -> AbstractContextManager:
+def namespace(ns: str) -> AbstractContextManager[None]:
     """Context manager for modifying the current namespace."""
     return registry.namespace(ns)
 

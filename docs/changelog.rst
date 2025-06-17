@@ -23,7 +23,7 @@ version 0.10.0.
 Unreleased
 ----------
 
-- Make the signature of `.pprint_registry()` more precise.
+- Make the signatures of `.namespace()` and `.pprint_registry()` more precise.
 
 v0.9
 ----
