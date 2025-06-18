@@ -24,6 +24,9 @@ Unreleased
 ----------
 
 - Make the signatures of `.namespace()` and `.pprint_registry()` more precise.
+- Add a new argument *allow_imports* to `.EnvRegistry.all()` that is True by
+  default. Passing this argument automatically loads any required entry points
+  from :ep:`cernml.envs` to ensure that all viable environments are found.
 
 v0.9
 ----

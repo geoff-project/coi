@@ -37,7 +37,7 @@ def registry() -> EnvRegistry:
         registry.register(name, entry_point=Mock(name=f"{ns}_entry_point"))
 
     registry._plugins = Mock(Plugins)
-    registry._plugins.unloaded.return_value = unloaded
+    registry._plugins.unloaded.side_effect = lambda: frozenset(unloaded)
     registry._plugins.load.side_effect = load
     return registry
 
@@ -160,7 +160,43 @@ def test_register_versioned_after_unversioned(registry: EnvRegistry) -> None:
 def test_all(registry: EnvRegistry) -> None:
     ep = Mock(name="entry_point")
     registry.register("name", entry_point=ep)
-    assert all(spec.entry_point == ep for spec in registry.all(version=None))
+    with pytest.warns(errors.GymDeprecationWarning, match="__other__"):
+        assert all(spec.entry_point == ep for spec in registry.all(version=None))
+
+
+def test_all_no_imports(registry: EnvRegistry) -> None:
+    # Given:
+    plugins = t.cast(Mock, registry._plugins)
+    # When:
+    without_imports = list(registry.all(allow_imports=False))
+    # Then:
+    assert not plugins.load.called
+    assert not without_imports
+    assert len(plugins.unloaded()) == 6
+    # When:
+    with pytest.warns(errors.GymDeprecationWarning, match="__other__"):
+        with_imports = list(registry.all(allow_imports=True))
+    # Then:
+    assert plugins.load.call_count == 6
+    assert len(with_imports) == 6
+    assert not plugins.unloaded()
+
+
+def test_all_single_import(registry: EnvRegistry) -> None:
+    # Given:
+    plugins = t.cast(Mock, registry._plugins)
+    # When:
+    without_imports = list(registry.all(ns="ns1", allow_imports=False))
+    # Then:
+    assert not plugins.load.called
+    assert not without_imports
+    assert len(plugins.unloaded()) == 6
+    # When:
+    with_imports = list(registry.all(ns="ns1", allow_imports=True))
+    # Then:
+    plugins.load.assert_called_once_with("ns1", stacklevel=4)
+    assert len(with_imports) == 1
+    assert len(plugins.unloaded()) == 5
 
 
 def test_spec(registry: EnvRegistry) -> None:

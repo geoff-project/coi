@@ -78,6 +78,7 @@ class EnvRegistry:
         ns: str | None | Sentinel = MISSING,
         name: str | Sentinel = MISSING,
         version: int | bool | None | Sentinel = MISSING,
+        allow_imports: bool = True,
     ) -> t.Iterator[EnvSpec]:
         """Yield all environment specs that match a given filter.
 
@@ -97,7 +98,20 @@ class EnvRegistry:
                 only environment specs that have *any* version are
                 yielded. If passed and False or None, only environment
                 specs *without* a version are yielded.
+            allow_imports: If True (the default), any entry points that
+                are relevant to the *ns* argument are loaded before
+                yielding any results. If *ns* is None, this parameter is
+                ignored. If *ns* is not passed at all, **all** entry
+                points in the registry's entry point group are loaded.
+                If passed and False, only environments that have already
+                been registered are yielded.
         """
+        if allow_imports and ns is not None:
+            if ns is MISSING:
+                for plugin in self._plugins.unloaded():
+                    self._load_namespace(plugin, stacklevel=3)
+            else:
+                self._load_namespace(ns, stacklevel=3)
         return self._registry.select(ns=ns, name=name, version=version)
 
     def spec(self, env_id: str, /) -> EnvSpec:
