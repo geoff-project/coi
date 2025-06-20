@@ -35,7 +35,7 @@ def hide_enum_init_args(
     if what == "class" and isinstance(obj, type) and issubclass(obj, enum.Enum):
         oldsig = signature
         # Extract all args and only keep the first.
-        arg = signature.strip("()").split(", ", 1)[0]
+        arg = signature.strip("()").split(", ", 1)[0].strip("*")
         signature = f"({arg!s}: str)"
         LOG.info(
             "hide enum args: %s -> %s",
