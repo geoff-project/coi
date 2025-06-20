@@ -24,7 +24,10 @@ The Configurable Interface
 
 .. autoclass:: cernml.coi.Config.Field
 
-.. autoclass:: ConfigValues
+.. type:: ConfigValues
+    :canonical: ~types.SimpleNamespace
+
+    A convenience alias to avoid importing another module.
 
 .. autoexception:: BadConfig
 

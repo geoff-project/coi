@@ -32,9 +32,23 @@ Common Optimization Interfaces
 
     See `gym:gymnasium.spaces.Space`. Re-exported for convenience.
 
-.. autodata:: Constraint
+.. type:: Constraint
+    :canonical: ~scipy.optimize.LinearConstraint | ~scipy.optimize.NonlinearConstraint
+    :no-index:
 
-.. autoclass:: InfoDict
+    The type of :ref:`constraints
+    <tutorials/implement-singleoptimizable:Constraints>` used by
+    `SingleOptimizable <SingleOptimizable.constraints>` and
+    `FunctionOptimizable <FunctionOptimizable.constraints>`.
+
+.. type:: InfoDict
+    :canonical: dict[str, ~typing.Any]
+    :no-index:
+
+    General metadata type. Used by `Problem.metadata`, the *options* parameter
+    of `~SingleOptimizable.get_initial_params()`, the *options* parameter of
+    `reset() <gymnasium.Env.reset>`, and the *info* return value of `step()
+    <gymnasium.Env.step>`.
 
 .. data:: ParamType
     :type: typing.TypeVar

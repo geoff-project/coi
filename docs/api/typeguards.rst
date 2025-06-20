@@ -12,7 +12,12 @@ Typeguards
 .. automodule:: cernml.coi._typeguards
     :no-members:
 
-.. autoclass:: AnyOptimizable
+.. type:: AnyOptimizable
+    :canonical: SingleOptimizable[ParamType] | FunctionOptimizable[ParamType]
+
+    A convenience alias for the union of both interfaces for single-objective
+    optimization.
+
 .. autofunction:: is_optimizable
 .. autofunction:: is_optimizable_class
 .. autofunction:: is_single_optimizable
