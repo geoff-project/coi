@@ -42,6 +42,7 @@ author = "Penny Madysa"
 release = dist.version
 version = release.partition("+")[0]
 
+assert dist.metadata is not None
 for entry in dist.metadata.get_all("Project-URL", []):
     url: str
     kind, url = entry.split(", ")
@@ -178,6 +179,7 @@ intersphinx_mapping = {
 fixsig_hide_type_alias_forward_ref = True
 fixsig_hide_exception_init_args = True
 fixsig_hide_mcs_init_args = True
+fixsig_hide_sentinel_values = True
 
 # -- Options for custom extension FixXrefs -----------------------------
 

@@ -88,11 +88,6 @@ Advanced Registration Features
 
 .. autofunction:: downcast_spec
 
-.. autoclass:: cernml.coi.registration._sentinel.Sentinel
-
-.. autodata:: cernml.coi.registration._sentinel.MISSING
-    :no-value:
-
 .. function:: make_vec(id: str | EnvSpec, num_envs: int = 1, vectorization_mode: str = 'async', vector_kwargs: dict[str, typing.Any] | None = None, wrappers: typing.Sequence[typing.Callable[[~cernml.coi.Env], Wrapper]] | None = None, **kwargs: typing.Any) -> VectorEnv
     :module: gymnasium
 
@@ -118,3 +113,6 @@ Advanced Registration Features
     `~cernml.coi.register()`. This is used merely for type annotations.
 
 .. autoclass:: gymnasium.envs.registration.WrapperSpec
+
+.. autoclass:: cernml.coi.registration._sentinel.Sentinel()
+    :no-show-inheritance:

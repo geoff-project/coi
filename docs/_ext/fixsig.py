@@ -132,6 +132,23 @@ def hide_type_alias_forward_ref(
     return None
 
 
+def hide_sentinel_values(
+    app: Sphinx,
+    what: str,
+    name: str,
+    obj: object,
+    options: dict[str, bool],
+    signature: str,
+    return_annotation: str | None,
+) -> tuple[str, str | None] | None:
+    """Hide default values that are surrounded by angle brackets.
+
+    This circumvents https://github.com/sphinx-doc/sphinx/issues/12695.
+    """
+    signature = re.sub(r"<[\w\.]+>", "...", signature)
+    return signature, return_annotation
+
+
 def install_handlers(app: Sphinx, config: Config) -> None:
     """Read config and install fixers."""
     if config.fixsig_hide_type_alias_forward_ref:
@@ -142,6 +159,8 @@ def install_handlers(app: Sphinx, config: Config) -> None:
         app.connect("autodoc-process-signature", hide_exception_init_args)
     if config.fixsig_hide_mcs_init_args:
         app.connect("autodoc-process-signature", hide_mcs_init_args)
+    if config.fixsig_hide_sentinel_values:
+        app.connect("autodoc-process-signature", hide_sentinel_values)
 
 
 def setup(app: Sphinx) -> ExtensionMetadata:
@@ -150,6 +169,7 @@ def setup(app: Sphinx) -> ExtensionMetadata:
     app.add_config_value("fixsig_hide_enum_init_args", False, "env", bool)
     app.add_config_value("fixsig_hide_exception_init_args", False, "env", bool)
     app.add_config_value("fixsig_hide_mcs_init_args", False, "env", bool)
+    app.add_config_value("fixsig_hide_sentinel_values", False, "env", bool)
     app.connect("config-inited", install_handlers)
     return {
         "version": "1.0",
