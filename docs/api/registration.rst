@@ -65,15 +65,17 @@ The Problem Registry
 .. function:: cernml.coi.register_envs(env_module: ~types.ModuleType)
 
     A no-op function such that it can appear to IDEs that a module is used.
-
     This has been re-exported from Gymnasium.
 
 .. data:: registry
     :type: EnvRegistry
     :value: EnvRegistry(ep_group="cernml.envs")
 
-    The global variable that contains all registered environments. If possible,
-    you should call the global functions instead of this variable's methods.
+    The global variable that contains all registered environments. It also
+    loads environments dynamically from the entry point :ep:`cernml.envs`.
+
+    The global functions all call the corresponding method of this global
+    variable, so you should prefer them where possible.
 
 Advanced Registration Features
 ------------------------------

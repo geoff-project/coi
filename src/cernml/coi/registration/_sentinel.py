@@ -41,12 +41,12 @@ __all__ = (
 @enum.unique
 @typing.final
 class Sentinel(enum.Enum):
-    """Singleton sentinel type to mark arguments as unpassed.
+    """Singleton type to mark unpassed arguments.
 
-    The pattern is motivated by :pep:`PEP 484
+    This is the default value type of `.EnvRegistry.all()`. The pattern
+    is motivated by :pep:`PEP 484
     <484#support-for-singleton-types-in-unions>` and the naming inspired
-    by :pep:`PEP 661 <661#specification>`. This is used by
-    `.EnvRegistry.all()`.
+    by :pep:`PEP 661 <661#specification>`.
     """
 
     MISSING = "MISSING"
