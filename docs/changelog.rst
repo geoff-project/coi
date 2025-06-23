@@ -27,6 +27,8 @@ Unreleased
 - Add a new argument *allow_imports* to `.EnvRegistry.all()` that is True by
   default. Passing this argument automatically loads any required entry points
   from :ep:`cernml.envs` to ensure that all viable environments are found.
+- Delay imports of :doc:`SciPy <sci:index>` and :doc:`Matplotlib <mpl:index>`
+  in `cernml.coi.checkers` until they are absolutely required.
 
 v0.9
 ----

@@ -52,7 +52,7 @@ def pyplot(monkeypatch: pytest.MonkeyPatch) -> Mock:
     class MockFigure(metaclass=MockFigureMeta):
         figure_class = mock.Figure
 
-    monkeypatch.setattr("cernml.coi.checkers._render.Figure", MockFigure)
+    monkeypatch.setattr("matplotlib.figure.Figure", MockFigure)
     monkeypatch.setitem(globals(), "plt", mock)
     return mock
 

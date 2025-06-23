@@ -13,12 +13,17 @@ import numpy as np
 
 from ._generic import is_iterable
 
-try:
+if t.TYPE_CHECKING:
     from matplotlib.figure import Figure
-except ImportError:
-    MPL_AVAILABLE = False
-else:
-    MPL_AVAILABLE = True
+
+
+def mpl_available() -> bool:
+    """Return True if :ref:`matplotlib <mpl:index>` can be imported."""
+    try:
+        import matplotlib as mpl  # noqa: F401
+    except ImportError:
+        return False
+    return True
 
 
 def get_render_mode_checks() -> dict[str, t.Callable[..., None]]:
@@ -31,7 +36,7 @@ def get_render_mode_checks() -> dict[str, t.Callable[..., None]]:
         "ansi": assert_ansi,
     }
     # Don't fail on missing matplotlib.
-    if MPL_AVAILABLE:
+    if mpl_available():
         checks["matplotlib_figures"] = assert_matplotlib_figures
     return checks
 
@@ -133,6 +138,8 @@ def assert_matplotlib_figures(result: t.Any) -> None:
 
     Example:
 
+        >>> from matplotlib.figure import Figure
+        ...
         >>> assert_matplotlib_figures(Figure())
         >>> assert_matplotlib_figures({"foo": Figure()})
         >>> assert_matplotlib_figures([("foo", Figure())])
@@ -141,7 +148,8 @@ def assert_matplotlib_figures(result: t.Any) -> None:
         ...
         AssertionError: render('matplotlib_figures') returns ...
     """
-    # Circumvent <https://github.com/PyCQA/pylint/issues/3507>.
+    from matplotlib.figure import Figure
+
     if isinstance(result, Figure):
         return assert_unmanaged_figure(result)
     if hasattr(result, "items"):
@@ -180,6 +188,8 @@ def assert_mpl_figures_iterable(result: t.Iterable) -> None:
 
 
 def _assert_mpl_figures_item(title: t.Any, figure: t.Any) -> None:
+    from matplotlib.figure import Figure
+
     assert isinstance(title, str), f"not a string: {title!r}"
     assert isinstance(figure, Figure), f"not a figure: {figure}"
     assert_unmanaged_figure(figure)

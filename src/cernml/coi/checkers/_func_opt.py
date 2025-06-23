@@ -10,7 +10,6 @@ import typing as t
 from functools import partial
 
 import numpy as np
-from scipy.optimize import LinearConstraint, NonlinearConstraint
 
 from ..protocols import Constraint, FunctionOptimizable
 from ._generic import assert_human_render_called, bump_warn_arg, is_box, is_reward
@@ -46,6 +45,8 @@ def assert_optimization_space(opt: FunctionOptimizable) -> None:
 
 def assert_constraints(constraints: t.Sequence[Constraint]) -> None:
     """Check that the list of constraints contains only constraints."""
+    from scipy.optimize import LinearConstraint, NonlinearConstraint
+
     allowed_types = (LinearConstraint, NonlinearConstraint)
     for constraint in constraints:
         assert isinstance(constraint, allowed_types), (
