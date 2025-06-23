@@ -17,7 +17,7 @@ build-backend = 'setuptools.build_meta'
 dynamic = ['version']
 name = 'cernml-coi'
 authors = [
-    {name = 'Nico Madysa', email = 'nico.madysa@cern.ch'},
+    {name = 'Penny Madysa', email = 'penny.madysa@cern.ch'},
 ]
 description = 'Common optimization interfaces for RL/num. optimization'
 readme = 'README.md'
