@@ -23,14 +23,7 @@ version 0.10.0.
 Unreleased
 ----------
 
-- Make the signatures of `.namespace()` and `.pprint_registry()` more precise.
-- Add a new argument *allow_imports* to `.EnvRegistry.all()` that is True by
-  default. Passing this argument automatically loads any required entry points
-  from :ep:`cernml.envs` to ensure that all viable environments are found.
-- Delay imports of :doc:`SciPy <sci:index>` and :doc:`Matplotlib <mpl:index>`
-  in `cernml.coi.checkers` until they are absolutely required.
-- Extend `.deduce_type()` to handle the standard library types
-  `~datetime.datetime`, `~datetime.date` and `~datetime.time`.
+No changes yet!
 
 v0.9
 ----
@@ -40,6 +33,23 @@ v0.9
     :doc:`guide/migration_090`
         User guide page listing all breaking changes and how to adapt your
         code.
+
+v0.9.5
+^^^^^^
+
+Additions
+~~~~~~~~~
+- Add a new argument *allow_imports* to `.EnvRegistry.all()` that is True by
+  default. Passing this argument automatically loads any required entry points
+  from :ep:`cernml.envs` to ensure that all viable environments are found.
+- Extend `.deduce_type()` to handle the standard library types
+  `~datetime.datetime`, `~datetime.date` and `~datetime.time`.
+
+Bug fixes
+~~~~~~~~~
+- Make the signatures of `.namespace()` and `.pprint_registry()` more precise.
+- Delay imports of :doc:`SciPy <sci:index>` and :doc:`Matplotlib <mpl:index>`
+  in `cernml.coi.checkers` until they are absolutely required.
 
 v0.9.4
 ^^^^^^
