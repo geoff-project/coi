@@ -30,6 +30,7 @@ each parameter's invariants are. It's implemented as follows:
 
 from __future__ import annotations
 
+import datetime
 import typing
 from abc import abstractmethod
 from collections import OrderedDict
@@ -491,6 +492,14 @@ def deduce_type(value: typing.Any, /) -> typing.Callable[[str], typing.Any]:
         >>> bool(str(False))
         True
 
+    We further provide overloads for the `datetime` classes
+    `~datetime.datetime`, `~datetime.date` and `~datetime.time`:
+
+        >>> deduce_type(datetime.date.today())("2025-06-01")
+        datetime.date(2025, 6, 1)
+        >>> deduce_type(datetime.time())("11:12:01")
+        datetime.time(11, 12, 1)
+
     This function uses `~functools.singledispatch`, so you can add your
     own special-cases:
 
@@ -526,3 +535,18 @@ def _(value: bool, /) -> StrSafeBool[bool]:
 @deduce_type.register
 def _(value: np.bool_, /) -> StrSafeBool[np.bool_]:
     return StrSafeBool(type(value))
+
+
+@deduce_type.register
+def _(value: datetime.datetime, /) -> typing.Callable[[str], datetime.datetime]:
+    return type(value).fromisoformat
+
+
+@deduce_type.register
+def _(value: datetime.date, /) -> typing.Callable[[str], datetime.date]:
+    return type(value).fromisoformat
+
+
+@deduce_type.register
+def _(value: datetime.time, /) -> typing.Callable[[str], datetime.time]:
+    return type(value).fromisoformat

@@ -6,6 +6,7 @@
 
 """Test the Configurable API."""
 
+import datetime
 import math
 
 import pytest
@@ -117,6 +118,23 @@ def test_bool() -> None:
     assert config.validate("foo", "1000") is True
     assert config.validate("foo", "check") is True
     assert config.validate("foo", "") is False
+
+
+def test_datetime() -> None:
+    config = Config().add("foo", datetime.datetime.now())  # noqa: DTZ005
+    assert config.validate("foo", "2025-06-25T10:20:30+02:00") == datetime.datetime(
+        2025, 6, 25, 10, 20, 30, tzinfo=datetime.timezone(datetime.timedelta(hours=2))
+    )
+
+
+def test_date() -> None:
+    config = Config().add("foo", datetime.date.today())  # noqa: DTZ011
+    assert config.validate("foo", "2025-06-25") == datetime.date(2025, 6, 25)
+
+
+def test_time() -> None:
+    config = Config().add("foo", datetime.time())
+    assert config.validate("foo", "10:20:30") == datetime.time(10, 20, 30)
 
 
 def test_custom_type() -> None:

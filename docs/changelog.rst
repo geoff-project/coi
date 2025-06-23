@@ -29,6 +29,8 @@ Unreleased
   from :ep:`cernml.envs` to ensure that all viable environments are found.
 - Delay imports of :doc:`SciPy <sci:index>` and :doc:`Matplotlib <mpl:index>`
   in `cernml.coi.checkers` until they are absolutely required.
+- Extend `.deduce_type()` to handle the standard library types
+  `~datetime.datetime`, `~datetime.date` and `~datetime.time`.
 
 v0.9
 ----
