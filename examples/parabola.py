@@ -158,7 +158,7 @@ def run_episode(agent: BaseAlgorithm, env: coi.OptEnv) -> bool:
         action, _ = agent.predict(obs)
         obs, _, terminated, truncated, info = env.step(action)
         done = terminated or truncated
-    return info.get("success", False)
+    return terminated
 
 
 def get_parser() -> argparse.ArgumentParser:

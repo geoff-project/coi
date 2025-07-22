@@ -23,7 +23,13 @@ version 0.10.0.
 Unreleased
 ----------
 
-No changes yet!
+v0.9.6
+^^^^^^
+
+Bug fixes
+~~~~~~~~~
+- The :doc:`examples/parabola` erroneously reported the success rate of RL as
+  0 %.
 
 v0.9
 ----
