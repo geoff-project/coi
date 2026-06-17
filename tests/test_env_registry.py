@@ -9,11 +9,12 @@
 from __future__ import annotations
 
 import typing as t
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from gymnasium.envs.registration import EnvSpec as GymEnvSpec
 
+import cernml.coi
 from cernml.coi.registration import EnvRegistry, EnvSpec, errors
 from cernml.coi.registration._plugins import Plugins
 
@@ -34,7 +35,7 @@ def registry() -> EnvRegistry:
         else:
             name = "name-v1"
             assert registry.current_namespace == ns
-        registry.register(name, entry_point=Mock(name=f"{ns}_entry_point"))
+        registry.register(name, entry_point=MagicMock(name=f"{ns}_entry_point"))
 
     registry._plugins = Mock(Plugins)
     registry._plugins.unloaded.side_effect = lambda: frozenset(unloaded)
@@ -45,8 +46,10 @@ def registry() -> EnvRegistry:
 @pytest.fixture(autouse=True)
 def make(monkeypatch: pytest.MonkeyPatch) -> Mock:
     make = Mock(name="make")
-    monkeypatch.setattr("cernml.coi.registration._registry.make_impl", make)
-    monkeypatch.setattr("cernml.coi.registration._registry.make_vec_impl", make)
+    monkeypatch.setattr(cernml.coi.registration._registry, "make_impl", make)
+    monkeypatch.setattr(cernml.coi.registration._registry, "make_vec_impl", make)
+    # Sanity check:
+    assert cernml.coi.registration._registry.make_impl is make
     return make
 
 
@@ -218,6 +221,10 @@ def test_spec_does_not_auto_load(registry: EnvRegistry) -> None:
 
 
 def test_make_default_args(registry: EnvRegistry, make: Mock) -> None:
+    import cernml.coi
+
+    print(cernml.coi.registration._registry.make_impl)
+    print(make)
     spec = EnvSpec("name")
     res = registry.make(spec)
     assert res == make.return_value

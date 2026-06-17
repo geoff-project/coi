@@ -31,6 +31,7 @@ Bug fixes
 - The :doc:`examples/parabola` erroneously reported the success rate of RL as
   0 %.
 - Fix custom extensions broken by Sphinx 9.
+- Fix tests broken by Pytest 9.
 
 v0.9
 ----
