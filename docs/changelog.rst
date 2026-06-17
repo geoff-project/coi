@@ -32,6 +32,8 @@ Bug fixes
   0 %.
 - Fix custom extensions broken by Sphinx 9.
 - Fix tests broken by Pytest 9.
+- Limit supported versions of ``pyparsing`` on Python 3.9 to avoid deprecation
+  notices.
 
 v0.9
 ----

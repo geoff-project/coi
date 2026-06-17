@@ -57,6 +57,9 @@ wiki = 'https://wikis.cern.ch/pages/viewpage.action?pageId=194741479'
 [project.optional-dependencies]
 matplotlib = [
     'matplotlib ~= 3.8',
+    # Avoid deprecration warnings enabled with pyparsing 3.3.0;
+    # these only appear on Python 3.9 due to limits imposed by Matplotlib.
+    'pyparsing < 3.3; python_version<"3.10"',
 ]
 optimizers = [
     'cernml-coi-optimizers  ~= 3.0',
