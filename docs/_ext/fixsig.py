@@ -97,37 +97,47 @@ def hide_mcs_init_args(
     return None
 
 
+def _type_alias_forward_ref_repl(match: re.Match[str]) -> str:
+    LOG.info(
+        "hide TypeAliasForwardRef: %s -> %s",
+        match.group(0),
+        match.group(1),
+        type="fixsig",
+        subtype="hide_type_alias_forward_ref",
+    )
+    return match.group(1)
+
+
+def _type_alias_forward_ref_apply(sig: str, name: str) -> str:
+    LOG.info(
+        "hide TypeAliasForwardRef: %s",
+        name,
+        type="fixsig",
+        subtype="hide_type_alias_forward_ref",
+    )
+    return re.sub(
+        r"\bTypeAliasForwardRef\('(~?[\w\.]+)'\)", _type_alias_forward_ref_repl, sig
+    )
+
+
 def hide_type_alias_forward_ref(
     app: Sphinx,
     what: str,
     name: str,
     obj: object,
     options: dict[str, bool],
-    signature: str,
+    signature: str | None,
     return_annotation: str | None,
-) -> tuple[str, str | None] | None:
+) -> tuple[str | None, str | None] | None:
     """Hide the spurious type `TypeAliasForwardRef` in return annotations."""
+    modified = False
+    if signature is not None and "TypeAliasForwardRef" in signature:
+        signature = _type_alias_forward_ref_apply(signature, name)
+        modified = True
     if return_annotation is not None and "TypeAliasForwardRef" in return_annotation:
-        LOG.info(
-            "hide TypeAliasForwardRef: %s",
-            name,
-            type="fixsig",
-            subtype="hide_type_alias_forward_ref",
-        )
-
-        def repl(match: re.Match[str]) -> str:
-            LOG.info(
-                "hide TypeAliasForwardRef: %s -> %s",
-                match.group(0),
-                match.group(1),
-                type="fixsig",
-                subtype="hide_type_alias_forward_ref",
-            )
-            return match.group(1)
-
-        return_annotation = re.sub(
-            r"\bTypeAliasForwardRef\('(~?[\w\.]+)'\)", repl, return_annotation
-        )
+        return_annotation = _type_alias_forward_ref_apply(return_annotation, name)
+        modified = True
+    if modified:
         return signature, return_annotation
     return None
 
@@ -138,13 +148,15 @@ def hide_sentinel_values(
     name: str,
     obj: object,
     options: dict[str, bool],
-    signature: str,
+    signature: str | None,
     return_annotation: str | None,
 ) -> tuple[str, str | None] | None:
     """Hide default values that are surrounded by angle brackets.
 
     This circumvents https://github.com/sphinx-doc/sphinx/issues/12695.
     """
+    if not signature:
+        return None
     signature = re.sub(r"<[\w\.]+>", "...", signature)
     return signature, return_annotation
 

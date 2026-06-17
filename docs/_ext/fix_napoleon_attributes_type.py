@@ -25,6 +25,18 @@ if t.TYPE_CHECKING:
     from sphinx.util.typing import ExtensionMetadata
 
 
+def _get_no_index(self: napoleon.GoogleDocstring) -> bool:
+    try:
+        return self._no_index
+    except AttributeError:
+        pass
+    # Older version.
+    opt: dict | None = getattr(self, "_opt", None)
+    if opt is not None:
+        return "no-index" in opt or "noindex" in opt
+    raise AttributeError("cannot determine no-index from docstring object")
+
+
 def _parse_attributes_section(
     self: napoleon.GoogleDocstring, section: str
 ) -> list[str]:
@@ -41,7 +53,7 @@ def _parse_attributes_section(
         lines.append(".. attribute:: " + _name)
         if _type:
             lines.extend(self._indent([f":type: {_type!s}"], 3))
-        if self._opt and ("no-index" in self._opt or "noindex" in self._opt):
+        if _get_no_index(self):
             lines.append("   :no-index:")
         lines.append("")
 

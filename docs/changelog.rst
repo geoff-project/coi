@@ -30,6 +30,7 @@ Bug fixes
 ~~~~~~~~~
 - The :doc:`examples/parabola` erroneously reported the success rate of RL as
   0 %.
+- Fix custom extensions broken by Sphinx 9.
 
 v0.9
 ----
