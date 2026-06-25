@@ -35,6 +35,11 @@ Bug fixes
 - Limit supported versions of ``pyparsing`` on Python 3.9 to avoid deprecation
   notices.
 
+Other changes
+~~~~~~~~~~~~~
+- Update project links to point at the new website https://geoff.docs.cern.ch/.
+- The package is now released on PyPI.
+
 v0.9
 ----
 
