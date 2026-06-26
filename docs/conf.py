@@ -4,7 +4,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later OR EUPL-1.2+
 
-# pylint: disable = missing-function-docstring
+# pylint: disable = import-outside-toplevel
+# pylint: disable = invalid-name
+# pylint: disable = redefined-builtin
+# pylint: disable = too-many-arguments
+# pylint: disable = unused-argument
 
 """Configuration file for the Sphinx documentation builder.
 
@@ -21,12 +25,10 @@ import pathlib
 import sys
 from pathlib import Path
 
-try:
+if sys.version_info < (3, 10):
     import importlib_metadata
-except ImportError:
-    # Starting with Python 3.10 (see pyproject.toml).
-    # pylint: disable = ungrouped-imports
-    import importlib.metadata as importlib_metadata  # type: ignore[import, no-redef]
+else:
+    import importlib.metadata as importlib_metadata
 
 
 ROOTDIR = pathlib.Path(__file__).absolute().parent.parent
@@ -109,6 +111,7 @@ html_theme_options = {
     "sidebarwidth": "21rem",
     "root_url": "https://acc-py.web.cern.ch/",
     "root_name": "Acc-Py Documentation server",
+    "hosted_on": "the <a href='https://acc-py.web.cern.ch/'>Acc-Py Documentation Server</a>",
     "license_url": license_url,
     "issues_url": issues_url,
 }

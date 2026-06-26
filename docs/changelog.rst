@@ -23,6 +23,22 @@ version 0.10.0.
 Unreleased
 ----------
 
+v0.9.7
+^^^^^^
+
+Other changes
+~~~~~~~~~~~~~
+- Harmonize docs theme of Geoff packages.
+
+v0.9
+----
+
+.. seealso::
+
+    :doc:`guide/migration_090`
+        User guide page listing all breaking changes and how to adapt your
+        code.
+
 v0.9.6
 ^^^^^^
 
@@ -39,15 +55,6 @@ Other changes
 ~~~~~~~~~~~~~
 - Update project links to point at the new website https://geoff.docs.cern.ch/.
 - The package is now released on PyPI.
-
-v0.9
-----
-
-.. seealso::
-
-    :doc:`guide/migration_090`
-        User guide page listing all breaking changes and how to adapt your
-        code.
 
 v0.9.5
 ^^^^^^
